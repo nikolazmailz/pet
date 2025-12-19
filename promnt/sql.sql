@@ -85,6 +85,8 @@ suspend fun findById(id: UUID): Entity? =
 
 
 
+
+
  import org.springframework.r2dbc.core.bind
 
   client
