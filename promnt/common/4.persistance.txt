@@ -1,0 +1,6 @@
+ДАННЫЕ + POSTGRESQL
+
+Хранилище: PostgreSQL.
+Реализация доступа к данным должна соответствовать WebFlux/корутинам (не блокировать event-loop).
+Если используешь R2DBC — используй корутинные расширения (CoroutineCrudRepository/DatabaseClient + coroutines).
+Миграции: Liquibase — добавь минимальную конфигурацию.

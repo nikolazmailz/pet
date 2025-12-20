@@ -1,0 +1,24 @@
+ТЕХСТЕК И ОГРАНИЧЕНИЯ (не менять часто)
+
+Gradle plugins:
+org.springframework.boot 3.4.2
+io.spring.dependency-management 1.1.6
+kotlin("jvm") 1.9.24
+kotlin("plugin.spring") 1.9.24
+java 21
+
+Stack:
+Spring Boot + WebFlux
+kotlinx-coroutines-reactor
+PostgreSQL
+io.github.oshai:kotlin-logging-jvm
+
+Testing:
+spring-boot-starter-test
+JUnit5 (как платформа)
+Testcontainers
+Kotest (основной фреймворк тестов)
+
+Корутины:
+API везде через suspend функции (где уместно).
+Не использовать блокирующие вызовы (block(), Thread.sleep, синхронный JDBC), кроме специальных случаев (и тогда явно объяснять почему).

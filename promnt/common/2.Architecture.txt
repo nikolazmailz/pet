@@ -1,0 +1,23 @@
+АРХИТЕКТУРА (Clean Architecture + Clean Code)
+
+Приложение должно быть организовано по Clean Architecture (Robert C. Martin):
+
+Пакеты верхнего уровня:
+com/example/domain
+com/example/application
+com/example/controllers
+com/example/infra
+com/example/config
+
+Правила зависимостей:
+domain не зависит ни от Spring, ни от БД, ни от фреймворков.
+application зависит от domain, описывает use-cases (интеракторы), порты (интерфейсы).
+infra реализует порты (репозитории, адаптеры, клиенты), содержит технические детали.
+controllers — входной адаптер (HTTP), DTO/маппинг, валидация, обработка ошибок на уровне API.
+config — wiring/beans/configuration.
+
+Clean Code требования:
+Имена говорящие, без “magic”.
+Маленькие функции, явные контракты.
+Ошибки — доменные/аппликационные исключения с понятными сообщениями.
+Логи — структурно и по делу, через kotlin-logging. Не логировать секреты.

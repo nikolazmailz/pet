@@ -1,0 +1,10 @@
+КОНВЕНЦИИ ПО WEBFLUX + COROUTINES
+
+Контроллеры:
+Использовать coroutine-friendly endpoints: suspend fun в @RestController.
+Не возвращать Mono/Flux, если можно suspend + обычные типы / Flow (если нужна стриминг-модель).
+Валидация DTO: если используешь Bean Validation — объясни где и как (и как работает в WebFlux).
+
+Ошибки:
+Единая обработка ошибок через @RestControllerAdvice (или functional error handler, если выбрано).
+Возвращать предсказуемый формат ошибок (problem+json или свой ErrorResponse) — выбрать один подход и придерживаться.
