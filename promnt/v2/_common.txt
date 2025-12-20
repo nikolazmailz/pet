@@ -1,0 +1,13 @@
+Загружаешь в чат файлы:
+backend-lead.md
+system.md
+workflow.md
+architecture.md
+coroutines.md
+controllers.md
+errors.md
+migrations.md
+repositories-databaseclient.md
+sql-patterns-examples.md
+testing.md
+base-integration-test.md

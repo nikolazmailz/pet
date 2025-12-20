@@ -1,7 +1,6 @@
 АРХИТЕКТУРА (Clean Architecture + Clean Code)
 
 Приложение должно быть организовано по Clean Architecture (Robert C. Martin):
-
 Пакеты верхнего уровня:
 com/example/domain
 com/example/application

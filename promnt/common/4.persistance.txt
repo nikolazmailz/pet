@@ -4,3 +4,12 @@
 Реализация доступа к данным должна соответствовать WebFlux/корутинам (не блокировать event-loop).
 Если используешь R2DBC — используй корутинные расширения (CoroutineCrudRepository/DatabaseClient + coroutines).
 Миграции: Liquibase — добавь минимальную конфигурацию.
+
+Миграции пишутся так: в db.changelog-master.yaml пишутся только подключаемые файлы
+по примеру:
+databaseChangeLog:
+  - include:
+      file: changes/0001-create-message-queue.sql
+      relativeToChangelogFile: true
+
+сами миграции пишутся в файлах .sql
