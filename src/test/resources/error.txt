@@ -1,19 +1,15 @@
 hub.image.name.prefix=your-internal-mirror.example.com/
 ryuk.container.image=your-mirror/testcontainers/ryuk:0.5.1
 
-org.opentest4j.AssertionFailedError: 
-expected: 200 OK
- but was: 302 FOUND
-Expected :200 OK
-Actual   :302 FOUND
-<Click to see difference>
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
 
-
-	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
-	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
-	at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
-	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:500)
-	at ru.ntdev.srhr.ms.taskblocker.controller.SystemBlockControllerIT.postSystemBlockReturnsUuid(SystemBlockControllerIT.java:23)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+            .csrf(AbstractHttpConfigurer::disable);
+        return http.build();
+    }
+}
