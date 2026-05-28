@@ -15,8 +15,11 @@ public class SecurityConfig {
 }
 
 
+org.opentest4j.AssertionFailedError: 
+expected: 200 OK
+ but was: 500 INTERNAL_SERVER_ERROR
 Expected :200 OK
-Actual   :400 BAD_REQUEST
+Actual   :500 INTERNAL_SERVER_ERROR
 <Click to see difference>
 
 
