@@ -15,4 +15,44 @@ public class SecurityConfig {
 }
 
 
-Modifying queries can only use void or int/Integer as return type; Offending method: public abstract java.util.Optional ru.ntdev.srhr.ms.taskblocker.domain.TaskBlockRepository.tryAcquire(java.lang.String,java.lang.String,java.lang.String)
+public interface TaskLockRepository
+        extends JpaRepository<TaskLock, UUID>, TaskLockCustomRepository {
+
+    @Modifying
+    @Query(value = "DELETE FROM task_locks WHERE block_id = :blockId", nativeQuery = true)
+    int deleteByBlockId(@Param("blockId") String blockId);
+}
+
+public interface TaskLockCustomRepository {
+    Optional<String> tryAcquire(String operationCode, String blockId, String blockTtl);
+}
+
+
+@RequiredArgsConstructor
+public class TaskLockCustomRepositoryImpl implements TaskLockCustomRepository {
+
+    private final EntityManager em;
+
+    @Override
+    @Transactional
+    public Optional<String> tryAcquire(String operationCode, String blockId, String blockTtl) {
+        var result = em.createNativeQuery("""
+                INSERT INTO task_locks (id, operation_code, block_id, block_ttl, block_date)
+                VALUES (gen_random_uuid(), :operationCode, :blockId, CAST(:blockTtl AS interval), now())
+                ON CONFLICT (operation_code) DO UPDATE
+                    SET block_id   = EXCLUDED.block_id,
+                        block_ttl  = EXCLUDED.block_ttl,
+                        block_date = EXCLUDED.block_date
+                    WHERE task_locks.block_date + task_locks.block_ttl < now()
+                RETURNING block_id
+                """)
+                .setParameter("operationCode", operationCode)
+                .setParameter("blockId", blockId)
+                .setParameter("blockTtl", blockTtl)
+                .getResultList();
+
+        return result.isEmpty()
+                ? Optional.empty()
+                : Optional.of(result.get(0).toString());
+    }
+}
