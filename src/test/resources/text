@@ -1,0 +1,60 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/changes/001-create-task-locks.yaml
+
+
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-task-locks
+      author: srhr
+      changes:
+        - createTable:
+            tableName: task_locks
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_task_locks
+                    nullable: false
+              - column:
+                  name: operation_code
+                  type: VARCHAR
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: uk_task_locks_operation_code
+              - column:
+                  name: block_id
+                  type: VARCHAR
+                  constraints:
+                    nullable: false
+              - column:
+                  name: block_ttl
+                  type: INTERVAL
+                  constraints:
+                    nullable: false
+              - column:
+                  name: block_date
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+        - createIndex:
+            tableName: task_locks
+            indexName: idx_task_locks_operation_code
+            columns:
+              - column:
+                  name: operation_code
+
+
+
+databaseChangeLog:
+  - changeSet:
+      id: 001-create-task-locks
+      author: srhr
+      changes:
+        - sqlFile:
+            path: db/changelog/changes/001-create-task-locks.sql
+            relativeToChangelogFile: false                  
