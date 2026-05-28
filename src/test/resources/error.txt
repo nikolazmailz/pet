@@ -15,19 +15,4 @@ public class SecurityConfig {
 }
 
 
-org.opentest4j.AssertionFailedError: 
-expected: 200 OK
- but was: 500 INTERNAL_SERVER_ERROR
-Expected :200 OK
-Actual   :500 INTERNAL_SERVER_ERROR
-<Click to see difference>
-
-
-	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
-	at java.base/jdk.internal.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:77)
-	at java.base/jdk.internal.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
-	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:500)
-	at ru.ntdev.srhr.ms.taskblocker.controller.SystemBlockControllerIT.postSystemBlockReturnsUuid(SystemBlockControllerIT.java:23)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+Modifying queries can only use void or int/Integer as return type; Offending method: public abstract java.util.Optional ru.ntdev.srhr.ms.taskblocker.domain.TaskBlockRepository.tryAcquire(java.lang.String,java.lang.String,java.lang.String)
