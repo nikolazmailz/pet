@@ -1,0 +1,13 @@
+@Configuration
+@EnableAspectJAutoProxy
+public class TaskBlockerClientConfig {
+
+    @Bean
+    @ConditionalOnMissingBean
+    public RestTemplate taskBlockerRestTemplate() {
+        return new RestTemplateBuilder()
+                .setConnectTimeout(Duration.ofSeconds(2))
+                .setReadTimeout(Duration.ofSeconds(5))
+                .build();
+    }
+}
