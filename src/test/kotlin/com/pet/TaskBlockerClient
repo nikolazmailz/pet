@@ -1,0 +1,39 @@
+@Component
+@RequiredArgsConstructor
+public class TaskBlockerClient {
+
+    private final RestTemplate restTemplate;   // бин из конфигурации commons
+
+    @Value("${srhr.task-blocker.base-url}")
+    private String baseUrl;
+
+    /** @return blockId или null, если блокировка занята */
+    public String block(String operationCode, Duration ttl) {
+        var body = Map.of(
+                "operationCode", operationCode,
+                "blockTTL", formatHms(ttl)         // "01:00:00"
+        );
+        try {
+            return restTemplate.postForObject(baseUrl + "/system-block", body, String.class);
+        } catch (RestClientException e) {
+            // недоступность блокировщика трактуем как "не заблокировано", чтобы не падать
+            return null;
+        }
+    }
+
+    public boolean unblock(String blockId) {
+        try {
+            var entity = new HttpEntity<>(Map.of("blockId", blockId));
+            return Boolean.TRUE.equals(
+                restTemplate.exchange(baseUrl + "/system-block", HttpMethod.PUT, entity, Boolean.class)
+                            .getBody());
+        } catch (RestClientException e) {
+            return false;
+        }
+    }
+
+    private static String formatHms(Duration d) {
+        long s = d.getSeconds();
+        return String.format("%02d:%02d:%02d", s / 3600, (s % 3600) / 60, s % 60);
+    }
+}
