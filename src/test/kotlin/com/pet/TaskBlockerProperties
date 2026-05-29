@@ -1,0 +1,15 @@
+@ConfigurationProperties(prefix = "srhr.task-blocker")
+public record TaskBlockerProperties(
+        String baseUrl,
+        Duration connectTimeout,
+        Duration readTimeout
+) {
+    public TaskBlockerProperties {
+        // дефолты, если значение не задано в yml
+        if (connectTimeout == null) connectTimeout = Duration.ofSeconds(2);
+        if (readTimeout == null)    readTimeout    = Duration.ofSeconds(5);
+    }
+}
+
+
+@EnableConfigurationProperties(TaskBlockerProperties.class)
