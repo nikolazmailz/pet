@@ -1,0 +1,27 @@
+@Aspect
+@Component
+@RequiredArgsConstructor
+public class SystemBlockAspect {
+
+    private final TaskBlockerClient client;
+
+    @Value("${spring.application.name:${SERVICE_NAME:unknown-service}}")
+    private String serviceName;
+
+    @Around("@annotation(systemBlock)")
+    public Object around(ProceedingJoinPoint pjp, SystemBlock systemBlock) throws Throwable {
+        String methodName = ((MethodSignature) pjp.getSignature()).getMethod().getName();
+        String operationCode = serviceName + " " + methodName;   // напр. "srhr-ms-sys-housekeep cleanerTask"
+
+        String blockId = client.block(operationCode, Duration.ofHours(systemBlock.ttlHours()));
+        if (blockId == null) {
+            // блокировка занята другим инстансом — молча выходим, без исключения
+            return null;
+        }
+        try {
+            return pjp.proceed();
+        } finally {
+            client.unblock(blockId);
+        }
+    }
+}
