@@ -1,58 +1,55 @@
 hub.image.name.prefix=your-internal-mirror.example.com/
 ryuk.container.image=your-mirror/testcontainers/ryuk:0.5.1
 
+
 @Configuration
-@EnableWebSecurity
-public class SecurityConfig {
+@Slf4j
+public class TaskConfiguration {
 
-    @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-            .csrf(AbstractHttpConfigurer::disable);
-        return http.build();
+    @Value("${app.scheduler.core-pool-size}")
+    private int corePoolSize;
+
+    @Value("${app.scheduler.max-pool-size}")
+    private int maxPoolSize;
+
+    @Value("${app.scheduler.queue-capacity}")
+    private int queueCapacity;
+
+    @Bean(name = "ProducerExecutor")public Executor ThreadPoolTaskExecutor(){
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(corePoolSize);
+        threadPoolTaskExecutor.setMaxPoolSize(maxPoolSize);
+        threadPoolTaskExecutor.setQueueCapacity(queueCapacity);
+        threadPoolTaskExecutor.setThreadNamePrefix("producer-ex-");
+        threadPoolTaskExecutor.setWaitForTasksToCompleteOnShutdown(true);
+        log.info("Конфигурируем ThreadPoolTaskExecutor");
+        return threadPoolTaskExecutor;
     }
 }
 
 
-public interface TaskLockRepository
-        extends JpaRepository<TaskLock, UUID>, TaskLockCustomRepository {
 
-    @Modifying
-    @Query(value = "DELETE FROM task_locks WHERE block_id = :blockId", nativeQuery = true)
-    int deleteByBlockId(@Param("blockId") String blockId);
-}
-
-public interface TaskLockCustomRepository {
-    Optional<String> tryAcquire(String operationCode, String blockId, String blockTtl);
-}
-
-
-@RequiredArgsConstructor
-public class TaskLockCustomRepositoryImpl implements TaskLockCustomRepository {
-
-    private final EntityManager em;
-
-    @Override
-    @Transactional
-    public Optional<String> tryAcquire(String operationCode, String blockId, String blockTtl) {
-        var result = em.createNativeQuery("""
-                INSERT INTO task_locks (id, operation_code, block_id, block_ttl, block_date)
-                VALUES (gen_random_uuid(), :operationCode, :blockId, CAST(:blockTtl AS interval), now())
-                ON CONFLICT (operation_code) DO UPDATE
-                    SET block_id   = EXCLUDED.block_id,
-                        block_ttl  = EXCLUDED.block_ttl,
-                        block_date = EXCLUDED.block_date
-                    WHERE task_locks.block_date + task_locks.block_ttl < now()
-                RETURNING block_id
-                """)
-                .setParameter("operationCode", operationCode)
-                .setParameter("blockId", blockId)
-                .setParameter("blockTtl", blockTtl)
-                .getResultList();
-
-        return result.isEmpty()
-                ? Optional.empty()
-                : Optional.of(result.get(0).toString());
+    private final RedisAdapter redisAdapter;
+    private final TaskCleanerRepositoryImpl taskCleanerRepository;
+    private final TaskScheduleRepository taskScheduleRepository;
+    @Value("${spring.data.redis.queue.name.housekeep}") String housekeepRequestQueue;
+    @Scheduled(cron = "${app.scheduler.db.cron.cleaner}")
+    @Async(value = "ProducerExecutor")
+    public void produce() throws JsonProcessingException {
+        int count = 100;
+        for (int i = 0; i < count; i++) {
+            String request = redisAdapter.getFromQueue(housekeepRequestQueue);
+            if (request!=null) {
+                try {
+                    ObjectMapper mapper = new ObjectMapper();
+                    mapper.registerModule(new JavaTimeModule());
+                    mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+                    ScheduledTaskDto dto = mapper.readValue(request, ScheduledTaskDto.class);
+                    taskCleanerRepository.deleteData(dto.getSchemaName(), dto.getTableName(), dto.getConditionColumn(), dto.getDataExpirationInHours());
+                    taskScheduleRepository.updatelastSuccessfulCleanDateById(dto.getTaskId(), LocalDateTime.now());
+                } catch (Exception e) {
+                    log.error("Произошла ошибка в таске очистки кэша бд [CleanerTask]. Текст ошибки: [{}]", e.getMessage());
+                }
+            }
+        }
     }
-}
