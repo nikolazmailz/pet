@@ -1,0 +1,29 @@
+@Component
+@RequiredArgsConstructor
+public class HousekeepScheduler {
+
+    private final CleanerService cleanerService;
+    private final DispatcherService dispatcherService;
+
+    @Scheduled(cron = "${housekeep.cleaner.cron}")
+    public void runCleaner() {
+        cleanerService.cleanerTask();          // вызов метода с @SystemBlock
+    }
+
+    @Scheduled(cron = "${housekeep.dispatcher.cron}")
+    public void runDispatcher() {
+        dispatcherService.dispatcherTask();
+    }
+}
+
+@Service
+public class CleanerService {
+    @SystemBlock(ttlHours = 1)
+    public void cleanerTask() { /* полезная работа */ }
+}
+
+@Service
+public class DispatcherService {
+    @SystemBlock(ttlHours = 1)
+    public void dispatcherTask() { /* полезная работа */ }
+}
