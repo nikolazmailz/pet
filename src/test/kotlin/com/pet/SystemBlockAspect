@@ -25,3 +25,50 @@ public class SystemBlockAspect {
         }
     }
 }
+
+
+@Aspect
+@RequiredArgsConstructor
+@Slf4j
+public class SystemBlockAspect {
+
+    private final TaskBlockerClient client;
+
+    @Value("${spring.application.name:${SERVICE_NAME:unknown-service}}")
+    private String serviceName;
+
+    @Around("@annotation(systemBlock)")
+    public Object around(ProceedingJoinPoint pjp, SystemBlock systemBlock) throws Throwable {
+        String methodName = ((MethodSignature) pjp.getSignature()).getMethod().getName();
+        String operationCode = serviceName + " " + methodName;
+        String ttl = formatHms(Duration.ofHours(systemBlock.ttlHours()));
+
+        String blockId;
+        try {
+            blockId = client.block(new SystemBlockRequestDto(operationCode, ttl));
+        } catch (FeignException e) {
+            log.warn("Task-blocker unreachable, skipping task {}: {}", operationCode, e.getMessage());
+            return null;                                       // fail-close при сетевой ошибке
+        }
+
+        if (blockId == null) {
+            return null;                                       // блокировка занята
+        }
+
+        try {
+            return pjp.proceed();
+        } finally {
+            try {
+                client.unblock(new SystemUnblockRequestDto(blockId));
+            } catch (FeignException e) {
+                log.warn("Failed to release lock {}: {}", blockId, e.getMessage());
+                // не пробрасываем — задача уже выполнена, блок снимется по TTL
+            }
+        }
+    }
+
+    private static String formatHms(Duration d) {
+        long s = d.getSeconds();
+        return String.format("%02d:%02d:%02d", s / 3600, (s % 3600) / 60, s % 60);
+    }
+}
