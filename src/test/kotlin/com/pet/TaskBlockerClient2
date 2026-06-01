@@ -1,0 +1,12 @@
+@FeignClient(
+        name = "task-blocker",
+        url  = "${srhr.task-blocker.base-url}"
+)
+public interface TaskBlockerClient {
+
+    @PostMapping("/system-block")
+    String block(@RequestBody SystemBlockRequestDto request);
+
+    @PutMapping("/system-block")
+    Boolean unblock(@RequestBody SystemUnblockRequestDto request);
+}
