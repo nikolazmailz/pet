@@ -53,3 +53,17 @@ public class TaskConfiguration {
             }
         }
     }
+
+
+
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+java.lang.NoSuchMethodException: ru.ntdev.srhr.common.taskblocker.application.SystemBlockAspectTest.dummyTaskMethod()
+
+	at java.base/java.lang.Class.getDeclaredMethod(Class.java:2675)
+	at ru.ntdev.srhr.common.taskblocker.application.SystemBlockAspectTest.setUp(SystemBlockAspectTest.java:40)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
+
