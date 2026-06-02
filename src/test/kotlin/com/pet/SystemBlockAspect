@@ -88,3 +88,14 @@ public Object around(ProceedingJoinPoint pjp, SystemBlock systemBlock) throws Th
 
     // дальше как было
 }
+
+
+    private String defineTtl(String ttlHours) {
+        String ttl = environment.resolvePlaceholders(ttlHours);
+
+        if (!HMS.matcher(ttl).matches()) {
+            log.warn("Invalid @SystemBlock ttl format: '{}', expected HH:mm:ss, set default ttl is 01:00:00", ttl);
+            ttl = "01:00:00";
+        }
+        return ttl;
+    }
