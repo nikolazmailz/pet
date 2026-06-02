@@ -72,3 +72,19 @@ public class SystemBlockAspect {
         return String.format("%02d:%02d:%02d", s / 3600, (s % 3600) / 60, s % 60);
     }
 }
+
+
+
+private static final Pattern HMS = Pattern.compile("\\d{2}:\\d{2}:\\d{2}");
+
+@Around("@annotation(systemBlock)")
+public Object around(ProceedingJoinPoint pjp, SystemBlock systemBlock) throws Throwable {
+    String ttl = environment.resolvePlaceholders(systemBlock.ttl());
+
+    if (!HMS.matcher(ttl).matches()) {
+        throw new IllegalArgumentException(
+                "Invalid @SystemBlock ttl format: '" + ttl + "', expected HH:mm:ss");
+    }
+
+    // дальше как было
+}
