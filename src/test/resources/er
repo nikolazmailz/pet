@@ -1,80 +1,80 @@
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
-2026-06-01T19:47:56.554+03:00  INFO 19424 --- [test-service] [           main] org.wiremock.spring.internal.Store       : Resolving store from context: test-service
-2026-06-01T19:47:56.557+03:00  INFO 19424 --- [test-service] [           main] org.wiremock.spring.internal.Store       : Resolving store from context: test-service
-2026-06-01T19:47:56.557+03:00  INFO 19424 --- [test-service] [           main] org.wiremock.spring.internal.Store       : Resolving store from context: test-service
-2026-06-01T19:47:56.558+03:00  INFO 19424 --- [test-service] [           main] o.w.s.i.WireMockSpringJunitExtension     : Configuring WireMock for default instance, 'wiremock' on '62775'.
-2026-06-01T19:47:56.734+03:00  INFO 19424 --- [test-service] [tp1242969461-35] WireMock wiremock                        : Request received:
-127.0.0.1 - POST /system-block
+@Component
+@Slf4j
+@RequiredArgsConstructor
+public class CleanerTask {
 
-Accept: [*/*]
-User-Agent: [Java/17.0.14]
-Connection: [keep-alive]
-Host: [localhost:62775]
-Content-Length: [66]
-Content-Type: [application/json]
-{"operationCode":"test-service cleanerTask","blockTTL":"01:00:00"}
+    private final CleanerTaskService cleanerTaskService;
 
-
-Matched response definition:
-{
-  "status" : 200,
-  "body" : "\"uuid-1234\"",
-  "headers" : {
-    "Content-Type" : "application/json"
-  }
+    @Scheduled(cron = "${app.scheduler.db.cron.cleaner}")
+    @Async(value = "ProducerExecutor")
+    public void produce() throws JsonProcessingException {
+        cleanerTaskService.processBatch();
+    }
 }
 
-Response:
-HTTP/1.1 200
-Content-Type: [application/json]
-Matched-Stub-Id: [f21b489d-e1da-493f-9a67-00acd50c73ec]
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class CleanerTaskService {
 
-2026-06-01T19:47:56.744+03:00  INFO 19424 --- [test-service] [tp1242969461-29] WireMock wiremock                        : Request received:
-127.0.0.1 - PUT /system-block
+    private final RedisAdapter redisAdapter;
+    private final CleanerTaskExecutor taskExecutor;
 
-Accept: [*/*]
-User-Agent: [Java/17.0.14]
-Connection: [keep-alive]
-Host: [localhost:62775]
-Content-Length: [27]
-Content-Type: [application/json]
-{"blockId":"\"uuid-1234\""}
+    @Value("${spring.data.redis.queue.name.housekeep}")
+    private String housekeepRequestQueue;
 
+    @Value("${app.cleaner.batch-size:100}")
+    private int batchSize;
 
-Matched response definition:
-{
-  "status" : 200,
-  "body" : "true",
-  "headers" : {
-    "Content-Type" : "application/json"
-  }
+    @SystemBlock(ttlHours = "${srhr.task-blocker.cleaner.ttl}")
+    public void processBatch() {
+        log.debug("Cleaner: starting batch, max size = {}", batchSize);
+        int processed = 0, failed = 0;
+        for (int i = 0; i < batchSize; i++) {
+            String request = redisAdapter.getFromQueue(housekeepRequestQueue);
+            if (request == null) break;
+            try {
+                taskExecutor.processOne(request);
+                processed++;
+            } catch (Exception e) {
+                failed++;
+            }
+        }
+        log.info("Cleaner: batch finished, processed={}, failed={}", processed, failed);
+    }
 }
 
-Response:
-HTTP/1.1 200
-Content-Type: [application/json]
-Matched-Stub-Id: [c48248c9-a9bd-4e9d-a5ee-f54238e749f5]
 
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class CleanerTaskExecutor {
 
-com.github.tomakehurst.wiremock.client.VerificationException: No requests exactly matched. Most similar request was:  expected:<
-PUT
-/system-block
+    private final TaskCleanerRepositoryImpl taskCleanerRepository;
+    private final TaskScheduleRepository taskScheduleRepository;
+    private final ObjectMapper objectMapper;
 
-$.blockId [equalTo] uuid-1234> but was:<
-PUT
-/system-block
-
-"uuid-1234">
-<Click to see difference>
-
-
-	at com.github.tomakehurst.wiremock.client.VerificationException.forUnmatchedRequestPattern(VerificationException.java:35)
-	at com.github.tomakehurst.wiremock.client.WireMock.verificationExceptionForNearMisses(WireMock.java:784)
-	at com.github.tomakehurst.wiremock.client.WireMock.verifyThat(WireMock.java:774)
-	at com.github.tomakehurst.wiremock.client.WireMock.verifyThat(WireMock.java:750)
-	at com.github.tomakehurst.wiremock.WireMockServer.verify(WireMockServer.java:304)
-	at ru.ntdev.srhr.common.taskblocker.application.SystemBlockAspectIT.shouldBeProceedingJoinPointSucceed(SystemBlockAspectIT.java:46)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void processOne(String rawRequest) {
+        try {
+            ScheduledTaskDto dto = objectMapper.readValue(rawRequest, ScheduledTaskDto.class);
+            taskCleanerRepository.deleteData(
+                    dto.getSchemaName(),
+                    dto.getTableName(),
+                    dto.getConditionColumn(),
+                    dto.getDataExpirationInHours()
+            );
+            taskScheduleRepository.updatelastSuccessfulCleanDateById(
+                    dto.getTaskId(),
+                    LocalDateTime.now()
+            );
+            log.debug("CleanerTaskExecutor: processed task {}", dto.getTaskId());
+        } catch (JsonProcessingException e) {
+            log.error("CleanerTaskExecutor: failed to parse request [{}]: {}", rawRequest, e.getMessage());
+            throw new IllegalStateException("Invalid task payload", e);
+        } catch (Exception e) {
+            log.error("CleanerTaskExecutor: failed to process request [{}]: {}", rawRequest, e.getMessage(), e);
+            throw e;
+        }
+    }
+}
