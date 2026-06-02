@@ -90,12 +90,14 @@ public Object around(ProceedingJoinPoint pjp, SystemBlock systemBlock) throws Th
 }
 
 
-    private String defineTtl(String ttlHours) {
-        String ttl = environment.resolvePlaceholders(ttlHours);
+private String resolveTtl(String rawTtl, String methodName) {
+    String ttl = environment.resolvePlaceholders(rawTtl);
 
-        if (!HMS.matcher(ttl).matches()) {
-            log.warn("Invalid @SystemBlock ttl format: '{}', expected HH:mm:ss, set default ttl is 01:00:00", ttl);
-            ttl = "01:00:00";
-        }
+    if (HMS.matcher(ttl).matches()) {
         return ttl;
     }
+
+    log.warn("Invalid @SystemBlock ttl '{}' on method '{}', expected HH:mm:ss — falling back to {}",
+            ttl, methodName, DEFAULT_TTL);
+    return DEFAULT_TTL;
+}
