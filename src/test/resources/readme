@@ -1,0 +1,26 @@
+# srhr-mod-commons :: task-blocker
+# Клиент распределённой блокировки фоновых задач через микросервис srhr-ms-task-blocker.
+# Помечаешь метод @SystemBlock(ttlHours = N) — аспект сам ставит блок до выполнения и
+# снимает в finally. Если блок занят или блокировщик недоступен — задача пропускается.
+
+srhr:
+  task-blocker:
+    # Включает клиент и аспект. Без true библиотека выключена, @SystemBlock игнорируется.
+    enabled: true
+    # Адрес микросервиса блокировщика. Обязательно.
+    base-url: ${TASK_BLOCKER_URL:http://localhost:8080}
+
+spring:
+  application:
+    # Обязательно. Входит в operationCode блокировки: "<имя сервиса> <имя метода>".
+    name: srhr-ms-sys-housekeep
+
+  cloud:
+    openfeign:
+      client:
+        config:
+          # Имя клиента из @FeignClient(name = "task-blocker") внутри библиотеки.
+          task-blocker:
+            connect-timeout: 2000      # мс
+            read-timeout: 5000         # мс
+            logger-level: basic        # NONE / BASIC / HEADERS / FULL
