@@ -1,5 +1,9 @@
+    @JdbcTypeCode(SqlTypes.INTERVAL_SECOND)
+    @Column(name = "block_ttl", nullable = false)
+    private Duration blockTtl;
 
-java.lang.IllegalStateException: Failed to load ApplicationContext for [WebMergedContextConfiguration@4704b66a testClass = ru.ntdev.srhr.ms.taskblocker.controller.SystemBlockerControllerIT, locations = [], classes = [ru.ntdev.srhr.ms.taskblocker.Application], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true", "server.port=0"], contextCustomizers = [org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@475c9c31, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@1807f5a7, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@41330d4f, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@0, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@503f91c3, org.springframework.boot.testcontainers.service.connection.ServiceConnectionContextCustomizer@d4ac7e5d, org.springframework.boot.test.context.SpringBootTestAnnotation@3dfe239a], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+
+java.lang.IllegalStateException: Failed to load ApplicationContext for [WebMergedContextConfiguration@6434d49e testClass = ru.ntdev.srhr.ms.taskblocker.controller.SystemBlockerControllerIT, locations = [], classes = [ru.ntdev.srhr.ms.taskblocker.Application], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true", "server.port=0"], contextCustomizers = [org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@475c9c31, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@1807f5a7, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@41330d4f, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@0, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@503f91c3, org.springframework.boot.testcontainers.service.connection.ServiceConnectionContextCustomizer@e7adbf8d, org.springframework.boot.test.context.SpringBootTestAnnotation@3dfe239a], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
 
 	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:180)
 	at org.springframework.test.context.support.DefaultTestContext.getApplicationContext(DefaultTestContext.java:130)
@@ -19,7 +23,7 @@ java.lang.IllegalStateException: Failed to load ApplicationContext for [WebMerge
 	at java.base/java.util.Optional.orElseGet(Optional.java:364)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: [PersistenceUnit: default] Unable to build Hibernate SessionFactory; nested exception is org.hibernate.tool.schema.spi.SchemaManagementException: Schema-validation: wrong column type encountered in column [block_ttl] in table [task_blocks]; found [interval (Types#OTHER)], but expecting [varchar(255) (Types#VARCHAR)]
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory' defined in class path resource [org/springframework/boot/autoconfigure/orm/jpa/HibernateJpaConfiguration.class]: [PersistenceUnit: default] Unable to build Hibernate SessionFactory; nested exception is org.hibernate.MappingException: Unable to determine SQL type name for column 'block_ttl' of table 'task_blocks': Illegal attempt to use interval second type with scale > 6
 	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1775)
 	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:601)
 	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:523)
@@ -44,15 +48,18 @@ Caused by: org.springframework.beans.factory.BeanCreationException: Error creati
 	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContextInternal(DefaultCacheAwareContextLoaderDelegate.java:225)
 	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:152)
 	... 17 more
-Caused by: jakarta.persistence.PersistenceException: [PersistenceUnit: default] Unable to build Hibernate SessionFactory; nested exception is org.hibernate.tool.schema.spi.SchemaManagementException: Schema-validation: wrong column type encountered in column [block_ttl] in table [task_blocks]; found [interval (Types#OTHER)], but expecting [varchar(255) (Types#VARCHAR)]
+Caused by: jakarta.persistence.PersistenceException: [PersistenceUnit: default] Unable to build Hibernate SessionFactory; nested exception is org.hibernate.MappingException: Unable to determine SQL type name for column 'block_ttl' of table 'task_blocks': Illegal attempt to use interval second type with scale > 6
 	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.buildNativeEntityManagerFactory(AbstractEntityManagerFactoryBean.java:421)
 	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.afterPropertiesSet(AbstractEntityManagerFactoryBean.java:396)
 	at org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean.afterPropertiesSet(LocalContainerEntityManagerFactoryBean.java:352)
 	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1822)
 	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1771)
 	... 39 more
-Caused by: org.hibernate.tool.schema.spi.SchemaManagementException: Schema-validation: wrong column type encountered in column [block_ttl] in table [task_blocks]; found [interval (Types#OTHER)], but expecting [varchar(255) (Types#VARCHAR)]
-	at org.hibernate.tool.schema.internal.AbstractSchemaValidator.validateColumnType(AbstractSchemaValidator.java:165)
+Caused by: org.hibernate.MappingException: Unable to determine SQL type name for column 'block_ttl' of table 'task_blocks': Illegal attempt to use interval second type with scale > 6
+	at org.hibernate.mapping.Column.getSqlTypeName(Column.java:296)
+	at org.hibernate.mapping.Column.getSqlType(Column.java:355)
+	at org.hibernate.tool.schema.internal.ColumnDefinitions.hasMatchingType(ColumnDefinitions.java:31)
+	at org.hibernate.tool.schema.internal.AbstractSchemaValidator.validateColumnType(AbstractSchemaValidator.java:163)
 	at org.hibernate.tool.schema.internal.AbstractSchemaValidator.validateTable(AbstractSchemaValidator.java:152)
 	at org.hibernate.tool.schema.internal.GroupedSchemaValidatorImpl.validateTables(GroupedSchemaValidatorImpl.java:46)
 	at org.hibernate.tool.schema.internal.AbstractSchemaValidator.performValidation(AbstractSchemaValidator.java:97)
@@ -70,4 +77,11 @@ Caused by: org.hibernate.tool.schema.spi.SchemaManagementException: Schema-valid
 	at org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean.createNativeEntityManagerFactory(LocalContainerEntityManagerFactoryBean.java:376)
 	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.buildNativeEntityManagerFactory(AbstractEntityManagerFactoryBean.java:409)
 	... 43 more
+Caused by: java.lang.IllegalStateException: Illegal attempt to use interval second type with scale > 6
+	at org.hibernate.type.descriptor.sql.internal.Scale6IntervalSecondDdlType.getTypeName(Scale6IntervalSecondDdlType.java:26)
+	at org.hibernate.type.descriptor.sql.DdlType.getTypeName(DdlType.java:80)
+	at org.hibernate.type.descriptor.sql.DdlType.getTypeName(DdlType.java:49)
+	at org.hibernate.type.descriptor.sql.spi.DdlTypeRegistry.getTypeName(DdlTypeRegistry.java:225)
+	at org.hibernate.mapping.Column.getSqlTypeName(Column.java:288)
+	... 62 more
 
