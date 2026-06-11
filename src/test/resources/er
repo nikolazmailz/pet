@@ -1,14 +1,12 @@
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+ @Autowired
+    EntityManager em;
 
-jakarta.persistence.TransactionRequiredException: Executing an update/delete query
+    @Autowired
+    TransactionTemplate transactionTemplate;     // ← Spring сам инжектит, бин есть всегда
 
-	at org.hibernate.internal.AbstractSharedSessionContract.checkTransactionNeededForUpdateOperation(AbstractSharedSessionContract.java:483)
-	at org.hibernate.query.spi.AbstractQuery.executeUpdate(AbstractQuery.java:646)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
-	at org.springframework.orm.jpa.SharedEntityManagerCreator$DeferredQueryInvocationHandler.invoke(SharedEntityManagerCreator.java:405)
-	at jdk.proxy2/jdk.proxy2.$Proxy233.executeUpdate(Unknown Source)
-	at ru.ntdev.srhr.ms.taskblocker.BaseIntegrationTest.cleanDb(BaseIntegrationTest.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-
+    @BeforeEach
+    void cleanDb() {
+        transactionTemplate.executeWithoutResult(status ->
+            em.createNativeQuery("DELETE FROM task_blocks").executeUpdate()
+        );
+    }
