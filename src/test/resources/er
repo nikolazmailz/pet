@@ -1,81 +1,348 @@
+package ru.ntdev.srhr.ms.taskblocker.domain;
 
-@Component
-@Slf4j
-@RequiredArgsConstructor
-public class CleanerTask {
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.UUID;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-    private final CleanerTaskService cleanerTaskService;
+@Entity
+@Table(name = "task_blocks")
+@Getter
+@Setter
+@NoArgsConstructor
+public class TaskBlock {
 
-    @Scheduled(cron = "${app.scheduler.db.cron.cleaner}")
-    @Async(value = "ProducerExecutor")
-    public void produce() throws JsonProcessingException {
-        cleanerTaskService.processBatch();
-    }
-}
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
-@Service
-@Slf4j
-@RequiredArgsConstructor
-public class CleanerTaskService {
+    @Column(name = "operation_code", nullable = false, unique = true)
+    private String operationCode;
 
-    private final RedisAdapter redisAdapter;
-    private final CleanerTaskExecutor taskExecutor;
+    @Column(name = "block_id", nullable = false)
+    private String blockId;
 
-    @Value("${spring.data.redis.queue.name.housekeep}")
-    private String housekeepRequestQueue;
+    @Column(name = "block_ttl", nullable = false, columnDefinition = "interval")
+    private Duration blockTtl;
 
-    @Value("${app.cleaner.batch-size:100}")
-    private int batchSize;
-
-    @SystemBlock(ttlHours = "${srhr.task-blocker.cleaner.ttl}")
-    public void processBatch() {
-        log.debug("Cleaner: starting batch, max size = {}", batchSize);
-        int processed = 0, failed = 0;
-        for (int i = 0; i < batchSize; i++) {
-            String request = redisAdapter.getFromQueue(housekeepRequestQueue);
-            if (request == null) break;
-            try {
-                taskExecutor.processOne(request);
-                processed++;
-            } catch (Exception e) {
-                failed++;
-            }
-        }
-        log.info("Cleaner: batch finished, processed={}, failed={}", processed, failed);
-    }
+    @Column(name = "block_date", nullable = false)
+    private LocalDateTime blockDate;
 }
 
 
-@Service
-@Slf4j
-@RequiredArgsConstructor
-public class CleanerTaskExecutor {
+[id, uuid]
+[operation_code, character varying]
+[block_id, character varying]
+[block_ttl, interval]
+[block_date, timestamp without time zone]
 
-    private final TaskCleanerRepositoryImpl taskCleanerRepository;
-    private final TaskScheduleRepository taskScheduleRepository;
-    private final ObjectMapper objectMapper;
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void processOne(String rawRequest) {
-        try {
-            ScheduledTaskDto dto = objectMapper.readValue(rawRequest, ScheduledTaskDto.class);
-            taskCleanerRepository.deleteData(
-                    dto.getSchemaName(),
-                    dto.getTableName(),
-                    dto.getConditionColumn(),
-                    dto.getDataExpirationInHours()
-            );
-            taskScheduleRepository.updatelastSuccessfulCleanDateById(
-                    dto.getTaskId(),
-                    LocalDateTime.now()
-            );
-            log.debug("CleanerTaskExecutor: processed task {}", dto.getTaskId());
-        } catch (JsonProcessingException e) {
-            log.error("CleanerTaskExecutor: failed to parse request [{}]: {}", rawRequest, e.getMessage());
-            throw new IllegalStateException("Invalid task payload", e);
-        } catch (Exception e) {
-            log.error("CleanerTaskExecutor: failed to process request [{}]: {}", rawRequest, e.getMessage(), e);
-            throw e;
-        }
-    }
-}
+
+
+databaseChangeLog:
+  - changeSet:
+      id: 2026-05-28-create-task-blocks.yml
+      author: n-pushkaryov
+      changes:
+        - createTable:
+            tableName: task_blocks
+            remarks: Таблица для управления блокировками задач
+            columns:
+              - column:
+                  name: id
+                  remarks: Уникальный идентификатор записи
+                  defaultValueComputed: gen_random_uuid()
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: operation_code
+                  remarks: Уникальный код операции
+                  type: varchar
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: block_id
+                  remarks: Идентификатор блокировки
+                  type: varchar
+                  constraints:
+                    nullable: false
+              - column:
+                  name: block_ttl
+                  remarks: Время жизни блокировки
+                  type: interval
+                  constraints:
+                    nullable: false
+              - column:
+                  name: block_date
+                  remarks: Время создания блокировки
+                  type: timestamp without time zone
+                  constraints:
+                    nullable: false
+        - createIndex:
+            indexName: idx_task_blocks_operation_code
+            tableName: task_blocks
+            columns:
+              - column:
+                  name: operation_code
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>ru.ntdev.srhr</groupId>
+        <artifactId>srhr-backend</artifactId>
+        <version>6.5.0</version>
+        <relativePath/>
+    </parent>
+    <groupId>ru.ntdev</groupId>
+    <artifactId>srhr-ms-task-blocker</artifactId>
+    <version>7.4.0</version>
+    <name>srhr-ms-task-blocker</name>
+    <description>srhr-ms-task-blocker</description>
+    <properties>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>ru.ntdev.srhr</groupId>
+            <artifactId>srhr-mod-commons</artifactId>
+            <version>7.3.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Тесты -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.version}</version>
+                <configuration>
+                    <source>${maven.compiler.source}
+                    </source>
+                    <!-- depending on your project. In this example, Java 11 is used -->
+                    <target>${maven.compiler.target}
+                    </target>
+                    <!-- depending on your project. In this example, Java 11 is used -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${org.mapstruct.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok-mapstruct-binding</artifactId>
+                            <version>${lombok-mapstruct-binding.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${maven.failsafe.version}</version>
+                <configuration>
+                    <reuseForks>true</reuseForks>
+                    <forkCount>3</forkCount>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.version}</version>
+                <configuration>
+                    <reuseForks>true</reuseForks>
+                    <forkCount>3</forkCount>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build-info</goal>
+                        </goals>
+                        <configuration>
+                            <additionalProperties>
+                                <encoding.source>UTF-8</encoding.source>
+                                <encoding.reporting>UTF-8</encoding.reporting>
+                                <java.source>${maven.compiler.source}</java.source>
+                                <java.target>${maven.compiler.target}</java.target>
+                            </additionalProperties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <formats>
+                                <format>XML</format>
+                            </formats>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.2.0</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>ru.ntdev.srhr</groupId>
+    <artifactId>srhr-backend</artifactId>
+    <version>6.5.0</version>
+    <packaging>pom</packaging>
+    <name>srhr-backend</name>
+
+    <properties>
+        <jackson-dataformat-xml.version>2.13.1</jackson-dataformat-xml.version>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+        <lombok.version>1.18.22</lombok.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.compiler.version>3.9.0</maven.compiler.version>
+        <maven.failsafe.version>2.22.2</maven.failsafe.version>
+        <maven.surefire.version>2.22.2</maven.surefire.version>
+        <opentracing-jdbc.version>0.2.15</opentracing-jdbc.version>
+        <opentracing-spring-cloud-starter.version>0.5.9</opentracing-spring-cloud-starter.version>
+        <org.mapstruct.version>1.4.2.Final</org.mapstruct.version>
+        <spring-cloud.version>2021.0.0</spring-cloud.version>
+        <spring-test.version>5.3.15</spring-test.version>
+        <springdoc-openapi.version>1.6.6</springdoc-openapi.version>
+        <snapshot_repository_url/>
+        <io.tarantool.version>0.12.0</io.tarantool.version>
+        <apache-poi.version>5.2.0</apache-poi.version>
+        <apache.commons.lang3.version>3.12.0</apache.commons.lang3.version>
+        <jacoco.version>0.8.7</jacoco.version>
+        <audit-lib.version>40.3.0.23</audit-lib.version>
+        <tsds.version>4.3.1.0</tsds.version>
+        <tsrm.version>40.3.1.0</tsrm.version>
+        <jagger-client.version>1.8.0</jagger-client.version>
+        <logback.integration.version>1.7.11</logback.integration.version>
+        <logback.version>1.5.6</logback.version>
+        <logstash.encoder.version>7.0.1</logstash.encoder.version>
+        <logstash.classic.version>1.5.6</logstash.classic.version>
+        <jagger-client.version>1.8.0</jagger-client.version>
+        <opentracing-spring-jaeger-cloud-starter.version>3.3.1</opentracing-spring-jaeger-cloud-starter.version>
+        <tstr-starter.version>4.2.6</tstr-starter.version>
+        <epa.sdk.version>0.0.46.0</epa.sdk.version>
+        <ecm.version>6.1.3</ecm.version>
+        <org.apache.commons.version>4.4</org.apache.commons.version>
+        <liquibase.version>4.28.0</liquibase.version>
+        <spring-cloud.version>2023.0.1</spring-cloud.version>
+        <wiremock-spring-boot.version>3.9.0</wiremock-spring-boot.version>
+    </properties>
+
+    <dependencies>
+    </dependencies>
+
+</project>
