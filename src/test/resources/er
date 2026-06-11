@@ -1,29 +1,14 @@
-    @BeforeEach
-    @Transactional
-    void cleanDb() {
-        em.createNamedQuery("DELETE FROM task_blocks").executeUpdate();
-    }
-
-
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 
-java.lang.IllegalArgumentException: No query named 'DELETE FROM task_blocks'
+jakarta.persistence.TransactionRequiredException: Executing an update/delete query
 
-	at org.hibernate.internal.AbstractSharedSessionContract.buildNamedQuery(AbstractSharedSessionContract.java:1053)
-	at org.hibernate.internal.AbstractSharedSessionContract.createNamedQuery(AbstractSharedSessionContract.java:929)
-	at org.hibernate.internal.AbstractSharedSessionContract.createNamedQuery(AbstractSharedSessionContract.java:132)
+	at org.hibernate.internal.AbstractSharedSessionContract.checkTransactionNeededForUpdateOperation(AbstractSharedSessionContract.java:483)
+	at org.hibernate.query.spi.AbstractQuery.executeUpdate(AbstractQuery.java:646)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
-	at org.springframework.orm.jpa.ExtendedEntityManagerCreator$ExtendedEntityManagerInvocationHandler.invoke(ExtendedEntityManagerCreator.java:360)
-	at jdk.proxy2/jdk.proxy2.$Proxy175.createNamedQuery(Unknown Source)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
-	at org.springframework.orm.jpa.SharedEntityManagerCreator$SharedEntityManagerInvocationHandler.invoke(SharedEntityManagerCreator.java:311)
-	at jdk.proxy2/jdk.proxy2.$Proxy175.createNamedQuery(Unknown Source)
+	at org.springframework.orm.jpa.SharedEntityManagerCreator$DeferredQueryInvocationHandler.invoke(SharedEntityManagerCreator.java:405)
+	at jdk.proxy2/jdk.proxy2.$Proxy233.executeUpdate(Unknown Source)
 	at ru.ntdev.srhr.ms.taskblocker.BaseIntegrationTest.cleanDb(BaseIntegrationTest.java:43)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-Caused by: org.hibernate.query.UnknownNamedQueryException: No query named 'DELETE FROM task_blocks'
-	at org.hibernate.internal.AbstractSharedSessionContract.buildNamedQuery(AbstractSharedSessionContract.java:1038)
-	at org.hibernate.internal.AbstractSharedSessionContract.buildNamedQuery(AbstractSharedSessionContract.java:1043)
-	... 12 more
 
