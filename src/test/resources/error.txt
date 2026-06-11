@@ -14,8 +14,14 @@ public class DurationToIntervalConverter implements AttributeConverter<Duration,
     }
 
     @Override
-    public Duration convertToEntityAttribute(String dbData) {
-        return dbData == null ? null : Duration.parse("PT" + dbData.replace(":", "H").replaceFirst("H", "H") + "S");
-        // упрощённо — реальная реализация ниже
+public Duration convertToEntityAttribute(String dbData) {
+    if (dbData == null) return null;
+    String[] parts = dbData.split(":");
+    if (parts.length != 3) {
+        throw new IllegalArgumentException("Unexpected INTERVAL format: " + dbData);
     }
+    return Duration.ofHours(Long.parseLong(parts[0]))
+            .plusMinutes(Long.parseLong(parts[1]))
+            .plusSeconds(Long.parseLong(parts[2]));
+}
 }
