@@ -56,14 +56,25 @@ public class TaskConfiguration {
 
 
 
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+org.springframework.dao.DataIntegrityViolationException: Could not extract column [4] from JDBC ResultSet [Bad value for type BigDecimal : 01:00:00] [n/a]; SQL [n/a]
 
-java.lang.NoSuchMethodException: ru.ntdev.srhr.common.taskblocker.application.SystemBlockAspectTest.dummyTaskMethod()
-
-	at java.base/java.lang.Class.getDeclaredMethod(Class.java:2675)
-	at ru.ntdev.srhr.common.taskblocker.application.SystemBlockAspectTest.setUp(SystemBlockAspectTest.java:40)
+	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:293)
+	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:241)
+	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.translateExceptionIfPossible(AbstractEntityManagerFactoryBean.java:550)
+	at org.springframework.dao.support.ChainedPersistenceExceptionTranslator.translateExceptionIfPossible(ChainedPersistenceExceptionTranslator.java:61)
+	at org.springframework.dao.support.DataAccessUtils.translateIfNecessary(DataAccessUtils.java:335)
+	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:152)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:164)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.interceptor.ExposeInvocationInterceptor.invoke(ExposeInvocationInterceptor.java:97)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:249)
+	at jdk.proxy2/jdk.proxy2.$Proxy181.deleteAll(Unknown Source)
+	at ru.ntdev.srhr.ms.taskblocker.BaseIntegrationTest.cleanDb(BaseIntegrationTest.java:37)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+Caused by: org.hibernate.exception.DataException: Could not extract column [4] from JDBC ResultSet [Bad value for type BigDecimal : 01:00:00] [n/a]
 
 
