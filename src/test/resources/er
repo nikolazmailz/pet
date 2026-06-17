@@ -180,3 +180,64 @@ public RequisitionPostVacancyCandidatesDto getRequisitionPostVacancyCandidates(R
     comparator = Comparator.comparing(
                     CandidateEventEntity::getStatusCode,
                     Comparator.nullsLast(Comparator.naturalOrder()));
+
+
+
+
+
+public class CandidateEventEntity implements Serializable {
+
+    @Id
+    @SequenceGenerator(name="candidates_events_id_seq",sequenceName="candidates_events_id_seq",allocationSize=1)
+    @GeneratedValue(strategy= GenerationType.SEQUENCE, generator="candidates_events_id_seq")
+    @Column(nullable = false, updatable = false)
+    private Integer id;
+
+    @ManyToOne(targetEntity = CandidateEntity.class,
+            fetch = FetchType.EAGER)
+    @JoinColumn(name = "candidate_id", referencedColumnName = "id")
+    private CandidateEntity candidateId;
+
+    @Column(name = "event_code")
+    private String eventCode;
+
+    @Column(name = "status_code")
+    private String statusCode;
+
+
+
+public class CandidateStageEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Integer id;
+
+    @Column(name = "code")
+    private String code;
+
+
+public class CandidateStageStatusEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Integer id;
+
+    @Column(name = "stage_id")
+    private Integer stageId;
+
+    @Column(name = "status_id")
+    private Integer statusId;
+}
+
+
+public class CandidateStatusEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Integer id;
+
+    @Column(name = "name")
+    private String name;
+
+    @Column(name = "code")
+    private String code;
