@@ -137,3 +137,58 @@ class SortCandidateEventsTest {
         });
     }
 }
+
+
+
+
+@Test
+void eventStatus_asc_sorts() throws Exception {
+    var list = new ArrayList<>(List.of(
+            event("SCREENING", "B", "x"),
+            event("SCREENING", "A", "y"),
+            event("SCREENING", "C", "z")));
+
+    invokeSort(list, "eventstatus", "asc", sortingMap);
+
+    assertThat(list).extracting(CandidateEventEntity::getStatusCode)
+            .containsExactly("A", "B", "C");
+}
+
+@Test
+void eventStatus_desc_sorts() throws Exception {
+    var list = new ArrayList<>(List.of(
+            event("SCREENING", "B", "x"),
+            event("SCREENING", "A", "y"),
+            event("SCREENING", "C", "z")));
+
+    invokeSort(list, "eventstatus", "desc", sortingMap);
+
+    assertThat(list).extracting(CandidateEventEntity::getStatusCode)
+            .containsExactly("C", "B", "A");
+}
+
+@Test
+void fio_asc_sorts() throws Exception {
+    var list = new ArrayList<>(List.of(
+            event("SCREENING", "A", "Сидоров"),
+            event("SCREENING", "A", "Абрамов"),
+            event("SCREENING", "A", "Петров")));
+
+    invokeSort(list, "fio", "asc", sortingMap);
+
+    assertThat(list).extracting(e -> e.getCandidateId().getFullName())
+            .containsExactly("Абрамов", "Петров", "Сидоров");
+}
+
+@Test
+void fio_desc_sorts() throws Exception {
+    var list = new ArrayList<>(List.of(
+            event("SCREENING", "A", "Сидоров"),
+            event("SCREENING", "A", "Абрамов"),
+            event("SCREENING", "A", "Петров")));
+
+    invokeSort(list, "fio", "desc", sortingMap);
+
+    assertThat(list).extracting(e -> e.getCandidateId().getFullName())
+            .containsExactly("Сидоров", "Петров", "Абрамов");
+}
