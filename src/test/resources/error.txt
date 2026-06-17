@@ -192,3 +192,44 @@ void fio_desc_sorts() throws Exception {
     assertThat(list).extracting(e -> e.getCandidateId().getFullName())
             .containsExactly("Сидоров", "Петров", "Абрамов");
 }
+
+
+
+public interface CandidateStatusNameProjection {
+    String getEventCode();
+    String getStatusCode();
+    String getName();
+}
+
+
+@Query(value = """
+        SELECT cs.code        AS eventCode,
+               st.code        AS statusCode,
+               st.name        AS name
+        FROM candidate_stage cs
+        JOIN candidate_stage_status css ON css.stage_id = cs.id
+        JOIN candidate_status st        ON st.id = css.status_id
+        """, nativeQuery = true)
+List<CandidateStatusNameProjection> findStatusNameMapping();
+
+
+
+Map<String, String> statusName = candidateStageStatusRepository.findStatusNameMapping().stream()
+        .collect(Collectors.toMap(
+                p -> statusKey(p.getEventCode(), p.getStatusCode()),
+                CandidateStatusNameProjection::getName,
+                (a, b) -> a));
+
+
+private static String statusKey(String eventCode, String statusCode) {
+    return eventCode + "\u0000" + statusCode; // \u0000 как разделитель — не встречается в кодах
+}
+
+
+        case "eventstatus" -> {
+            Map<String, String> statusNameByEventAndStatus =
+                    buildStatusNameMap();
+            comparator = Comparator.comparing(
+                    e -> statusNameByEventAndStatus.get(
+                            statusKey(e.getEventCode(), e.getStatusCode())),
+                    Comparator.nullsLast(Comparator.naturalOrder()));
