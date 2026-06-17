@@ -1,27 +1,139 @@
-hub.image.name.prefix=your-internal-mirror.example.com/
-ryuk.container.image=your-mirror/testcontainers/ryuk:0.5.1
-
-import jakarta.persistence.AttributeConverter;
-import jakarta.persistence.Converter;
-import java.time.Duration;
-
-@Converter
-public class DurationToIntervalConverter implements AttributeConverter<Duration, String> {
-
-    @Override
-    public String convertToDatabaseColumn(Duration duration) {
-        return duration == null ? null : duration.getSeconds() + " seconds";
+private static void sortCandidateEvents(List<CandidateEventEntity> events,
+                                        String sortAttr,
+                                        String sortDirection,
+                                        Map<String, Integer> sortingMap) {
+    if (events == null || events.isEmpty()
+            || sortAttr == null || sortAttr.isEmpty()
+            || sortDirection == null || sortDirection.isEmpty()) {
+        return;
     }
 
-    @Override
-public Duration convertToEntityAttribute(String dbData) {
-    if (dbData == null) return null;
-    String[] parts = dbData.split(":");
-    if (parts.length != 3) {
-        throw new IllegalArgumentException("Unexpected INTERVAL format: " + dbData);
+    Comparator<CandidateEventEntity> comparator;
+    switch (sortAttr) {
+        case "event" -> comparator = Comparator.comparingInt(
+                e -> sortingMap.getOrDefault(e.getEventCode(), Integer.MAX_VALUE));
+        case "eventstatus" -> comparator = Comparator.comparing(
+                CandidateEventEntity::getStatusCode,
+                Comparator.nullsLast(Comparator.naturalOrder()));
+        case "fio" -> comparator = Comparator.comparing(
+                e -> e.getCandidateId() == null ? null : e.getCandidateId().getFullName(),
+                Comparator.nullsLast(Comparator.naturalOrder()));
+        default -> { return; }
     }
-    return Duration.ofHours(Long.parseLong(parts[0]))
-            .plusMinutes(Long.parseLong(parts[1]))
-            .plusSeconds(Long.parseLong(parts[2]));
+
+    if (sortDirection.equals("desc")) {
+        comparator = comparator.reversed();
+    }
+    events.sort(comparator);
 }
+
+
+
+
+class SortCandidateEventsTest {
+
+    private static final Method SORT;
+    static {
+        try {
+            SORT = VacancyCandidateService.class.getDeclaredMethod(
+                    "sortCandidateEvents",
+                    List.class, String.class, String.class, Map.class);
+            SORT.setAccessible(true);
+        } catch (NoSuchMethodException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+
+    private static void invokeSort(List<CandidateEventEntity> events,
+                                   String attr, String dir,
+                                   Map<String, Integer> map) throws Exception {
+        SORT.invoke(null, events, attr, dir, map); // static -> instance = null
+    }
+
+    private static CandidateEventEntity event(String code, String status, String fio) {
+        CandidateEntity c = new CandidateEntity();
+        c.setFullName(fio);
+        CandidateEventEntity e = new CandidateEventEntity();
+        e.setEventCode(code);
+        e.setStatusCode(status);
+        e.setCandidateId(c);
+        return e;
+    }
+
+    private final Map<String, Integer> sortingMap = Map.of(
+            "SCREENING", 1, "INTERVIEW", 2, "OFFER", 3);
+
+    @Test
+    void event_asc_ordersBySortingMap() throws Exception {
+        var list = new ArrayList<>(List.of(
+                event("OFFER", "A", "Иванов"),
+                event("SCREENING", "A", "Петров"),
+                event("INTERVIEW", "A", "Сидоров")));
+
+        invokeSort(list, "event", "asc", sortingMap);
+
+        assertThat(list).extracting(CandidateEventEntity::getEventCode)
+                .containsExactly("SCREENING", "INTERVIEW", "OFFER");
+    }
+
+    @Test
+    void event_desc_reversesOrder() throws Exception {
+        var list = new ArrayList<>(List.of(
+                event("SCREENING", "A", "Петров"),
+                event("OFFER", "A", "Иванов"),
+                event("INTERVIEW", "A", "Сидоров")));
+
+        invokeSort(list, "event", "desc", sortingMap);
+
+        assertThat(list).extracting(CandidateEventEntity::getEventCode)
+                .containsExactly("OFFER", "INTERVIEW", "SCREENING");
+    }
+
+    @Test
+    void event_unknownCode_doesNotThrow_andGoesLast() throws Exception {
+        var list = new ArrayList<>(List.of(
+                event("UNKNOWN", "A", "Иванов"),
+                event("SCREENING", "A", "Петров")));
+
+        assertThatNoException().isThrownBy(
+                () -> invokeSort(list, "event", "asc", sortingMap));
+
+        assertThat(list).extracting(CandidateEventEntity::getEventCode)
+                .containsExactly("SCREENING", "UNKNOWN");
+    }
+
+    @Test
+    void fio_asc_withNullFio_doesNotThrow_nullsLast() throws Exception {
+        var list = new ArrayList<>(List.of(
+                event("SCREENING", "A", "Яковлев"),
+                event("SCREENING", "A", null),
+                event("SCREENING", "A", "Абрамов")));
+
+        invokeSort(list, "fio", "asc", sortingMap);
+
+        assertThat(list).extracting(e -> e.getCandidateId().getFullName())
+                .containsExactly("Абрамов", "Яковлев", null);
+    }
+
+    @Test
+    void eventStatus_desc_sorts() throws Exception {
+        var list = new ArrayList<>(List.of(
+                event("SCREENING", "B", "x"),
+                event("SCREENING", "A", "y"),
+                event("SCREENING", "C", "z")));
+
+        invokeSort(list, "eventstatus", "desc", sortingMap);
+
+        assertThat(list).extracting(CandidateEventEntity::getStatusCode)
+                .containsExactly("C", "B", "A");
+    }
+
+    @Test
+    void emptyOrNullArgs_returnEarly() throws Exception {
+        assertThatNoException().isThrownBy(() -> {
+            invokeSort(new ArrayList<>(), "event", "asc", sortingMap);
+            invokeSort(new ArrayList<>(List.of(event("SCREENING", "A", "x"))),
+                    null, "asc", sortingMap);
+        });
+    }
 }
