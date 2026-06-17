@@ -112,3 +112,33 @@ public RequisitionPostVacancyCandidatesDto getRequisitionPostVacancyCandidates(R
         dto = mapperService.mapCandidatesAndEventsToVacancyCandidatesDto(candidateEventsLatest, requestValues, activeTabCount, inactiveTabCount);
         return dto;
     }
+
+
+
+public class CandidateEventEntity implements Serializable {
+
+    @Id
+    @SequenceGenerator(name="candidates_events_id_seq",sequenceName="candidates_events_id_seq",allocationSize=1)
+    @GeneratedValue(strategy= GenerationType.SEQUENCE, generator="candidates_events_id_seq")
+    @Column(nullable = false, updatable = false)
+    private Integer id;
+
+    @ManyToOne(targetEntity = CandidateEntity.class,
+            fetch = FetchType.EAGER)
+    @JoinColumn(name = "candidate_id", referencedColumnName = "id")
+    private CandidateEntity candidateId;
+
+    @Column(name = "event_code")
+    private String eventCode;
+
+    @Column(name = "status_code")
+    private String statusCode;
+
+    @Column(name = "creation_date", nullable = false)
+    private LocalDateTime creationDate;
+
+    @Column(name = "status_date", nullable = false)
+    private LocalDateTime statusDate ;
+
+    @Column(name = "result_date", nullable = false)
+    private LocalDateTime resultDate;
