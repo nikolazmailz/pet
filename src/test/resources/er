@@ -115,30 +115,68 @@ public RequisitionPostVacancyCandidatesDto getRequisitionPostVacancyCandidates(R
 
 
 
-public class CandidateEventEntity implements Serializable {
+ private void sortCandidateEvents(List<CandidateEventEntity> candidateEventsLatest,
+                                     String sortAttr,
+                                     String sortDirection) {
 
-    @Id
-    @SequenceGenerator(name="candidates_events_id_seq",sequenceName="candidates_events_id_seq",allocationSize=1)
-    @GeneratedValue(strategy= GenerationType.SEQUENCE, generator="candidates_events_id_seq")
-    @Column(nullable = false, updatable = false)
-    private Integer id;
+        List<CandidateStageEntity> candidateStageSorting = candidateStageRepository.findAll();
+        Map<String, Integer> candidateStageSortingMap = candidateStageSorting.stream()
+                .collect(Collectors.toMap(CandidateStageEntity::getCode, CandidateStageEntity::getSorting));
 
-    @ManyToOne(targetEntity = CandidateEntity.class,
-            fetch = FetchType.EAGER)
-    @JoinColumn(name = "candidate_id", referencedColumnName = "id")
-    private CandidateEntity candidateId;
 
-    @Column(name = "event_code")
-    private String eventCode;
+        Map<String, String> sortingMap = new HashMap<>();
+        candidateEventsLatest.forEach(e -> {
 
-    @Column(name = "status_code")
-    private String statusCode;
+            Integer eventCodeId = candidateStageRepository.findByCode(e.getEventCode()).getId();
 
-    @Column(name = "creation_date", nullable = false)
-    private LocalDateTime creationDate;
+            Integer statusId = candidateStageStatusRepository.findAll().stream().filter(it -> it.getStageId().equals(eventCodeId)).findFirst().get().getStatusId();
 
-    @Column(name = "status_date", nullable = false)
-    private LocalDateTime statusDate ;
+            CandidateStatusEntity candidateStatus = candidateStatusRepository.findById(statusId).get();
 
-    @Column(name = "result_date", nullable = false)
-    private LocalDateTime resultDate;
+            sortingMap.put(e.getEventCode(), candidateStatus.getName());
+        });
+        
+
+        if (candidateEventsLatest == null || candidateEventsLatest.isEmpty()
+                || sortAttr == null || sortAttr.isEmpty()
+                || sortDirection == null || sortDirection.isEmpty()) {
+            return;
+        }
+
+        Comparator<CandidateEventEntity> comparator;
+        switch (sortAttr) {
+            case "event" -> comparator = Comparator.comparingInt(
+                    e -> candidateStageSortingMap.getOrDefault(e.getEventCode(), Integer.MAX_VALUE));
+            case "eventstatus" -> comparator = Comparator.comparing(
+                    CandidateEventEntity::getStatusCode,
+                    Comparator.nullsLast(Comparator.naturalOrder()));
+            case "fio" -> comparator = Comparator.comparing(
+                    e -> e.getCandidateId() == null ? null : e.getCandidateId().getFullName(),
+                    Comparator.nullsLast(Comparator.naturalOrder()));
+            default -> {
+                return;
+            }
+        }
+
+        if (sortDirection.equals("desc")) {
+            comparator = comparator.reversed();
+        }
+        candidateEventsLatest.sort(comparator);
+    }
+
+
+
+    получить CandidateStageEntity id по CandidateEventEntity.eventCode
+
+    получаю все CandidateStageStatusEntity
+
+    CandidateStageStatusEntity.stageId == id_candidate_stage
+
+    CandidateStageStatusEntity.statusId
+
+    из CandidateStatusEntity по CandidateStageStatusEntity.statusId получаю name - и уже по нему сортирую 
+    тут 
+
+    comparator = Comparator.comparing(
+                    CandidateEventEntity::getStatusCode,
+                    Comparator.nullsLast(Comparator.naturalOrder()));
