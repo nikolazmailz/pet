@@ -171,3 +171,51 @@ public class DatabaseServiceSortCandidateEventsTest {
                 .containsExactly("Сидоров", "Петров", "Иванов");
     }
 }
+
+
+
+
+private void sortCandidateEvents(List<CandidateEventEntity> candidateEventsLatest,
+                                     String sortAttr,
+                                     String sortDirection) {
+        
+        if (candidateEventsLatest == null || candidateEventsLatest.isEmpty()
+                || sortAttr == null || sortAttr.isEmpty()
+                || sortDirection == null || sortDirection.isEmpty()) {
+            return;
+        }
+
+        Comparator<CandidateEventEntity> comparator;
+        switch (sortAttr) {
+            case "event" -> {
+                List<CandidateStageEntity> candidateStageSorting = candidateStageRepository.findAll();
+                Map<String, Integer> sortingMap = candidateStageSorting.stream()
+                        .collect(Collectors.toMap(CandidateStageEntity::getCode, CandidateStageEntity::getSorting));
+
+                comparator = Comparator.comparingInt(
+                        e -> sortingMap.getOrDefault(e.getEventCode(), Integer.MAX_VALUE));
+            }
+            case "eventstatus" -> {
+                Map<String, String> statusNameSortingMap = candidateStageStatusRepository.findStatusNameMapping().stream()
+                        .collect(Collectors.toMap(
+                                p -> statusKey(p.getEventCode(), p.getStatusCode()),
+                                CandidateStatusNameProjection::getName,
+                                (a, b) -> a));
+                
+                comparator = Comparator.comparing(
+                        e -> statusNameSortingMap.get(statusKey(e.getEventCode(), e.getStatusCode())),
+                        Comparator.nullsLast(Comparator.naturalOrder()));
+            }
+            case "fio" -> comparator = Comparator.comparing(
+                    e -> e.getCandidateId() == null ? null : e.getCandidateId().getFullName(),
+                    Comparator.nullsLast(Comparator.naturalOrder()));
+            default -> {
+                return;
+            }
+        }
+
+        if (sortDirection.equals("desc")) {
+            comparator = comparator.reversed();
+        }
+        candidateEventsLatest.sort(comparator);
+    }
