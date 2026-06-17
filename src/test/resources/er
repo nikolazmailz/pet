@@ -1,141 +1,17 @@
-public RequisitionPostVacancyCandidatesDto getRequisitionPostVacancyCandidates(RequisitionPostVacancyCandidatesRequest requestValues, SapSystemParamsDto systemParams) throws Exception {
-        Boolean skipCache = requestValues.isSkipCache();
-        String vacancyId = requestValues.getVacancyId();
-        RequisitionPostVacancyCandidatesDto dto;
-        ResponseEntity<SpoVacancyCandidatesDto> response;
-        SpoVacancyCandidatesDto spoDto = null;
-        VacancyEntity vacancyEntity = vacancyRepository.findVacancyStatusEntityByVacancyId(vacancyId);
-        LocalDateTime currentTime = LocalDateTime.now();
-        Integer offset = calculateOffset(requestValues.getPage(), requestValues.getPageSize());
-        Integer limit = requestValues.getPageSize();
-        String tabsCode = requestValues.getCandidateTabsCode();
-        Integer activeTabCount = 0;
-        Integer inactiveTabCount = 0;
-        String sortAttr = requestValues.getSortAttribute().toLowerCase();
-        String sortDirection = requestValues.getSortDirection().toLowerCase();
-        boolean filtersPresent = false;
-        if (requestValues.getFilter() != null) {
-            if (requestValues.getFilter().getEventCodeList() != null || requestValues.getFilter().getEventStatusCodeList() != null || requestValues.getFilter().getSearch() != null ||
-                    !requestValues.getFilter().getEventCodeList().isEmpty() || !requestValues.getFilter().getEventStatusCodeList().isEmpty() || !requestValues.getFilter().getSearch().isEmpty()) {
-                filtersPresent = true;
-            }
-        }
-        String searchString = null;
-        if (requestValues.getFilter() != null && requestValues.getFilter().getSearch() != null && !requestValues.getFilter().getSearch().isEmpty()) {
-            searchString = prepareSearchString(requestValues.getFilter().getSearch());
-        }
-        if (vacancyEntity.getCandidatesLastUpdate() == null || skipCache) {
-            response = masterDataIntegrationService.getPostVacancyCandidates(systemParams, systemParams.getTabNumber(), requestValues.getVacancyId());
-            if (response != null) {
-                spoDto = response.getBody();
-                log.debug("Получаемый ответ по кандидатам и их этапам : [{}]", objectMapper.writeValueAsString(spoDto));
-            }
-        } else {
-            if (vacancyEntity.getCandidatesLastUpdate().plusHours(ttlVacancyCandidates).isBefore(currentTime)) {
-                response = masterDataIntegrationService.getPostVacancyCandidates(systemParams, systemParams.getTabNumber(), requestValues.getVacancyId());
-                if (response != null) {
-                    spoDto = response.getBody();
-                    log.debug("Получаемый ответ по кандидатам и их этапам : [{}]", objectMapper.writeValueAsString(spoDto));
-                }
-            }
-        }
-        if (spoDto != null) {
-            SpoVacancyCandidatesMappedDto mappedDto = mapperService.mapSpoCandidatesToCandidateEntities(spoDto.getData().getCandidates(), vacancyEntity);
-            List<CandidateEntity> candidateEntities = mappedDto.getCandidateEntityList();
-            List<CandidateEventEntity> candidateEventEntities = mappedDto.getCandidateEventEntities();
-            try {
-                candidateEventRepository.deleteCandidateEventEntitiesByVacancyId(vacancyEntity.getId());
-                candidateRepository.deleteCandidateEntitiesByVacancyId(vacancyEntity.getId());
-                candidateRepository.saveAll(candidateEntities);
-                candidateEventRepository.saveAll(candidateEventEntities);
-                vacancyRepository.updateCandidateUpdateDate(vacancyId, LocalDateTime.now());
-            } catch (Exception e) {
-                log.error("Произошла ошибка при попытке удаления и обновления в бд сущностей [candidates] и [candidates_events], текст ошибки: [{}]", e.getMessage());
-                log.debug("Произошла ошибка при попытке удаления и обновления в бд сущностей [candidates] и [candidates_events], стектрейс ошибки: [{}]", ExceptionUtils.getStackTrace(e));
-            }
-        }
-        List<CandidateEventEntity> candidateEventsLatest;
-        List<CandidateStageEntity> candidateStageSorting = candidateStageRepository.findAll();
-        Map<String,Integer> sortingMap = candidateStageSorting.stream()
-                .collect(Collectors.toMap(CandidateStageEntity::getCode, CandidateStageEntity::getSorting));
-        if (filtersPresent) {
-            // Несмотря на то, что вторая вкладка называется inactive, согласно бизнесу на ней просто показываются все кандидаты
-            if (tabsCode.equals("active")) {
-                activeTabCount = candidateEventRepository.countActiveCandidatesAndCandidatesEventsByVacancyIdWithFilters(vacancyEntity.getId(), searchString, requestValues.getFilter().getEventCodeList(), requestValues.getFilter().getEventStatusCodeList());
-                inactiveTabCount = candidateEventRepository.countInactiveCandidatesAndCandidatesEventsByVacancyIdWithFilters(vacancyEntity.getId(), searchString, requestValues.getFilter().getEventCodeList(), requestValues.getFilter().getEventStatusCodeList());
-                candidateEventsLatest = candidateEventRepository.findActiveCandidatesAndCandidatesEventsByVacancyIdWithFilters(vacancyEntity.getId(), searchString, requestValues.getFilter().getEventCodeList(), requestValues.getFilter().getEventStatusCodeList(), limit, offset);
-            } else {
-                activeTabCount = candidateEventRepository.countActiveCandidatesAndCandidatesEventsByVacancyIdWithFilters(vacancyEntity.getId(), searchString, requestValues.getFilter().getEventCodeList(), requestValues.getFilter().getEventStatusCodeList());
-                inactiveTabCount = candidateEventRepository.countInactiveCandidatesAndCandidatesEventsByVacancyIdWithFilters(vacancyEntity.getId(), searchString, requestValues.getFilter().getEventCodeList(), requestValues.getFilter().getEventStatusCodeList());
-                candidateEventsLatest = candidateEventRepository.findInactiveCandidatesAndCandidatesEventsByVacancyIdWithFilters(vacancyEntity.getId(), searchString, requestValues.getFilter().getEventCodeList(), requestValues.getFilter().getEventStatusCodeList(), limit, offset);
-            }
-        } else {
-            if (tabsCode.equals("active")) {
-                activeTabCount = candidateEventRepository.countActiveCandidatesAndCandidatesEventsByVacancyId(vacancyEntity.getId());
-                inactiveTabCount = candidateEventRepository.countInactiveCandidatesAndCandidatesEventsByVacancyId(vacancyEntity.getId());
-                candidateEventsLatest = candidateEventRepository.findActiveCandidatesAndCandidatesEventsByVacancyId(vacancyEntity.getId(), limit, offset);
-            } else {
-                activeTabCount = candidateEventRepository.countActiveCandidatesAndCandidatesEventsByVacancyId(vacancyEntity.getId());
-                inactiveTabCount = candidateEventRepository.countInactiveCandidatesAndCandidatesEventsByVacancyId(vacancyEntity.getId());
-                candidateEventsLatest = candidateEventRepository.findInactiveCandidatesAndCandidatesEventsByVacancyId(vacancyEntity.getId(), limit, offset);
-
-            }
-        }
-        if (sortDirection != null && !sortDirection.isEmpty() && sortAttr != null && !sortAttr.isEmpty() && candidateEventsLatest != null && !candidateEventsLatest.isEmpty() ) {
-            //TODO Перебиваю айди, чтобы отсортировать сущности, подумать, как лучше реализовать
-            if (sortAttr.equals("event") && sortDirection.equals("asc")) {
-                for (CandidateEventEntity entity : candidateEventsLatest ){
-                    entity.setId(sortingMap.get(entity.getEventCode()));
-                }
-                candidateEventsLatest.sort(Comparator.comparing(CandidateEventEntity::getId));
-            }
-            if (sortAttr.equals("event") && sortDirection.equals("desc")) {
-                for (CandidateEventEntity entity : candidateEventsLatest ){
-                    entity.setId(sortingMap.get(entity.getEventCode()));
-                }
-                candidateEventsLatest.sort(Comparator.comparing(CandidateEventEntity::getId).reversed());
-            }
-            if (sortAttr.equals("eventstatus") && sortDirection.equals("asc")) {
-                candidateEventsLatest.sort(Comparator.comparing(CandidateEventEntity::getStatusCode));
-            }
-            if (sortAttr.equals("eventstatus") && sortDirection.equals("desc")) {
-                candidateEventsLatest.sort(Comparator.comparing(CandidateEventEntity::getStatusCode).reversed());
-            }
-            if (sortAttr.equals("fio") && sortDirection.equals("asc")) {
-                candidateEventsLatest.sort(Comparator.comparing(obj -> obj.getCandidateId().getFullName()));
-            }
-            if (sortAttr.equals("fio") && sortDirection.equals("desc")) {
-                candidateEventsLatest.sort(Comparator.comparing(obj -> obj.getCandidateId().getFullName()));
-                Collections.reverse(candidateEventsLatest);
-            }
-        }
-        dto = mapperService.mapCandidatesAndEventsToVacancyCandidatesDto(candidateEventsLatest, requestValues, activeTabCount, inactiveTabCount);
-        return dto;
-    }
-
-
-
- private void sortCandidateEvents(List<CandidateEventEntity> candidateEventsLatest,
+private void sortCandidateEvents(List<CandidateEventEntity> candidateEventsLatest,
                                      String sortAttr,
                                      String sortDirection) {
 
         List<CandidateStageEntity> candidateStageSorting = candidateStageRepository.findAll();
-        Map<String, Integer> candidateStageSortingMap = candidateStageSorting.stream()
+        Map<String, Integer> sortingMap = candidateStageSorting.stream()
                 .collect(Collectors.toMap(CandidateStageEntity::getCode, CandidateStageEntity::getSorting));
 
+        Map<String, String> statusNameSortingMap = candidateStageStatusRepository.findStatusNameMapping().stream()
+                .collect(Collectors.toMap(
+                        p -> statusKey(p.getEventCode(), p.getStatusCode()),
+                        CandidateStatusNameProjection::getName,
+                        (a, b) -> a));
 
-        Map<String, String> sortingMap = new HashMap<>();
-        candidateEventsLatest.forEach(e -> {
-
-            Integer eventCodeId = candidateStageRepository.findByCode(e.getEventCode()).getId();
-
-            Integer statusId = candidateStageStatusRepository.findAll().stream().filter(it -> it.getStageId().equals(eventCodeId)).findFirst().get().getStatusId();
-
-            CandidateStatusEntity candidateStatus = candidateStatusRepository.findById(statusId).get();
-
-            sortingMap.put(e.getEventCode(), candidateStatus.getName());
-        });
-        
 
         if (candidateEventsLatest == null || candidateEventsLatest.isEmpty()
                 || sortAttr == null || sortAttr.isEmpty()
@@ -146,9 +22,9 @@ public RequisitionPostVacancyCandidatesDto getRequisitionPostVacancyCandidates(R
         Comparator<CandidateEventEntity> comparator;
         switch (sortAttr) {
             case "event" -> comparator = Comparator.comparingInt(
-                    e -> candidateStageSortingMap.getOrDefault(e.getEventCode(), Integer.MAX_VALUE));
+                    e -> sortingMap.getOrDefault(e.getEventCode(), Integer.MAX_VALUE));
             case "eventstatus" -> comparator = Comparator.comparing(
-                    CandidateEventEntity::getStatusCode,
+                    e -> statusNameSortingMap.get(statusKey(e.getEventCode(), e.getStatusCode())),
                     Comparator.nullsLast(Comparator.naturalOrder()));
             case "fio" -> comparator = Comparator.comparing(
                     e -> e.getCandidateId() == null ? null : e.getCandidateId().getFullName(),
@@ -166,78 +42,132 @@ public RequisitionPostVacancyCandidatesDto getRequisitionPostVacancyCandidates(R
 
 
 
-    получить CandidateStageEntity id по CandidateEventEntity.eventCode
-
-    получаю все CandidateStageStatusEntity
-
-    CandidateStageStatusEntity.stageId == id_candidate_stage
-
-    CandidateStageStatusEntity.statusId
-
-    из CandidateStatusEntity по CandidateStageStatusEntity.statusId получаю name - и уже по нему сортирую 
-    тут 
-
-    comparator = Comparator.comparing(
-                    CandidateEventEntity::getStatusCode,
-                    Comparator.nullsLast(Comparator.naturalOrder()));
 
 
+package ru.ntdev.srhr.ms.requisition.service;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import org.junit.jupiter.api.Test;
+import ru.ntdev.srhr.ms.requisition.entity.CandidateEntity;
+import ru.ntdev.srhr.ms.requisition.entity.CandidateEventEntity;
+import ru.ntdev.srhr.ms.requisition.service.impl.DatabaseServiceImpl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
-public class CandidateEventEntity implements Serializable {
+public class DatabaseServiceSortCandidateEventsTest {
 
-    @Id
-    @SequenceGenerator(name="candidates_events_id_seq",sequenceName="candidates_events_id_seq",allocationSize=1)
-    @GeneratedValue(strategy= GenerationType.SEQUENCE, generator="candidates_events_id_seq")
-    @Column(nullable = false, updatable = false)
-    private Integer id;
+    private static final Method SORT;
+    static {
+        try {
+            SORT = DatabaseServiceImpl.class.getDeclaredMethod(
+                    "sortCandidateEvents",
+                    List.class, String.class, String.class, Map.class);
+            SORT.setAccessible(true);
+        } catch (NoSuchMethodException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
 
-    @ManyToOne(targetEntity = CandidateEntity.class,
-            fetch = FetchType.EAGER)
-    @JoinColumn(name = "candidate_id", referencedColumnName = "id")
-    private CandidateEntity candidateId;
+    private final DatabaseServiceImpl service = mock(DatabaseServiceImpl.class);
 
-    @Column(name = "event_code")
-    private String eventCode;
+    private void invokeSort(List<CandidateEventEntity> events,
+                                   String attr, String dir,
+                                   Map<String, Integer> map) throws Exception {
+        SORT.invoke(service, events, attr, dir, map);
+    }
 
-    @Column(name = "status_code")
-    private String statusCode;
+    private static CandidateEventEntity event(String code, String status, String fio) {
+        CandidateEntity c = new CandidateEntity();
+        c.setFullName(fio);
+        CandidateEventEntity e = new CandidateEventEntity();
+        e.setEventCode(code);
+        e.setStatusCode(status);
+        e.setCandidateId(c);
+        return e;
+    }
 
+    private final Map<String, Integer> sortingMap = Map.of(
+            "Ожидает", 1, "Запланированно", 2, "Одобрено", 3);
 
+    @Test
+    void event_asc_sort() throws Exception {
+        var list = new ArrayList<>(List.of(
+                event("Ожидает", "Status", "Клиент1"),
+                event("Запланированно", "Status", "Клиент2"),
+                event("Одобрено", "Status", "Клиент3")));
 
-public class CandidateStageEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Integer id;
+        invokeSort(list, "event", "asc", sortingMap);
 
-    @Column(name = "code")
-    private String code;
+        assertThat(list).extracting(CandidateEventEntity::getEventCode)
+                .containsExactly("Ожидает", "Запланированно", "Одобрено");
+    }
 
+    @Test
+    void event_desc_sort() throws Exception {
+        var list = new ArrayList<>(List.of(
+                event("Запланированно", "Status", "Клиент2"),
+                event("Ожидает", "Status", "Клиент1"),
+                event("Одобрено", "Status", "Клиент3")));
 
-public class CandidateStageStatusEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Integer id;
+        invokeSort(list, "event", "desc", sortingMap);
 
-    @Column(name = "stage_id")
-    private Integer stageId;
+        assertThat(list).extracting(CandidateEventEntity::getEventCode)
+                .containsExactly("Одобрено", "Запланированно", "Ожидает");
+    }
 
-    @Column(name = "status_id")
-    private Integer statusId;
+    @Test
+    void eventStatus_asc_sorts() throws Exception {
+        var list = new ArrayList<>(List.of(
+                event("Ожидает", "Status1", "Клиент1"),
+                event("Запланированно", "Status2", "Клиент1"),
+                event("Одобрено", "Status3", "Клиент1")));
+
+        invokeSort(list, "eventstatus", "asc", sortingMap);
+
+        assertThat(list).extracting(CandidateEventEntity::getStatusCode)
+                .containsExactly("Status1", "Status2", "Status3");
+    }
+
+    @Test
+    void eventStatus_desc_sorts() throws Exception {
+        var list = new ArrayList<>(List.of(
+                event("Ожидает", "Status1", "Клиент1"),
+                event("Запланированно", "Status2", "Клиент1"),
+                event("Одобрено", "Status3", "Клиент1")));
+
+        invokeSort(list, "eventstatus", "desc", sortingMap);
+
+        assertThat(list).extracting(CandidateEventEntity::getStatusCode)
+                .containsExactly("Status3", "Status2", "Status1");
+    }
+
+    @Test
+    void fio_asc_sorts() throws Exception {
+        var list = new ArrayList<>(List.of(
+                event("Ожидает", "Status1", "Иванов"),
+                event("Запланированно", "Status1", "Петров"),
+                event("Одобрено", "Status1", "Сидоров")));
+
+        invokeSort(list, "fio", "asc", sortingMap);
+
+        assertThat(list).extracting(e -> e.getCandidateId().getFullName())
+                .containsExactly("Иванов", "Петров", "Сидоров");
+    }
+
+    @Test
+    void fio_desc_sorts() throws Exception {
+        var list = new ArrayList<>(List.of(
+                event("Ожидает", "Status1", "Иванов"),
+                event("Запланированно", "Status1", "Петров"),
+                event("Одобрено", "Status1", "Сидоров")));
+
+        invokeSort(list, "fio", "desc", sortingMap);
+
+        assertThat(list).extracting(e -> e.getCandidateId().getFullName())
+                .containsExactly("Сидоров", "Петров", "Иванов");
+    }
 }
-
-
-public class CandidateStatusEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Integer id;
-
-    @Column(name = "name")
-    private String name;
-
-    @Column(name = "code")
-    private String code;
