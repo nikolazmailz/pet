@@ -1,14 +1,4 @@
-@Repository
-public interface CandidateStageStatusRepository extends JpaRepository<CandidateStageStatusEntity, Integer> {
-
-    // todo добавить кэш
-    @Query(value = """
-        SELECT cs.code        AS eventCode,
-               st.code        AS statusCode,
-               st.name        AS name
-        FROM candidate_stage cs
-        JOIN candidate_stage_status css ON css.stage_id = cs.id
-        JOIN candidate_status st        ON st.id = css.status_id
-        """, nativeQuery = true)
-    List<CandidateStatusNameProjection> findStatusNameMapping();
-}
+  @Query(value = "select * from srhr_requisition.requisitions p where p.guid =  :guid", nativeQuery = true)
+    RequisitionEntity findRequisitionEntityByGuid(
+            @Param("guid") String guid
+    );
