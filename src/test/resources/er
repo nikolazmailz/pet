@@ -1,4 +1,4 @@
- @Query(value = "select requisition_guid from srhr_requisition.vacancy p where p.vacancy_id =  :vacancyId ", nativeQuery = true)
-    String findRequisitionGuidByVacancyId(
+   @Query(value = "select * from srhr_requisition.vacancy p where p.vacancy_id =  :vacancyId ", nativeQuery = true)
+    VacancyEntity findVacancyStatusEntityByVacancyId(
             @Param("vacancyId") String vacancyId
     );
