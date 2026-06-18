@@ -1,1 +1,14 @@
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition/pulls/2381691
+@Repository
+public interface CandidateStageStatusRepository extends JpaRepository<CandidateStageStatusEntity, Integer> {
+
+    // todo добавить кэш
+    @Query(value = """
+        SELECT cs.code        AS eventCode,
+               st.code        AS statusCode,
+               st.name        AS name
+        FROM candidate_stage cs
+        JOIN candidate_stage_status css ON css.stage_id = cs.id
+        JOIN candidate_status st        ON st.id = css.status_id
+        """, nativeQuery = true)
+    List<CandidateStatusNameProjection> findStatusNameMapping();
+}
