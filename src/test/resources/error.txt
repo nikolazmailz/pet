@@ -1,3 +1,2 @@
-Таблица "h" не найдена
-Table "h" not found; SQL statement:
-TRUNCATE TABLE  h-schema staff_card CASCADE [42102-224] [Failed SQL: (42102) TRUNCATE TABLE  h-schema staff_card CASCADE]
+Syntax error in SQL statement "TRUNCATE TABLE srhr_bscs_integration.staff_card [*]CASCADE"; SQL statement:
+TRUNCATE TABLE srhr_bscs_integration.staff_card CASCADE [42000-224] [Failed SQL: (42000) TRUNCATE TABLE srhr_bscs_integration.staff_card CASCADE]
