@@ -1,3 +1,10 @@
+@BeforeEach
+@Transactional
+void cleanUp() {
+    em.createNativeQuery("TRUNCATE TABLE staff_card RESTART IDENTITY").executeUpdate();
+}
+
+
 package ru.ntdev.srhr.requisition.repository;
 
 import org.junit.jupiter.api.Test;
