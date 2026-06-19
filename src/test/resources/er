@@ -1,2 +1,111 @@
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition/pulls/2390279
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-bscs-integration/pulls/2390281
+package ru.ntdev.srhr.requisition.repository;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.test.context.TestPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@TestPropertySource(properties = {
+        "spring.jpa.properties.hibernate.default_schema=srhr_requisition",
+        "spring.jpa.hibernate.ddl-auto=none"
+})
+@Testcontainers
+class StaffCardRepositoryIT {
+
+    @Container
+    @ServiceConnection
+    static PostgreSQLContainer<?> postgres =
+            new PostgreSQLContainer<>("postgres:16-alpine")
+                    .withInitScript("db/staff_card_init.sql");
+
+    @Autowired
+    private StaffCardRepository repository;
+
+    @Autowired
+    private TestEntityManager em;
+
+    @Test
+    void insertsNewRecordWhenTableIsEmpty() {
+        insert("ivanov", "T-001", "Developer");
+        em.clear();
+
+        List<StaffCardEntity> all = repository.findAll();
+        assertThat(all).hasSize(1);
+        assertThat(all.get(0).getAdlogin()).isEqualTo("ivanov");
+        assertThat(all.get(0).getTabNumber()).isEqualTo("T-001");
+    }
+
+    @Test
+    void doesNotInsertAndDoesNotUpdateWhenAdloginExists() {
+        insert("ivanov", "T-001", "Developer");
+        em.clear();
+
+        // тот же adlogin, но другой tab_number и position
+        insert("ivanov", "T-999", "Architect");
+        em.clear();
+
+        List<StaffCardEntity> all = repository.findAll();
+        assertThat(all).hasSize(1);
+        // tab_number остался прежним — метод ничего не обновляет, только пропускает
+        assertThat(all.get(0).getTabNumber()).isEqualTo("T-001");
+    }
+
+    @Test
+    void doesNotInsertWhenTabNumberExists() {
+        insert("ivanov", "T-001", "Developer");
+        em.clear();
+
+        // другой adlogin, но тот же tab_number
+        insert("petrov", "T-001", "Developer");
+        em.clear();
+
+        assertThat(repository.findAll()).hasSize(1);
+    }
+
+    @Test
+    void insertsWhenBothAdloginAndTabNumberAreNew() {
+        insert("ivanov", "T-001", "Developer");
+        insert("petrov", "T-002", "Developer");
+        em.clear();
+
+        assertThat(repository.findAll()).hasSize(2);
+    }
+
+    @Test
+    void allowsMultipleRowsWithNullTabNumber() {
+        insert("ivanov", null, "Developer");
+        insert("petrov", null, "Developer");
+        em.clear();
+
+        // обычный UNIQUE не считает несколько NULL дублями — обе строки вставятся
+        assertThat(repository.findAll()).hasSize(2);
+    }
+
+    private void insert(String adlogin, String tabNumber, String position) {
+        repository.updateOrInsert(
+                adlogin,
+                tabNumber,
+                LocalDateTime.now(),
+                adlogin,        // adlogin_without_domain
+                "GROUP_A",      // pers_group
+                position,
+                "POS-1",        // position_id
+                "Иван",         // first_name
+                "Иванов",       // last_name
+                "Иванович"      // patronymic
+        );
+    }
+}
