@@ -1,1 +1,39 @@
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition/pulls/2389561
+public class StaffCardEntity implements Serializable {
+
+    @Id
+    @SequenceGenerator(name="staff_card_id_seq",sequenceName="staff_card_id_seq",allocationSize=1)
+    @GeneratedValue(strategy= GenerationType.SEQUENCE, generator="staff_card_id_seq")
+    @Column(nullable = false, updatable = false)
+    private Integer id;
+
+    @Column(name = "adlogin")
+    private String adlogin;
+
+    @Column(name = "adlogin_without_domain")
+    private String adloginWithoutDomain;
+
+    @Column(name = "tab_number")
+    private String tabNumber;
+
+
+
+ @Transactional
+    @Modifying
+    @Query(value = "INSERT INTO {h-schema}staff_card (id, adlogin, tab_number, created_at, adlogin_without_domain, pers_group," +
+            " position, position_id, first_name, last_name, patronymic)\n" +
+            "    VALUES(nextval('{h-schema}staff_card_id_seq'), :adlogin, :tab_number, :created_at, :adlogin_without_domain, :pers_group, " +
+            ":position, :position_id, :first_name, :last_name, :patronymic)\n" +
+            "    ON CONFLICT ( adlogin )\n" +
+            "    DO NOTHING",
+            nativeQuery = true)
+    void updateOrInsert(@Param("adlogin") String adlogin,
+                        @Param("tab_number") String tabnumber,
+                        @Param("created_at") LocalDateTime createdAt,
+                        @Param("adlogin_without_domain") String adLoginWithoutDomain,
+                        @Param("pers_group") String persGroup,
+                        @Param("position") String position,
+                        @Param("position_id") String positionId,
+                        @Param("first_name") String firstName,
+                        @Param("last_name") String lastName,
+                        @Param("patronymic") String patronymic
+    );
