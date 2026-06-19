@@ -1,22 +1,2 @@
-databaseChangeLog:
-  - changeSet:
-      id: truncate-staff-card-cache
-      author: nikolai
-      changes:
-        - sql:
-            sql: TRUNCATE TABLE {h-schema}staff_card RESTART IDENTITY
-      rollback:
-        - empty
-
-  - changeSet:
-      id: add-unique-constraint-staff-card-tab-number
-      author: nikolai
-      changes:
-        - addUniqueConstraint:
-            tableName: staff_card
-            columnNames: tab_number
-            constraintName: uq_staff_card_tab_number
-      rollback:
-        - dropUniqueConstraint:
-            tableName: staff_card
-            constraintName: uq_staff_card_tab_number
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition/pulls/2390279
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-bscs-integration/pulls/2390281
