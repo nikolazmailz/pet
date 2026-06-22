@@ -77,3 +77,46 @@
 
 
 Штука такая, мне надо поменять условия если есть eventStatusCodeList то должна проверяться пара eventCodeList и eventStatusCodeList, условие об чистом eventCodeList игнорируются, а если eventStatusCodeList пустой, то применять фильтр чисто по eventCodeList
+
+
+
+
+@Query(value = "WITH active_check AS (" +
+    "SELECT ce.candidate_id, cst.is_active " +
+    "FROM srhr_requisition.candidates_events ce " +
+    "JOIN srhr_requisition.candidates c ON ce.candidate_id = c.id " +
+    "JOIN srhr_requisition.candidate_stage cs ON ce.event_code = cs.code " +
+    "JOIN srhr_requisition.candidate_stage_status css ON cs.id = css.stage_id " +
+    "JOIN srhr_requisition.candidate_status cst ON css.status_id = cst.id " +
+    "WHERE c.vacancy_id = :vacancyId AND ce.status_code = cst.code " +
+    ") " +
+    "SELECT COUNT(*) " +
+    "FROM srhr_requisition.candidates_events ce " +
+    "JOIN srhr_requisition.candidates c ON ce.candidate_id = c.id " +
+    "WHERE c.vacancy_id = :vacancyId " +
+    "  AND ce.creation_date = (" +
+    "    SELECT MAX(ce2.creation_date) " +
+    "    FROM srhr_requisition.candidates_events ce2 " +
+    "    JOIN srhr_requisition.candidates c2 ON ce2.candidate_id = c2.id " +
+    "    WHERE c2.vacancy_id = :vacancyId " +
+    "      AND ce2.candidate_id = ce.candidate_id " +
+    "  ) " +
+    "  AND ce.candidate_id IN (SELECT candidate_id FROM active_check WHERE is_active = true) " +
+    "  AND ce.status_code IN (SELECT code FROM srhr_requisition.candidate_status WHERE is_active = true) " +
+    "  AND (" +
+    "    cardinality(:pairStatusCodes) = 0 " +                       // пар нет -> фильтр по чистым event
+    "      AND (cardinality(:eventCodeList) = 0 OR ce.event_code = ANY(:eventCodeList)) " +
+    "    OR " +
+    "    cardinality(:pairStatusCodes) > 0 " +                       // пары есть -> матчим (event, status)
+    "      AND (ce.event_code, ce.status_code) IN (" +
+    "        SELECT e, s FROM unnest(:pairEventCodes, :pairStatusCodes) AS pair(e, s)" +
+    "      )" +
+    "  ) " +
+    "  AND (:search IS NULL OR c.full_name ILIKE :search)", nativeQuery = true)
+Long countActiveCandidatesAndCandidatesEventsByVacancyIdWithFilters(
+        @Param("vacancyId") Integer vacancyId,
+        @Param("search") String search,
+        @Param("eventCodeList") String[] eventCodeList,
+        @Param("pairEventCodes") String[] pairEventCodes,
+        @Param("pairStatusCodes") String[] pairStatusCodes
+);
