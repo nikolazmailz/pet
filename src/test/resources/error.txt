@@ -1,3 +1,18 @@
+Integer stageIdForScreening = (Integer) em.createNativeQuery("""
+        INSERT INTO srhr_requisition.candidate_stage (code, name_estaff, name_lkr, sorting, last_update)
+        VALUES ('SCREENING', 'Скрининг', 'Скрининг', 1, '2024-06-01 12:00:00')
+        RETURNING id;
+        """).getSingleResult();
+
+em.createNativeQuery("""
+        INSERT INTO srhr_requisition.candidate_stage_status (stage_id, status_id)
+        VALUES (?, ?);
+        """)
+    .setParameter(1, stageIdForScreening)
+    .setParameter(2, candidate_statusId)   // ACTIVE
+    .executeUpdate();
+
+
 package ru.ntdev.srhr.ms.requisition.repository;
 
 import org.junit.jupiter.api.BeforeEach;
