@@ -1,118 +1,31 @@
-@BeforeEach
-@Transactional
-void cleanUp() {
-    em.createNativeQuery("TRUNCATE TABLE staff_card RESTART IDENTITY").executeUpdate();
-}
-
-
-package ru.ntdev.srhr.requisition.repository;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.test.context.TestPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@TestPropertySource(properties = {
-        "spring.jpa.properties.hibernate.default_schema=srhr_requisition",
-        "spring.jpa.hibernate.ddl-auto=none"
-})
-@Testcontainers
-class StaffCardRepositoryIT {
-
-    @Container
-    @ServiceConnection
-    static PostgreSQLContainer<?> postgres =
-            new PostgreSQLContainer<>("postgres:16-alpine")
-                    .withInitScript("db/staff_card_init.sql");
-
-    @Autowired
-    private StaffCardRepository repository;
-
-    @Autowired
-    private TestEntityManager em;
-
-    @Test
-    void insertsNewRecordWhenTableIsEmpty() {
-        insert("ivanov", "T-001", "Developer");
-        em.clear();
-
-        List<StaffCardEntity> all = repository.findAll();
-        assertThat(all).hasSize(1);
-        assertThat(all.get(0).getAdlogin()).isEqualTo("ivanov");
-        assertThat(all.get(0).getTabNumber()).isEqualTo("T-001");
-    }
-
-    @Test
-    void doesNotInsertAndDoesNotUpdateWhenAdloginExists() {
-        insert("ivanov", "T-001", "Developer");
-        em.clear();
-
-        // тот же adlogin, но другой tab_number и position
-        insert("ivanov", "T-999", "Architect");
-        em.clear();
-
-        List<StaffCardEntity> all = repository.findAll();
-        assertThat(all).hasSize(1);
-        // tab_number остался прежним — метод ничего не обновляет, только пропускает
-        assertThat(all.get(0).getTabNumber()).isEqualTo("T-001");
-    }
-
-    @Test
-    void doesNotInsertWhenTabNumberExists() {
-        insert("ivanov", "T-001", "Developer");
-        em.clear();
-
-        // другой adlogin, но тот же tab_number
-        insert("petrov", "T-001", "Developer");
-        em.clear();
-
-        assertThat(repository.findAll()).hasSize(1);
-    }
-
-    @Test
-    void insertsWhenBothAdloginAndTabNumberAreNew() {
-        insert("ivanov", "T-001", "Developer");
-        insert("petrov", "T-002", "Developer");
-        em.clear();
-
-        assertThat(repository.findAll()).hasSize(2);
-    }
-
-    @Test
-    void allowsMultipleRowsWithNullTabNumber() {
-        insert("ivanov", null, "Developer");
-        insert("petrov", null, "Developer");
-        em.clear();
-
-        // обычный UNIQUE не считает несколько NULL дублями — обе строки вставятся
-        assertThat(repository.findAll()).hasSize(2);
-    }
-
-    private void insert(String adlogin, String tabNumber, String position) {
-        repository.updateOrInsert(
-                adlogin,
-                tabNumber,
-                LocalDateTime.now(),
-                adlogin,        // adlogin_without_domain
-                "GROUP_A",      // pers_group
-                position,
-                "POS-1",        // position_id
-                "Иван",         // first_name
-                "Иванов",       // last_name
-                "Иванович"      // patronymic
-        );
-    }
-}
+@Query(value = "WITH active_check AS (" +
+    "SELECT ce.candidate_id, cst.is_active " +
+    "FROM srhr_requisition.candidates_events ce " +
+    "JOIN srhr_requisition.candidates c ON ce.candidate_id = c.id " +
+    "JOIN srhr_requisition.candidate_stage cs ON ce.event_code = cs.code " +
+    "JOIN srhr_requisition.candidate_stage_status css ON cs.id = css.stage_id " +
+    "JOIN srhr_requisition.candidate_status cst ON css.status_id = cst.id " +
+    "WHERE c.vacancy_id = :vacancyId AND ce.status_code = cst.code " +
+    ") " +
+    "SELECT COUNT(*) " +
+    "FROM srhr_requisition.candidates_events ce " +
+    "JOIN srhr_requisition.candidates c ON ce.candidate_id = c.id " +
+    "WHERE c.vacancy_id = :vacancyId " +
+    "  AND ce.creation_date = (" +
+    "    SELECT MAX(ce2.creation_date) " +
+    "    FROM srhr_requisition.candidates_events ce2 " +
+    "    JOIN srhr_requisition.candidates c2 ON ce2.candidate_id = c2.id " +
+    "    WHERE c2.vacancy_id = :vacancyId " +
+    "      AND ce2.candidate_id = ce.candidate_id " +
+    "  ) " +
+    "  AND ce.candidate_id IN (SELECT candidate_id FROM active_check WHERE is_active = true) " +
+    "  AND ce.status_code IN (SELECT code FROM srhr_requisition.candidate_status WHERE is_active = true) " +
+    "  AND (" +
+    "    (:eventStatusCodeList IS NULL OR :eventStatusCodeList = '{}') " +
+    "      AND (:eventCodeList IS NULL OR :eventCodeList = '{}' OR ce.event_code = ANY(:eventCodeList)) " +
+    "    OR " +
+    "    (:eventStatusCodeList IS NOT NULL AND :eventStatusCodeList != '{}') " +
+    "      AND (:eventCodeList IS NULL OR :eventCodeList = '{}' OR ce.event_code = ANY(:eventCodeList)) " +
+    "      AND ce.status_code = ANY(:eventStatusCodeList)" +
+    "  ) " +
+    "  AND (:search IS NULL OR c.full_name ILIKE :search)", nativeQuery = true)
