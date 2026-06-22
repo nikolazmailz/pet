@@ -29,3 +29,51 @@
     "      AND ce.status_code = ANY(:eventStatusCodeList)" +
     "  ) " +
     "  AND (:search IS NULL OR c.full_name ILIKE :search)", nativeQuery = true)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@Query(value = "with active_check as ( select ce.candidate_id, cst.is_active FROM srhr_requisition.candidates_events ce  " +
+            "JOIN srhr_requisition.candidates c ON ce.candidate_id = c.id   " +
+            "JOIN srhr_requisition.candidate_stage cs on ce.event_code = cs.code  " +
+            "JOIN srhr_requisition.candidate_stage_status css on cs.id = css.stage_id  " +
+            "JOIN srhr_requisition.candidate_status cst on css.status_id = cst.id  " +
+            "WHERE c.vacancy_id = :vacancyId AND ce.status_code = cst.code  " +
+            ") SELECT count(ce.*)   " +
+            "FROM srhr_requisition.candidates_events ce  " +
+            "JOIN srhr_requisition.candidates c ON ce.candidate_id = c.id  " +
+            "WHERE c.vacancy_id = :vacancyId  " +
+            "  AND ce.creation_date = (  " +
+            "      SELECT MAX(ce2.creation_date)  " +
+            "      FROM srhr_requisition.candidates_events ce2  " +
+            "      JOIN srhr_requisition.candidates c2 ON ce2.candidate_id = c2.id  " +
+            "      WHERE c2.vacancy_id = :vacancyId  " +
+            "        AND ce2.candidate_id = ce.candidate_id   " +
+            "  ) AND ce.candidate_id in (select candidate_id from active_check where is_active = 1)  " +
+            "  AND ce.status_code in (select cs.code from srhr_requisition.candidate_status cs where cs.is_active = 1)   " +
+            "            AND (ce.event_code IN (:eventCodeList) or (coalesce(null, :eventCodeList) IS NULL))   " +
+            "            AND (ce.status_code IN (:eventStatusCodeList) or (coalesce(null, :eventStatusCodeList) IS NULL))   " +
+            "            AND (cast(:search as text) IS NULL or c.full_name ILIKE :search)", nativeQuery = true)
+    Integer countActiveCandidatesAndCandidatesEventsByVacancyIdWithFilters (
+            @Param("vacancyId") Integer vacancyId,
+            @Param("search") String search,
+            @Param("eventCodeList") List<String> eventCodeList,
+            @Param("eventStatusCodeList") List<String>  eventStatusCodeList
+
+    );
+
+
+Штука такая, мне надо поменять условия если есть eventStatusCodeList то должна проверяться пара eventCodeList и eventStatusCodeList, условие об чистом eventCodeList игнорируются, а если eventStatusCodeList пустой, то применять фильтр чисто по eventCodeList
