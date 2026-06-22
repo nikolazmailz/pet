@@ -120,3 +120,184 @@ Long countActiveCandidatesAndCandidatesEventsByVacancyIdWithFilters(
         @Param("pairEventCodes") String[] pairEventCodes,
         @Param("pairStatusCodes") String[] pairStatusCodes
 );
+
+
+
+
+var pairs = Optional.ofNullable(eventStatusCodeList).orElseGet(List::of);
+String[] pairEventCodes  = pairs.stream().map(EventStatusCodeItem::getEventCode).toArray(String[]::new);
+String[] pairStatusCodes = pairs.stream().map(EventStatusCodeItem::getEventStatusCode).toArray(String[]::new);
+
+
+
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Testcontainers
+@Sql(scripts = "/schema-test.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+class CandidateEventRepositoryTest {
+
+    @Container
+    static PostgreSQLContainer<?> postgres =
+            new PostgreSQLContainer<>("postgres:16-alpine");
+
+    @DynamicPropertySource
+    static void props(DynamicPropertyRegistry r) {
+        r.add("spring.datasource.url", postgres::getJdbcUrl);
+        r.add("spring.datasource.username", postgres::getUsername);
+        r.add("spring.datasource.password", postgres::getPassword);
+        r.add("spring.jpa.hibernate.ddl-auto", () -> "none");
+    }
+
+    @Autowired CandidateEventRepository repository;
+    @Autowired EntityManager em;
+
+    private static final int VACANCY = 100;
+
+    @BeforeEach
+    void seed() {
+        // справочники статусов: succeed/pending активны, archived — нет
+        status(1, "succeed",  true);
+        status(2, "pending",  true);
+        status(3, "open",     true);
+        status(4, "archived", false);   // неактивный статус -> отсекается status_code IN (active)
+
+        // стадии
+        stage(10, "Interview");
+        stage(11, "Hold");
+        stage(12, "Final Interview");
+
+        // stage_status маппинг для active_check (stage x status)
+        int ssId = 1;
+        for (int stageId : new int[]{10, 11, 12})
+            for (int statusId : new int[]{1, 2, 3, 4})
+                stageStatus(ssId++, stageId, statusId);
+
+        em.flush();
+        em.clear();
+    }
+
+    // ---- helpers ----
+    private void candidate(int id, String name) {
+        em.createNativeQuery("INSERT INTO srhr_requisition.candidates(id,vacancy_id,full_name) VALUES (?,?,?)")
+          .setParameter(1, id).setParameter(2, VACANCY).setParameter(3, name).executeUpdate();
+    }
+    private void status(int id, String code, boolean active) {
+        em.createNativeQuery("INSERT INTO srhr_requisition.candidate_status(id,code,is_active) VALUES (?,?,?)")
+          .setParameter(1, id).setParameter(2, code).setParameter(3, active).executeUpdate();
+    }
+    private void stage(int id, String code) {
+        em.createNativeQuery("INSERT INTO srhr_requisition.candidate_stage(id,code) VALUES (?,?)")
+          .setParameter(1, id).setParameter(2, code).executeUpdate();
+    }
+    private void stageStatus(int id, int stageId, int statusId) {
+        em.createNativeQuery("INSERT INTO srhr_requisition.candidate_stage_status(id,stage_id,status_id) VALUES (?,?,?)")
+          .setParameter(1, id).setParameter(2, stageId).setParameter(3, statusId).executeUpdate();
+    }
+    private void event(int id, int candidateId, String eventCode, String statusCode, String ts) {
+        em.createNativeQuery("INSERT INTO srhr_requisition.candidates_events(id,candidate_id,event_code,status_code,creation_date) VALUES (?,?,?,?,?::timestamp)")
+          .setParameter(1, id).setParameter(2, candidateId).setParameter(3, eventCode)
+          .setParameter(4, statusCode).setParameter(5, ts).executeUpdate();
+    }
+    private Long count(String search, String[] events, String[] pairE, String[] pairS) {
+        em.flush(); em.clear();
+        return repository.countActiveCandidatesAndCandidatesEventsByVacancyIdWithFilters(
+                VACANCY, search, events, pairE, pairS);
+    }
+    private static final String[] EMPTY = new String[0];
+
+    // ========================================================================
+    // КЕЙС 1: оба фильтра пусты -> считаем всех (по последнему событию)
+    // ========================================================================
+    @Test
+    void noFilters_countsAllByLatestEvent() {
+        candidate(1, "Alice");
+        event(1, 1, "Interview", "succeed", "2024-01-01 10:00");
+        candidate(2, "Bob");
+        event(2, 2, "Hold", "pending", "2024-01-02 10:00");
+
+        assertThat(count(null, EMPTY, EMPTY, EMPTY)).isEqualTo(2L);
+    }
+
+    // ========================================================================
+    // КЕЙС 2: только eventCodeList -> любой статус под этими событиями
+    // ========================================================================
+    @Test
+    void eventCodeListOnly_filtersByEventAnyStatus() {
+        candidate(1, "Alice");
+        event(1, 1, "Interview", "succeed", "2024-01-01 10:00");
+        candidate(2, "Bob");
+        event(2, 2, "Interview", "pending", "2024-01-02 10:00");
+        candidate(3, "Carol");
+        event(3, 3, "Hold", "succeed", "2024-01-03 10:00");   // не Interview -> вне фильтра
+
+        // оба Interview-кандидата считаются независимо от статуса, Hold — нет
+        assertThat(count(null, new String[]{"Interview"}, EMPTY, EMPTY)).isEqualTo(2L);
+    }
+
+    // ========================================================================
+    // КЕЙС 3 (главный): пары -> ровно (event, status), без B+s1
+    // ========================================================================
+    @Test
+    void pairs_matchExactPairs_noCartesianLeak() {
+        candidate(1, "Alice");
+        event(1, 1, "Interview", "succeed", "2024-01-01 10:00");        // совпадает с парой
+        candidate(2, "Bob");
+        event(2, 2, "Hold", "succeed", "2024-01-02 10:00");             // совпадает с парой
+        candidate(3, "Carol");
+        event(3, 3, "Final Interview", "succeed", "2024-01-03 10:00");  // НЕ в парах -> не должен попасть
+        candidate(4, "Dave");
+        event(4, 4, "Interview", "pending", "2024-01-04 10:00");        // Interview есть, но статус pending -> не пара
+
+        String[] pairE = {"Interview", "Hold"};
+        String[] pairS = {"succeed",   "succeed"};
+
+        // только Alice + Bob; Carol (Final Interview) и Dave (pending) отсечены
+        assertThat(count(null, EMPTY, pairE, pairS)).isEqualTo(2L);
+    }
+
+    // ========================================================================
+    // КЕЙС 4: пары заданы -> eventCodeList игнорируется
+    // ========================================================================
+    @Test
+    void pairsPresent_eventCodeListIgnored() {
+        candidate(1, "Alice");
+        event(1, 1, "Interview", "succeed", "2024-01-01 10:00");
+        candidate(2, "Bob");
+        event(2, 2, "Hold", "pending", "2024-01-02 10:00");
+
+        // eventCodeList просит Hold, но пары требуют Interview+succeed -> Hold игнорируется
+        String[] pairE = {"Interview"};
+        String[] pairS = {"succeed"};
+        assertThat(count(null, new String[]{"Hold"}, pairE, pairS)).isEqualTo(1L); // только Alice
+    }
+
+    // ========================================================================
+    // КЕЙС 5: search по ILIKE
+    // ========================================================================
+    @Test
+    void searchFiltersByFullName() {
+        candidate(1, "Alice Smith");
+        event(1, 1, "Interview", "succeed", "2024-01-01 10:00");
+        candidate(2, "Bob Jones");
+        event(2, 2, "Interview", "succeed", "2024-01-02 10:00");
+
+        assertThat(count("%ali%", EMPTY, EMPTY, EMPTY)).isEqualTo(1L); // ILIKE -> Alice
+    }
+
+    // ========================================================================
+    // КЕЙС 6: учитывается только ПОСЛЕДНЕЕ событие кандидата
+    // ========================================================================
+    @Test
+    void onlyLatestEventCounts() {
+        candidate(1, "Alice");
+        event(1, 1, "Interview", "pending", "2024-01-01 10:00");  // старое
+        event(2, 1, "Interview", "succeed", "2024-01-05 10:00");  // последнее
+
+        // фильтр по паре Interview+pending -> не должен сматчить, т.к. последнее событие succeed
+        assertThat(count(null, EMPTY, new String[]{"Interview"}, new String[]{"pending"}))
+                .isEqualTo(0L);
+        // а Interview+succeed -> матчит
+        assertThat(count(null, EMPTY, new String[]{"Interview"}, new String[]{"succeed"}))
+                .isEqualTo(1L);
+    }
+}
