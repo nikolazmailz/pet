@@ -1,3 +1,17 @@
+    /**
+     * Если у кандитдатов несколько паралелельных этапов, с разнымми по атквиности статусами, то он является активным в том случае
+     * если хотя бы один статус активен
+     *
+     * у этапов есть статусы - актинвый и не актвинвые
+     * У кандидата есть этапы, как посмотреть статусы этих этапов?
+     * candidates candidates_events(этапы)(candidates_events.status_code - это статус) активность статуса(candidate_status.is_active)
+     * candidates_events.status_code это candidate_status.code
+     *
+     * */
+
+
+      List<CandidateEventEntity> findActiveCandidatesAndCandidatesEventsByVacancyIdWithFilters
+
 package ru.ntdev.srhr.ms.requisition.repository.candidateEventRepository;
 
 import java.util.List;
