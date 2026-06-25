@@ -1,170 +1,4 @@
-    /**
-     * Если у кандитдатов несколько паралелельных этапов, с разнымми по атквиности статусами, то он является активным в том случае
-     * если хотя бы один статус активен
-     *
-     * у этапов есть статусы - актинвый и не актвинвые
-     * У кандидата есть этапы, как посмотреть статусы этих этапов?
-     * candidates candidates_events(этапы)(candidates_events.status_code - это статус) активность статуса(candidate_status.is_active)
-     * candidates_events.status_code это candidate_status.code
-     *
-     * */
-
-
-      List<CandidateEventEntity> findActiveCandidatesAndCandidatesEventsByVacancyIdWithFilters
-
-package ru.ntdev.srhr.ms.requisition.repository.candidateEventRepository;
-
-import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import ru.ntdev.srhr.ms.requisition.BaseIntegrationTest;
-import ru.ntdev.srhr.ms.requisition.entity.CandidateEventEntity;
-import ru.ntdev.srhr.ms.requisition.entity.VacancyEntity;
-import ru.ntdev.srhr.ms.requisition.repository.CandidateEventRepository;
-import ru.ntdev.srhr.ms.requisition.repository.VacancyRepository;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-
-public class FindActiveCandidatesAndCandidatesEventsByVacancyIdWithFiltersIT extends BaseIntegrationTest {
-
-    @Autowired
-    CandidateEventRepository repository;
-
-    @Autowired
-    VacancyRepository vacancyRepository;
-
-    @BeforeEach
-    void setUp() {
-        transactionTemplate.executeWithoutResult(status -> {
-            em.createNativeQuery("TRUNCATE srhr_requisition.data_integrations RESTART IDENTITY CASCADE").executeUpdate();
-            em.createNativeQuery("TRUNCATE srhr_requisition.vacancy RESTART IDENTITY CASCADE").executeUpdate();
-            em.createNativeQuery("TRUNCATE srhr_requisition.candidates_events RESTART IDENTITY CASCADE").executeUpdate();
-            em.createNativeQuery("TRUNCATE srhr_requisition.candidates RESTART IDENTITY CASCADE").executeUpdate();
-            em.createNativeQuery("TRUNCATE srhr_requisition.candidate_stage RESTART IDENTITY CASCADE").executeUpdate();
-            em.createNativeQuery("TRUNCATE srhr_requisition.candidate_stage_status RESTART IDENTITY CASCADE").executeUpdate();
-            em.createNativeQuery("TRUNCATE srhr_requisition.candidate_status RESTART IDENTITY CASCADE").executeUpdate();
-
-            Integer data_integrationsId = (Integer) em.createNativeQuery("""
-                    INSERT INTO srhr_requisition.data_integrations (
-                        id, easup_integration_id, estaff_integration_id, started_at, finished_at, step, status, message
-                    ) VALUES (
-                        DEFAULT, 'EASUP-20240601', 'ad02b4d5-8167-4282-9f37-d2e8bf562e81',\s
-                        '2024-06-01 08:00:00', '2024-06-01 09:30:00', 'PROCESSING', 'SUCCESS', 'Integration completed successfully'
-                    ) RETURNING id;
-                    """).getSingleResult();
-
-            Integer vacancyId = (Integer) em.createNativeQuery("""
-                            INSERT INTO srhr_requisition.vacancy (
-                                id, integration_id, requisition_guid, vacancy_id, vacancy_code, vacancy_status,
-                                last_status_change_date, last_name_recruiter, first_name_recruiter, middle_name_recruiter,
-                                last_name_boss_recruiter, first_name_boss_recruiter, middle_name_boss_recruiter,
-                                publication_id, confidential, referral, last_update, candidates_last_update
-                            ) VALUES (
-                                nextval('srhr_requisition.vacancy_id_seq'), ?, 'req-12345', 'VAC-001', 'CODE-001', 'OPEN',
-                                '2024-06-01 10:00:00', 'Иванов', 'Иван', 'Иванович',
-                                'Петров', 'Петр', 'Петрович',
-                                'PUB-999', true, false, '2024-06-01 10:00:00', '2024-06-01 10:00:00'
-                            ) RETURNING id;
-                            """)
-                    .setParameter(1, data_integrationsId)
-                    .getSingleResult();
-
-            Integer candidatesId = (Integer) em.createNativeQuery("""
-                            INSERT INTO srhr_requisition.candidates (id, vacancy_id, candidate_id, full_name)
-                            VALUES (nextval('srhr_requisition.candidates_id_seq'), ?, 'CAND-001', 'Иван Иванов')
-                            RETURNING id;
-                            """)
-                    .setParameter(1, vacancyId)
-                    .getSingleResult();
-
-            em.createNativeQuery("""
-                            INSERT INTO srhr_requisition.candidates_events (id, candidate_id, event_code, status_code, creation_date, status_date, result_date)
-                            VALUES (nextval('srhr_requisition.candidates_events_id_seq'), ?, 'INTERVIEW', 'ACTIVE', '2024-06-01 10:00:00', '2024-06-01 10:00:00', '2024-06-05 17:00:00');
-                            """)
-                    .setParameter(1, candidatesId)
-                    .executeUpdate();
-
-            // -- candidate_stage
-            Integer stageIdForInterview = (Integer) em.createNativeQuery("""
-                    INSERT INTO srhr_requisition.candidate_stage (code, name_estaff, name_lkr, sorting, last_update)
-                    VALUES ('INTERVIEW', 'Интервью', 'Интервью', 2, '2024-06-01 12:00:00')
-                    RETURNING id;
-                    """).getSingleResult();
-
-            Integer stageIdForScreening = (Integer) em.createNativeQuery("""
-                    INSERT INTO srhr_requisition.candidate_stage (code, name_estaff, name_lkr, sorting, last_update)
-                    VALUES ('SCREENING', 'Скрининг', 'Скрининг', 1, '2024-06-01 12:00:00')
-                    RETURNING id;
-                    """).getSingleResult();
-
-            // -- candidate_status
-            Integer statusIdForActive = (Integer) em.createNativeQuery("""
-                    INSERT INTO srhr_requisition.candidate_status (name, code, background_color, text_color, last_update, is_active)
-                    VALUES ('Активный', 'ACTIVE', '#D4EDDA', '#155724', '2024-06-01 12:00:00', 1)
-                    RETURNING id;
-                    """).getSingleResult();
-
-            Integer statusIdForRejected = (Integer) em.createNativeQuery("""
-                    INSERT INTO srhr_requisition.candidate_status (name, code, background_color, text_color, last_update, is_active)
-                    VALUES ('Отклонён', 'REJECTED', '#F8D7DA', '#721C24', '2024-06-01 12:00:00', 1)
-                    RETURNING id;
-                    """).getSingleResult();
-
-            // -- candidate_stage_status
-            em.createNativeQuery("""
-                            INSERT INTO srhr_requisition.candidate_stage_status (stage_id, status_id)
-                            VALUES (?, ?);
-                            """)
-                    .setParameter(1, stageIdForInterview)
-                    .setParameter(2, statusIdForActive)
-                    .executeUpdate();
-
-            em.createNativeQuery("""
-                            INSERT INTO srhr_requisition.candidate_stage_status (stage_id, status_id)
-                            VALUES (?, ?);
-                            """)
-                    .setParameter(1, stageIdForScreening)
-                    .setParameter(2, statusIdForActive)
-                    .executeUpdate();
-
-            em.createNativeQuery("""
-                            INSERT INTO srhr_requisition.candidate_stage_status (stage_id, status_id)
-                            VALUES (?, ?);
-                            """)
-                    .setParameter(1, stageIdForInterview)
-                    .setParameter(2, statusIdForRejected)
-                    .executeUpdate();
-
-        });
-
-
-    }
-
-    @Test
-    void shouldReturnListCandidateEventEntity_WhenNoFilters() {
-        Integer vacancyId = vacancyRepository.findAll().stream()
-                .findFirst()
-                .map(VacancyEntity::getId)
-                .orElse(null);
-
-        String search = null;
-        String[] eventCodeList = {};
-        String[] pairEventCodes = {};
-        String[] pairStatusCodes = {};
-
-        List<CandidateEventEntity> result = repository.findActiveCandidatesAndCandidatesEventsByVacancyIdWithFilters(
-                vacancyId, search, eventCodeList, pairEventCodes, pairStatusCodes, 100, 0);
-
-        assertThat(result).isEqualTo(1);
-    }
-
-}
-
-
-
-
-@Query(value = "with active_check as ( select ce.candidate_id, cst.is_active FROM srhr_requisition.candidates_events ce  " +
+with active_check as ( select ce.candidate_id, cst.is_active FROM srhr_requisition.candidates_events ce  " +
             "JOIN srhr_requisition.candidates c ON ce.candidate_id = c.id   " +
             "JOIN srhr_requisition.candidate_stage cs on ce.event_code = cs.code  " +
             "JOIN srhr_requisition.candidate_stage_status css on cs.id = css.stage_id  " +
@@ -180,7 +14,9 @@ public class FindActiveCandidatesAndCandidatesEventsByVacancyIdWithFiltersIT ext
             "      JOIN srhr_requisition.candidates c2 ON ce2.candidate_id = c2.id  " +
             "      WHERE c2.vacancy_id = :vacancyId  " +
             "        AND ce2.candidate_id = ce.candidate_id   " +
-            "  ) AND ce.candidate_id in (select candidate_id from active_check where is_active = 1)  " +
+            "        AND ce2.status_code in (select cs.code from srhr_requisition.candidate_status cs where cs.is_active = 1) " +
+            "  ) " +
+            "  AND ce.candidate_id in (select candidate_id from active_check where is_active = 1)  " +
             "  AND ce.status_code in (select cs.code from srhr_requisition.candidate_status cs where cs.is_active = 1)   " +
             "  AND (" +
             "    cardinality(:pairStatusCodes) = 0 " +                       // пар нет -> фильтр по чистым event
@@ -193,13 +29,4 @@ public class FindActiveCandidatesAndCandidatesEventsByVacancyIdWithFiltersIT ext
             "  ) " +
             "            AND (cast(:search as text) IS NULL or c.full_name ILIKE :search)" +
             "ORDER BY ce.creation_date DESC "+
-            "limit :limit offset :offset", nativeQuery = true)
-    List<CandidateEventEntity> findActiveCandidatesAndCandidatesEventsByVacancyIdWithFilters (
-            @Param("vacancyId") Integer vacancyId,
-            @Param("search") String search,
-            @Param("eventCodeList") String[] eventCodeList,
-            @Param("pairEventCodes") String[] pairEventCodes,
-            @Param("pairStatusCodes") String[] pairStatusCodes,
-            @Param("limit") Integer limit,
-            @Param("offset") Integer offset
-    );
+            "limit :limit offset :offset
