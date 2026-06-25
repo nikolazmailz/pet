@@ -30,3 +30,9 @@ with active_check as ( select ce.candidate_id, cst.is_active FROM srhr_requisiti
             "            AND (cast(:search as text) IS NULL or c.full_name ILIKE :search)" +
             "ORDER BY ce.creation_date DESC "+
             "limit :limit offset :offset
+
+
+
+        setCandidatesEventsForCandidateWithIsActiveTrueForLastStatusStatus(vacancyId);
+        setCandidatesEventsForCandidateWithIsActiveFalseForLastStatus(vacancyId);
+        setCandidatesEventsForCandidateWiIsActiveFalseForAllStatus(vacancyId);
