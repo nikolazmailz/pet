@@ -1,4 +1,41 @@
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition/pulls/2412010
+-- 1. Права на подключение к БД (если ещё не выданы)
+GRANT CONNECT ON DATABASE your_db TO tuz_account;
 
+-- 2. Доступ ко всем существующим схемам (USAGE — обязателен,
+--    без него гранты на таблицы внутри схемы не работают)
+DO $$
+DECLARE
+    s text;
+BEGIN
+    FOR s IN
+        SELECT nspname
+        FROM pg_namespace
+        WHERE nspname NOT IN ('pg_catalog', 'information_schema')
+          AND nspname NOT LIKE 'pg_temp%'
+          AND nspname NOT LIKE 'pg_toast%'
+    LOOP
+        EXECUTE format('GRANT USAGE ON SCHEMA %I TO tuz_account', s);
+        EXECUTE format('GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA %I TO tuz_account', s);
+        EXECUTE format('GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA %I TO tuz_account', s);
+    END LOOP;
+END $$;
 
-https://boards.yandex.ru/whiteboard/?hash=e9f3e17c1d0d0f9f95a766079cf39297
+-- 3. Default privileges — на объекты, которые будут СОЗДАНЫ в будущем.
+--    Применяется per-schema и от имени роли-создателя объектов.
+DO $$
+DECLARE
+    s text;
+BEGIN
+    FOR s IN
+        SELECT nspname
+        FROM pg_namespace
+        WHERE nspname NOT IN ('pg_catalog', 'information_schema')
+          AND nspname NOT LIKE 'pg_temp%'
+          AND nspname NOT LIKE 'pg_toast%'
+    LOOP
+        EXECUTE format(
+            'ALTER DEFAULT PRIVILEGES IN SCHEMA %I GRANT ALL PRIVILEGES ON TABLES TO tuz_account', s);
+        EXECUTE format(
+            'ALTER DEFAULT PRIVILEGES IN SCHEMA %I GRANT ALL PRIVILEGES ON SEQUENCES TO tuz_account', s);
+    END LOOP;
+END $$;
