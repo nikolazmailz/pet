@@ -1,8 +1,7 @@
--- 1. Права на подключение к БД (если ещё не выданы)
-GRANT CONNECT ON DATABASE your_db TO tuz_account;
+-- 1. Право на подключение к базе данных (замените your_db на реальное имя)
+GRANT CONNECT ON DATABASE your_db TO srhr_admin;
 
--- 2. Доступ ко всем существующим схемам (USAGE — обязателен,
---    без него гранты на таблицы внутри схемы не работают)
+-- 2. Выдать USAGE и ALL PRIVILEGES на все существующие схемы и объекты
 DO $$
 DECLARE
     s text;
@@ -14,14 +13,13 @@ BEGIN
           AND nspname NOT LIKE 'pg_temp%'
           AND nspname NOT LIKE 'pg_toast%'
     LOOP
-        EXECUTE format('GRANT USAGE ON SCHEMA %I TO tuz_account', s);
-        EXECUTE format('GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA %I TO tuz_account', s);
-        EXECUTE format('GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA %I TO tuz_account', s);
+        EXECUTE format('GRANT USAGE ON SCHEMA %I TO srhr_admin', s);
+        EXECUTE format('GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA %I TO srhr_admin', s);
+        EXECUTE format('GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA %I TO srhr_admin', s);
     END LOOP;
 END $$;
 
--- 3. Default privileges — на объекты, которые будут СОЗДАНЫ в будущем.
---    Применяется per-schema и от имени роли-создателя объектов.
+-- 3. Установить default privileges для будущих объектов
 DO $$
 DECLARE
     s text;
@@ -33,9 +31,7 @@ BEGIN
           AND nspname NOT LIKE 'pg_temp%'
           AND nspname NOT LIKE 'pg_toast%'
     LOOP
-        EXECUTE format(
-            'ALTER DEFAULT PRIVILEGES IN SCHEMA %I GRANT ALL PRIVILEGES ON TABLES TO tuz_account', s);
-        EXECUTE format(
-            'ALTER DEFAULT PRIVILEGES IN SCHEMA %I GRANT ALL PRIVILEGES ON SEQUENCES TO tuz_account', s);
+        EXECUTE format('ALTER DEFAULT PRIVILEGES IN SCHEMA %I GRANT ALL PRIVILEGES ON TABLES TO srhr_admin', s);
+        EXECUTE format('ALTER DEFAULT PRIVILEGES IN SCHEMA %I GRANT ALL PRIVILEGES ON SEQUENCES TO srhr_admin', s);
     END LOOP;
 END $$;
