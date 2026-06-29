@@ -1,7 +1,0 @@
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-mod-commons/pulls/2398763
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition/pulls/2398764
-
-
-AND ce2.status_code in (select cs.code from srhr_requisition.candidate_status cs where cs.is_active = 1)
-
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition/pulls/2408680
