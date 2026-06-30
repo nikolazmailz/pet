@@ -1,65 +1,27 @@
-Release Notes 8.0.0
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-developer-guidelines/pulls/2420141
+Коллеги, добрый день.
+Процессы релизов, работы с ветками и код-ревью сейчас сложились каким-то образом на практике, но нигде не зафиксированы единообразно. 
+Предлагаю зафиксировать договорённости явно — собрал для этого три документа. 
 
 Release Management
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-developer-guidelines/code/browse/branch/master/release-management.md?view=file
+Документ описывающий подготовку, планирование и стабилизацию `release/*` на продакшен, какие есть роли и точки принятия решений.
+Вначале каждого нового планирования, на новый релиз, определяется ответственный за релиз или группа разработчиков, которые будут отвечать за подготовку релиза.
+Для каждого релиза создаётся отдельная страница release notes. На этой странице, каждый кто добавляет новую фичу, должен добавить инфо об этой фиче и затрунутом сервисом. Если есть критичная инфа о поставке, тоже её указать
 
-Git Flow Custom Workflow
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-developer-guidelines/code/browse/branch/master/standards%2Fgit-flow-custom-workflow.md?view=file
-
-Code Review Process
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-developer-guidelines/code/browse/branch/master/standards%2Fcode-review.md?view=file
-
-
-Release Management
-Цель: Описать единые правила подготовки, выпуска и сопровождения релизов.
-
-Для версионирования используем формат:
-`MAJOR.MINOR.PATCH`
-Где:
-- `MAJOR` — номер суперспринта;
-- `MINOR` — номер релиза внутри суперспринта;
-- `PATCH` — номер hotfix / срочного исправления внутри релиза.
-
-Release branches
-Release-ветка создаётся от `main/master`, в неё заливаются фичи, затем когда команда готова, эта release-ветка  используется для стабилизацию релиза.
-
-Когда релиз готов:
-1. `release/*` мержится в `main` с tag(`1.1.0`) с номером версии;
-2. выполняется deploy в production;
-3. `main` подтягивается в более поздние версии `release/*`, если такие есть.
-
-
-## Branches
-
-- `main` - стабильная production-версия;
+Git Flow (Custom Workflow) фиксирует нашу модель ветвления, правила именования веток и требования к коммитам. 
+- `master` - стабильная production-версия;
 - `release/*` - основная ветка разработки и ветка подготовки и стабилизации релиза;
 - `feature/*` - ветки для новых задач;
 - `hotfix/*` - ветки срочных исправлений production;
 - `bugfix/*` - ветки исправления ошибок в рамках текущей разработки или релизной ветке.
 
+Когда `release/*` выходит в продакшен, он сразу мерджиться в `master` с тегом версии релиза.
+Когда объявляется о стабилзация релиза, то для добавления новых фич создается новая версия  `release/*`, и новый `release/*` создаётся от `release/*` предыдущей версии. 
+`feature/*` - ветки для новых задач создаются от `release/*` меражтсья в тот же `release/*`.
 
-С полной версией можно ознакомится тут
-Release Management 
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-developer-guidelines/code/browse/branch/master/release-management.md?view=file
+Code Review Process.
+Про то как проводим ревью, по каким критериям.
 
-
-Git Flow Custom Workflow
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-developer-guidelines/code/browse/branch/master/standards%2Fgit-flow-custom-workflow.md?view=file
-
-Code Review Process
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-developer-guidelines/code/browse/branch/master/standards%2Fcode-review.md?view=file
-
-
-Коллеги, добрый день.
-Процессы релизов, работы с ветками и код-ревью сейчас сложились каким-то образом на практике, но нигде не зафиксированы единообразно. 
-Предлагаю зафиксировать договорённости явно — собрал для этого три документа. 
-Release Management описывает, как мы планируем, стабилизируем и выпускаем релизы, какие есть роли и точки принятия решений. 
-Git Flow (Custom Workflow) фиксирует нашу модель ветвления, правила именования веток и требования к коммитам. 
-Code Review Process — как проводим ревью, по каким критериям и кто за что отвечает.
-Цель встречи — обсудить эти материалы, скорректировать спорные моменты и принять их как общие рабочие договорённости. 
-Прошу до встречи ознакомиться с документами и прийти с вопросами и замечаниями.
-Полные версии:
+Для ознакомления полные версии документов:
 — Release Management: https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-developer-guidelines/code/browse/branch/master/release-management.md?view=file
 — Git Flow Custom Workflow: https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-developer-guidelines/code/browse/branch/master/standards%2Fgit-flow-custom-workflow.md?view=file
 — Code Review Process: https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-developer-guidelines/code/browse/branch/master/standards%2Fcode-review.md?view=file
