@@ -1,29 +1,827 @@
-switch (systemParams.getRequestType()) {
-            case "salarychange_staff_dependency":
-                return getSalarychangeStaffDependency(requestEntity, systemParams);
-            case "salarychange_staff_dependency_exp":
-                return getSalarychangeStaffDependencyExp(requestEntity, systemParams);
-            case "salarychange_staff_detail":
-                return getSalarychangeStaffDetail(requestEntity, systemParams, listId, listType, dependencyCode, staffTabNum, staffPositionId, expand);
-            case "salarychange_post_staff_detail":
-                return getSalarychangePostStaffDetail(requestEntity, systemParams, requestValues);
-            case "salarychange_staff_delegation_list":
-                return getSalarychangeStaffDelegationList(requestEntity, systemParams, filter, expand, orderBy, linesTop, linesSkip, searchString);
-            case "salarychange_staff_list":
-                return getSalarychangeStaffList(requestEntity, systemParams, expand, listId);
-            case "salarychange_staff_list_detail":
-                return getSalarychangeStaffListDetail(requestEntity, systemParams, listId, listType, dependencyCode, expand);
-            case "salarychange_post_staff_list":
-                return getSalarychangePostStaffList(requestEntity, systemParams, requestValues);
-            case "salarychange_post_staff_multi_list_action":
-                return getSalarychangePostStaffMultiListAction(requestEntity, systemParams, requestValues);
-            case "salarychange_post_staff_multi_list_rebase":
-                return getSalarychangePostStaffMultiListRebase(requestEntity, systemParams, requestValues);
+package ru.ntdev.srhr.ms.scheduleHoliday.rest.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.hc.client5.http.HttpResponseException;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import ru.ntdev.srhr.common.dto.api.SapSystemParamsDto;
+import ru.ntdev.srhr.common.dto.api.error.ErrorResponse;
+import ru.ntdev.srhr.common.dto.api.error.ServiceErrorDto;
+import ru.ntdev.srhr.common.dto.api.request.scheduleHoliday.ScheduleHolidayPostRequest;
+import ru.ntdev.srhr.common.dto.api.request.scheduleHoliday.ScheduleHolidayPostVacationLimitRequest;
+import ru.ntdev.srhr.common.dto.api.response.scheduleHoliday.*;
+import ru.ntdev.srhr.common.dto.api.response.vacationreq.VacationreqContentDto;
+import ru.ntdev.srhr.common.util.LogUtil;
+import ru.ntdev.srhr.ms.scheduleHoliday.rest.dto.*;
+import ru.ntdev.srhr.ms.scheduleHoliday.rest.mapper.ScheduleHolidayDtoMapper;
+import ru.ntdev.srhr.ms.scheduleHoliday.rest.service.ScheduleHolidayService;
+import ru.vtb.omni.audit.lib.api.annotation.Audit;
 
+import java.util.Base64;
 
+@Slf4j
+@RestController
+@Tag(name = "ScheduleHoliday", description = "The Schedule Holiday API")
+@RequiredArgsConstructor
+public class ScheduleHolidayController {
 
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-developer-guidelines/code/browse/branch/master?view=dir
+    private final ScheduleHolidayService scheduleHolidayService;
+    private final ScheduleHolidayDtoMapper scheduleHolidayDtoMapper;
 
+    @Value("${spring.kafka.topic.name.from-easup}")
+    String kafkaTopicNameFromEasup;
 
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-developer-guidelines/code/browse/branch/develop/standards%2Fcode-style.md?view=file
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_GET_USER")
+    @GetMapping(value = "/user", produces = "application/json")
+    @ResponseBody
+    @Operation(summary = "Получение информации о сотруднике",
+            tags = "schedule-holiday-user",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Получена информация о сотруднике",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ScheduleHolidayUserDtoOut.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Информация о сотруднике не получена",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Непредвиденная ошибка сервера",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    })
+    })
+    public ResponseEntity<Object> getScheduleHolidayUser(
+            HttpServletRequest request,
+            @Parameter(description = "Параметр экспандов в еасуп")
+            @Size(max = 255)
+            @RequestParam(value = "exp", required = false) String expand
+    ) throws Exception {
+        request.setAttribute("requestType","schedule_holiday_user");
+        SapSystemParamsDto systemParams = setSystemParams(request);
+        ScheduleHolidayUserDto orgResponse = scheduleHolidayService
+                .getScheduleHolidayUser(systemParams, expand);
+        if (orgResponse != null) {
+            LogUtil.logResponse(systemParams.getAdLogin(), systemParams.getSessionId(),"GET", kafkaTopicNameFromEasup, orgResponse.getResponseCode(),
+                    orgResponse.getErrorMessage(), false, null, orgResponse.getTraceId());
+            if (orgResponse.getResponseCode().startsWith("2")) {
+                ScheduleHolidayUserDtoOut responseOut = new ScheduleHolidayUserDtoOut();
+                BeanUtils.copyProperties(orgResponse,responseOut);
+                responseOut = scheduleHolidayDtoMapper.cleanNulls(responseOut);
+                log.info("Успешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_USER]");
+                return new ResponseEntity<>(responseOut, HttpStatus.OK);
+            } else {
+                log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_USER]: [{}]", orgResponse.getErrorMessage());
+                int httpStatusNumber = Integer.parseInt(orgResponse.getResponseCode().substring(0, 3));
+                throw new HttpResponseException(httpStatusNumber, orgResponse.getErrorMessage());
+            }
+        }
+        log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_USER]: вернулось нулевое значение");
+        throw new HttpResponseException(404, ErrorResponse.SCHEDULE_HOLIDAY_INFO_NOT_FOUND);
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_GET_REF")
+    @GetMapping(value = "/ref", produces = "application/json")
+    @ResponseBody
+    @Operation(summary = "Получение списка статусов заявки, списка лет по которым запущена компания планирования отпусков",
+            tags = "schedule-holiday-ref",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Получена список статусов заявки, списка лет по которым запущена компания планирования отпусков",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ScheduleHolidayRefDtoOut.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "список статусов заявки списка лет, по которым запущена компания планирования отпусков, не получена",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Непредвиденная ошибка сервера",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    })
+    })
+    public ResponseEntity<Object> getScheduleHolidayRef(
+            HttpServletRequest request,
+            @Parameter(description = "Параметр экспандов в еасуп")
+            @Size(max = 255)
+            @RequestParam(value = "exp", required = false) String expand
+    ) throws Exception {
+        request.setAttribute("requestType","schedule_holiday_ref");
+        SapSystemParamsDto systemParams = setSystemParams(request);
+        ScheduleHolidayRefDto orgResponse = scheduleHolidayService
+                .getScheduleHolidayRef(systemParams, expand);
+        if (orgResponse != null) {
+            LogUtil.logResponse(systemParams.getAdLogin(), systemParams.getSessionId(),"GET", kafkaTopicNameFromEasup, orgResponse.getResponseCode(),
+                    orgResponse.getErrorMessage(), false, null, orgResponse.getTraceId());
+            if (orgResponse.getResponseCode().startsWith("2")) {
+                ScheduleHolidayRefDtoOut responseOut = new ScheduleHolidayRefDtoOut();
+                BeanUtils.copyProperties(orgResponse,responseOut);
+                responseOut = scheduleHolidayDtoMapper.cleanNulls(responseOut);
+                log.info("Успешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_REF]");
+                return new ResponseEntity<>(responseOut, HttpStatus.OK);
+            } else {
+                log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_REF]: [{}]", orgResponse.getErrorMessage());
+                int httpStatusNumber = Integer.parseInt(orgResponse.getResponseCode().substring(0, 3));
+                throw new HttpResponseException(httpStatusNumber, orgResponse.getErrorMessage());
+            }
+        }
+        log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_REF]: вернулось нулевое значение");
+        throw new HttpResponseException(404, ErrorResponse.SCHEDULE_HOLIDAY_INFO_NOT_FOUND);
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_GET_REQUEST")
+    @GetMapping(value = "/request", produces = "application/json")
+    @ResponseBody
+    @Operation(summary = "Получение списка статусов заявки, списка лет по которым запущена компания планирования отпусков",
+            tags = "schedule-holiday-request",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Получена список статусов заявки, списка лет по которым запущена компания планирования отпусков",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ScheduleHolidayRequestDtoOut.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Список статусов заявки списка лет, по которым запущена компания планирования отпусков, не получена",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Непредвиденная ошибка сервера",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    })
+    })
+    public ResponseEntity<Object> getScheduleHolidayRequest(
+            HttpServletRequest request,
+            @Parameter(description = "Параметр экспандов в еасуп")
+            @Size(max = 255)
+            @RequestParam(value = "exp", required = false) String expand,
+            @Parameter(description = "Количество записей, которое необходимо показать")
+            @Max(value = 9999)
+            @Min(value = 0)
+            @RequestParam(value = "ln", required = false) Integer linesNumber,
+            @Parameter(description = "Количество записей, которое необходимо пропустить")
+            @Max(value = 9999)
+            @Min(value = 0)
+            @RequestParam(value = "skl", required = false) Integer skipLines,
+            @Parameter(description = "Параметр фильтрации")
+            @Size(max = 255)
+            @RequestParam(value = "f", required = false) String filter,
+            @Parameter(description = "Параметр поиска")
+            @Size(max = 255)
+            @RequestParam(value = "ptr", required = false) String search,
+            @Parameter(description = "Параметр количества")
+            @Min(0)
+            @Max(999999999)
+            @RequestParam(required = false) Integer count
+    ) throws Exception {
+        request.setAttribute("requestType","schedule_holiday_request");
+        SapSystemParamsDto systemParams = setSystemParams(request);
+        ScheduleHolidayRequestDto orgResponse = scheduleHolidayService
+                .getScheduleHolidayRequest(
+                        systemParams, expand, linesNumber, skipLines, filter, search, count);
+        if (orgResponse != null) {
+            LogUtil.logResponse(systemParams.getAdLogin(), systemParams.getSessionId(),"GET", kafkaTopicNameFromEasup, orgResponse.getResponseCode(),
+                    orgResponse.getErrorMessage(), false, null, orgResponse.getTraceId());
+            if (orgResponse.getResponseCode().startsWith("2")) {
+                ScheduleHolidayRequestDtoOut responseOut = new ScheduleHolidayRequestDtoOut();
+                BeanUtils.copyProperties(orgResponse,responseOut);
+                responseOut = scheduleHolidayDtoMapper.cleanNulls(responseOut);
+                log.info("Успешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_REQUEST]");
+                return new ResponseEntity<>(responseOut, HttpStatus.OK);
+            } else {
+                log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_REQUEST]: [{}]", orgResponse.getErrorMessage());
+                int httpStatusNumber = Integer.parseInt(orgResponse.getResponseCode().substring(0, 3));
+                throw new HttpResponseException(httpStatusNumber, orgResponse.getErrorMessage());
+            }
+        }
+        log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_REQUEST]: вернулось нулевое значение");
+        throw new HttpResponseException(404, ErrorResponse.SCHEDULE_HOLIDAY_INFO_NOT_FOUND);
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_GET_REQUEST_INFO")
+    @GetMapping(value = "/request/info", produces = "application/json")
+    @ResponseBody
+    @Operation(summary = "Получение деталей заявки",
+            tags = "schedule-holiday-request-info",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Получены детали заявки",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ScheduleHolidayRequestInfoDtoOut.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Детали заявки не получена",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Непредвиденная ошибка сервера",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    })
+    })
+    public ResponseEntity<Object> getScheduleHolidayRequestInfo(
+            HttpServletRequest request,
+            @Parameter(description = "Идентификатор заявки")
+            @Size(max = 64)
+            @RequestParam(value = "guid") String requestUuid,
+            @Parameter(description = "Параметр экспандов в еасуп")
+            @Size(max = 255)
+            @RequestParam(value = "exp", required = false) String expand
+    ) throws Exception {
+        request.setAttribute("requestType","schedule_holiday_request_info");
+        SapSystemParamsDto systemParams = setSystemParams(request);
+        ScheduleHolidayRequestInfoDto orgResponse = scheduleHolidayService
+                .getScheduleHolidayRequestInfo(systemParams, requestUuid, expand);
+        if (orgResponse != null) {
+            LogUtil.logResponse(systemParams.getAdLogin(), systemParams.getSessionId(),"GET", kafkaTopicNameFromEasup, orgResponse.getResponseCode(),
+                    orgResponse.getErrorMessage(), false, null, orgResponse.getTraceId());
+            if (orgResponse.getResponseCode().startsWith("2")) {
+                ScheduleHolidayRequestInfoDtoOut responseOut = new ScheduleHolidayRequestInfoDtoOut();
+                orgResponse.setUuid(orgResponse.getTempUuid());
+                BeanUtils.copyProperties(orgResponse,responseOut);
+                responseOut = scheduleHolidayDtoMapper.cleanNulls(responseOut);
+                log.info("Успешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_REQUEST_INFO]");
+                return new ResponseEntity<>(responseOut, HttpStatus.OK);
+            } else {
+                log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_REQUEST_INFO]: [{}]", orgResponse.getErrorMessage());
+                int httpStatusNumber = Integer.parseInt(orgResponse.getResponseCode().substring(0, 3));
+                throw new HttpResponseException(httpStatusNumber, orgResponse.getErrorMessage());
+            }
+        }
+        log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_REQUEST_INFO]: вернулось нулевое значение");
+        throw new HttpResponseException(404, ErrorResponse.SCHEDULE_HOLIDAY_INFO_NOT_FOUND);
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_POST_REQUEST")
+    @PostMapping(value = "/request", produces = "application/json")
+    @ResponseBody
+    @Operation(summary = "Получение деталей заявки",
+            tags = "schedule-holiday-post-request",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Получены детали заявки",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ScheduleHolidayPostRequestDtoOut.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Детали заявки не получена",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Непредвиденная ошибка сервера",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    })
+    })
+    public ResponseEntity<Object> getScheduleHolidayPostRequest(
+            HttpServletRequest request,
+            @RequestBody ScheduleHolidayPostRequest requestDto
+    ) throws Exception {
+        request.setAttribute("requestType","schedule_holiday_post_request");
+        SapSystemParamsDto systemParams = setSystemParams(request);
+        ScheduleHolidayPostRequestDto orgResponse = scheduleHolidayService
+                .getScheduleHolidayPostRequest(systemParams, requestDto);
+        if (orgResponse != null) {
+            LogUtil.logResponse(systemParams.getAdLogin(), systemParams.getSessionId(),"GET", kafkaTopicNameFromEasup, orgResponse.getResponseCode(),
+                    orgResponse.getErrorMessage(), false, null, orgResponse.getTraceId());
+            if (orgResponse.getResponseCode().startsWith("2")) {
+                ScheduleHolidayPostRequestDtoOut responseOut = new ScheduleHolidayPostRequestDtoOut();
+                orgResponse.setUuid(orgResponse.getTempUuid());
+                BeanUtils.copyProperties(orgResponse,responseOut);
+                responseOut = scheduleHolidayDtoMapper.cleanNulls(responseOut);
+                log.info("Успешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_POST_REQUEST]");
+                return new ResponseEntity<>(responseOut, HttpStatus.OK);
+            } else {
+                log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_POST_REQUEST]: [{}]", orgResponse.getErrorMessage());
+                int httpStatusNumber = Integer.parseInt(orgResponse.getResponseCode().substring(0, 3));
+                throw new HttpResponseException(httpStatusNumber, orgResponse.getErrorMessage());
+            }
+        }
+        log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_POST_REQUEST]: вернулось нулевое значение");
+        throw new HttpResponseException(404, ErrorResponse.SCHEDULE_HOLIDAY_INFO_NOT_FOUND);
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_POST_VACATION_LIMIT")
+    @PostMapping(value = "/vacation-limit", produces = "application/json")
+    @ResponseBody
+    @Operation(summary = "Расчёт использованного лимита отпуска с учетом плановой даты начала и окончания отпуска",
+            tags = "schedule-holiday-post-vacation-limit",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Расчёт использованного лимита отпуска с учетом плановой даты начала и окончания отпуска выполнен",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ScheduleHolidayPostVacationLimitDtoOut.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Расчёт использованного лимита отпуска с учетом плановой даты начала и окончания отпуска не получен",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Непредвиденная ошибка сервера",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    })
+    })
+    public ResponseEntity<Object> getScheduleHolidayPostVacationLimit(
+            HttpServletRequest request,
+            @RequestBody ScheduleHolidayPostVacationLimitRequest requestDto
+    ) throws Exception {
+        request.setAttribute("requestType","schedule_holiday_post_vacation_limit");
+        SapSystemParamsDto systemParams = setSystemParams(request);
+        ScheduleHolidayPostVacationLimitDto orgResponse = scheduleHolidayService
+                .getScheduleHolidayPostVacationLimit(systemParams, requestDto);
+        if (orgResponse != null) {
+            LogUtil.logResponse(systemParams.getAdLogin(), systemParams.getSessionId(),"GET", kafkaTopicNameFromEasup, orgResponse.getResponseCode(),
+                    orgResponse.getErrorMessage(), false, null, orgResponse.getTraceId());
+            if (orgResponse.getResponseCode().startsWith("2")) {
+                ScheduleHolidayPostVacationLimitDtoOut responseOut = new ScheduleHolidayPostVacationLimitDtoOut();
+                BeanUtils.copyProperties(orgResponse,responseOut);
+                responseOut = scheduleHolidayDtoMapper.cleanNulls(responseOut);
+                log.info("Успешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_POST_VACATION_LIMIT]");
+                return new ResponseEntity<>(responseOut, HttpStatus.OK);
+            } else {
+                log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_POST_VACATION_LIMIT]: [{}]", orgResponse.getErrorMessage());
+                int httpStatusNumber = Integer.parseInt(orgResponse.getResponseCode().substring(0, 3));
+                throw new HttpResponseException(httpStatusNumber, orgResponse.getErrorMessage());
+            }
+        }
+        log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_POST_VACATION_LIMIT]: вернулось нулевое значение");
+        throw new HttpResponseException(404, ErrorResponse.SCHEDULE_HOLIDAY_INFO_NOT_FOUND);
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_GET_BUFFER")
+    @GetMapping(value = "/buffer", produces = "application/json")
+    @ResponseBody
+    @Operation(summary = "Расчета списка доступных пользователю ОЕ",
+            tags = "schedule-holiday-buffer",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Получен расчет списка доступных пользователю ОЕ",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ScheduleHolidayBufferDtoOut.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Детали заявки не получена",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Непредвиденная ошибка сервера",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    })
+    })
+    public ResponseEntity<Object> getScheduleHolidayBuffer(
+            HttpServletRequest request,
+            @Parameter(description = "Номер задачи")
+            @Size(max = 8)
+            @RequestParam String taskNumber
+    ) throws Exception {
+        request.setAttribute("requestType","schedule_holiday_buffer");
+        SapSystemParamsDto systemParams = setSystemParams(request);
+        ScheduleHolidayBufferDto orgResponse = scheduleHolidayService
+                .getScheduleHolidayBuffer(systemParams, taskNumber);
+        if (orgResponse != null) {
+            LogUtil.logResponse(systemParams.getAdLogin(), systemParams.getSessionId(),"GET", kafkaTopicNameFromEasup, orgResponse.getResponseCode(),
+                    orgResponse.getErrorMessage(), false, null, orgResponse.getTraceId());
+            if (orgResponse.getResponseCode().startsWith("2")) {
+                ScheduleHolidayBufferDtoOut responseOut = new ScheduleHolidayBufferDtoOut();
+                BeanUtils.copyProperties(orgResponse,responseOut);
+                responseOut = scheduleHolidayDtoMapper.cleanNulls(responseOut);
+                log.info("Успешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_BUFFER]");
+                return new ResponseEntity<>(responseOut, HttpStatus.OK);
+            } else {
+                log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_BUFFER]: [{}]", orgResponse.getErrorMessage());
+                int httpStatusNumber = Integer.parseInt(orgResponse.getResponseCode().substring(0, 3));
+                throw new HttpResponseException(httpStatusNumber, orgResponse.getErrorMessage());
+            }
+        }
+        log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_BUFFER]: вернулось нулевое значение");
+        throw new HttpResponseException(404, ErrorResponse.SCHEDULE_HOLIDAY_INFO_NOT_FOUND);
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_GET_ATTACHMENT_TYPE")
+    @GetMapping(value = "/attachment-type", produces = "application/json")
+    @ResponseBody
+    @Operation(summary = "Получение списка вложений с допустимыми расширениями и ограничениями объема файлов",
+            tags = "schedule-holiday-buffer",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Получен список вложений с допустимыми расширениями и ограничениями объема файлов",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ScheduleHolidayAttachmentTypeDtoOut.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Список вложений с допустимыми расширениями и ограничениями объема файлов не получена",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Непредвиденная ошибка сервера",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    })
+    })
+    public ResponseEntity<Object> getScheduleHolidayAttachmentType(
+            HttpServletRequest request,
+            @Parameter(description = "Параметр экспандов в еасуп")
+            @Size(max = 255)
+            @RequestParam(value = "exp", required = false) String expand,
+            @Parameter(description = "Количество записей, которое необходимо показать")
+            @Max(value = 9999)
+            @Min(value = 0)
+            @RequestParam(required = false) Integer top,
+            @Parameter(description = "Количество записей, которое необходимо пропустить")
+            @Max(value = 9999)
+            @Min(value = 0)
+            @RequestParam(required = false) Integer skip,
+            @Parameter(description = "Параметр фильтрации")
+            @Size(max = 255)
+            @RequestParam(required = false) String filter,
+            @Parameter(description = "Параметр поиска")
+            @Size(max = 255)
+            @RequestParam(required = false) String search,
+            @Parameter(description = "Параметр количества")
+            @Min(0)
+            @Max(999999999)
+            @RequestParam(required = false) Integer count
+    ) throws Exception {
+        request.setAttribute("requestType","schedule_holiday_attachment_type");
+        SapSystemParamsDto systemParams = setSystemParams(request);
+        ScheduleHolidayAttachmentTypeDto orgResponse = scheduleHolidayService
+                .getScheduleHolidayAttachmentType(systemParams, expand, top, skip, filter, search, count);
+        if (orgResponse != null) {
+            LogUtil.logResponse(systemParams.getAdLogin(), systemParams.getSessionId(),"GET", kafkaTopicNameFromEasup, orgResponse.getResponseCode(),
+                    orgResponse.getErrorMessage(), false, null, orgResponse.getTraceId());
+            if (orgResponse.getResponseCode().startsWith("2")) {
+                ScheduleHolidayAttachmentTypeDtoOut responseOut = new ScheduleHolidayAttachmentTypeDtoOut();
+                BeanUtils.copyProperties(orgResponse,responseOut);
+                responseOut = scheduleHolidayDtoMapper.cleanNulls(responseOut);
+                log.info("Успешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_ATTACHMENT_TYPE]");
+                return new ResponseEntity<>(responseOut, HttpStatus.OK);
+            } else {
+                log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_ATTACHMENT_TYPE]: [{}]", orgResponse.getErrorMessage());
+                int httpStatusNumber = Integer.parseInt(orgResponse.getResponseCode().substring(0, 3));
+                throw new HttpResponseException(httpStatusNumber, orgResponse.getErrorMessage());
+            }
+        }
+        log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_ATTACHMENT_TYPE]: вернулось нулевое значение");
+        throw new HttpResponseException(404, ErrorResponse.SCHEDULE_HOLIDAY_INFO_NOT_FOUND);
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_GET_USER_SEARCH")
+    @GetMapping(value = "/user/search", produces = "application/json")
+    @ResponseBody
+    @Operation(summary = "Получение выбора сотрудника из справочника для создания заявки",
+            tags = "schedule-holiday-user-search",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Получен выбор сотрудника из справочника для создания заявки",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ScheduleHolidayUserSearchDtoOut.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Выбор сотрудника из справочника для создания заявки не получена",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Непредвиденная ошибка сервера",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    })
+    })
+    public ResponseEntity<Object> getScheduleHolidayUserSearch(
+            HttpServletRequest request,
+            @Parameter(description = "Параметр экспандов в еасуп")
+            @Size(max = 255)
+            @RequestParam(value = "exp", required = false) String expand,
+            @Parameter(description = "Количество записей, которое необходимо показать")
+            @Max(value = 9999)
+            @Min(value = 0)
+            @RequestParam(required = false) Integer top,
+            @Parameter(description = "Количество записей, которое необходимо пропустить")
+            @Max(value = 9999)
+            @Min(value = 0)
+            @RequestParam(required = false) Integer skip,
+            @Parameter(description = "Параметр фильтрации")
+            @Size(max = 255)
+            @RequestParam(required = false) String filter,
+            @Parameter(description = "Параметр поиска")
+            @Size(max = 255)
+            @RequestParam(required = false) String search,
+            @Parameter(description = "Параметр количества")
+            @Min(0)
+            @Max(999999999)
+            @RequestParam(required = false) Integer count
+    ) throws Exception {
+        request.setAttribute("requestType","schedule_holiday_user_search");
+        SapSystemParamsDto systemParams = setSystemParams(request);
+        ScheduleHolidayUserSearchDto orgResponse = scheduleHolidayService
+                .getScheduleHolidayUserSearch(systemParams, expand, top, skip, filter, search, count);
+        if (orgResponse != null) {
+            LogUtil.logResponse(systemParams.getAdLogin(), systemParams.getSessionId(),"GET", kafkaTopicNameFromEasup, orgResponse.getResponseCode(),
+                    orgResponse.getErrorMessage(), false, null, orgResponse.getTraceId());
+            if (orgResponse.getResponseCode().startsWith("2")) {
+                ScheduleHolidayUserSearchDtoOut responseOut = new ScheduleHolidayUserSearchDtoOut();
+                BeanUtils.copyProperties(orgResponse,responseOut);
+                responseOut = scheduleHolidayDtoMapper.cleanNulls(responseOut);
+                log.info("Успешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_USER_SEARCH]");
+                return new ResponseEntity<>(responseOut, HttpStatus.OK);
+            } else {
+                log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_USER_SEARCH]: [{}]", orgResponse.getErrorMessage());
+                int httpStatusNumber = Integer.parseInt(orgResponse.getResponseCode().substring(0, 3));
+                throw new HttpResponseException(httpStatusNumber, orgResponse.getErrorMessage());
+            }
+        }
+        log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_USER_SEARCH]: вернулось нулевое значение");
+        throw new HttpResponseException(404, ErrorResponse.SCHEDULE_HOLIDAY_INFO_NOT_FOUND);
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_GET_VACATION_LIMIT")
+    @GetMapping(value = "/vacation-limit", produces = "application/json")
+    @ResponseBody
+    @Operation(summary = "Получение расчета использованного лимита отпуска с учетом даты плановой даты начала и окончания",
+            tags = "schedule-holiday-vacation-limit",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Получен расчет использованного лимита отпуска с учетом даты плановой даты начала и окончания",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ScheduleHolidayVacationLimitDtoOut.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Расчет использованного лимита отпуска с учетом даты плановой даты начала и окончания не получен",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Непредвиденная ошибка сервера",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    })
+    })
+    public ResponseEntity<Object> getScheduleHolidayVacationLimit(
+            HttpServletRequest request,
+            @Parameter(description = "Параметр экспандов в еасуп")
+            @Size(max = 8)
+            @RequestParam String id
+    ) throws Exception {
+        request.setAttribute("requestType","schedule_holiday_vacation_limit");
+        SapSystemParamsDto systemParams = setSystemParams(request);
+        ScheduleHolidayVacationLimitDto orgResponse = scheduleHolidayService
+                .getScheduleHolidayVacationLimit(systemParams, id);
+        if (orgResponse != null) {
+            LogUtil.logResponse(systemParams.getAdLogin(), systemParams.getSessionId(),"GET", kafkaTopicNameFromEasup, orgResponse.getResponseCode(),
+                    orgResponse.getErrorMessage(), false, null, orgResponse.getTraceId());
+            if (orgResponse.getResponseCode().startsWith("2")) {
+                ScheduleHolidayVacationLimitDtoOut responseOut = new ScheduleHolidayVacationLimitDtoOut();
+                BeanUtils.copyProperties(orgResponse,responseOut);
+                responseOut = scheduleHolidayDtoMapper.cleanNulls(responseOut);
+                log.info("Успешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_VACATION_LIMIT]");
+                return new ResponseEntity<>(responseOut, HttpStatus.OK);
+            } else {
+                log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_VACATION_LIMIT]: [{}]", orgResponse.getErrorMessage());
+                int httpStatusNumber = Integer.parseInt(orgResponse.getResponseCode().substring(0, 3));
+                throw new HttpResponseException(httpStatusNumber, orgResponse.getErrorMessage());
+            }
+        }
+        log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_VACATION_LIMIT]: вернулось нулевое значение");
+        throw new HttpResponseException(404, ErrorResponse.SCHEDULE_HOLIDAY_INFO_NOT_FOUND);
+    }
+
+    @Audit(value = "SRHR_SCHEDULE_HOLIDAY_REST_GET_CONTENT")
+    @GetMapping(value = "/content", produces = "application/octet-stream")
+    @ResponseBody
+    @Operation(summary = "Запрос контента по идентификатору",
+            tags = "schedule-holiday-content",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Получен контент по идентификатору",
+                    content = {
+                            @Content(
+                                    mediaType = "application/octet-stream")
+                    }),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Контент по идентификатору не получен",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Непредвиденная ошибка сервера",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ServiceErrorDto.class))
+                    })
+    })
+    public ResponseEntity<byte[]> getScheduleHolidayContent(
+            HttpServletRequest request,
+            @Parameter(description = "Идентификатор запрашиваемого контента", example = "")
+            @Size(max = 255, message = "Параметр id не должен превышать 255 символов")
+            @RequestParam(name = "id") String id
+    ) throws Exception {
+        request.setAttribute("requestType","schedule_holiday_content");
+        id = id.replace("'","");
+        SapSystemParamsDto systemParams = setSystemParams(request);
+        ScheduleHolidayContentDto contentResponse = scheduleHolidayService.getScheduleHolidayContent(systemParams, id);
+        if (contentResponse != null) {
+            LogUtil.logResponse(systemParams.getAdLogin(), systemParams.getSessionId(),"GET", kafkaTopicNameFromEasup, contentResponse.getResponseCode(),
+                    contentResponse.getErrorMessage(), false, null, contentResponse.getTraceId());
+            if (contentResponse.getResponseCode().startsWith("2")) {
+                String content = contentResponse.getBase64();
+                byte[] decodedBytes = Base64.getDecoder().decode(content);
+                log.info("Успешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_CONTENT]");
+                return new ResponseEntity<>(decodedBytes, HttpStatus.OK);
+            } else {
+                log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_CONTENT]: [{}]", contentResponse.getErrorMessage());
+                int httpStatusNumber = Integer.parseInt(contentResponse.getResponseCode().substring(0, 3));
+                throw new HttpResponseException(httpStatusNumber, contentResponse.getErrorMessage());
+            }
+        }
+        log.warn("Неуспешное выполнение эндпоинта [SRHR_SCHEDULE_HOLIDAY_REST_GET_CONTENT]: вернулось нулевое значение");
+        throw new HttpResponseException(404, ErrorResponse.SCHEDULE_HOLIDAY_INFO_NOT_FOUND);
+    }
+
+    private SapSystemParamsDto setSystemParams(HttpServletRequest request) {
+        SapSystemParamsDto systemParams = new SapSystemParamsDto();
+        systemParams.setChannel(request.getAttribute("channel").toString());
+        systemParams.setAdLogin(request.getAttribute("adLogin").toString());
+        systemParams.setSessionId(request.getAttribute("sessionId").toString());
+        systemParams.setRealm(request.getAttribute("realm").toString());
+        return systemParams;
+    }
+}
