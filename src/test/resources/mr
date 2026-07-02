@@ -1,6 +1,26 @@
-посмотрите МРки, пожалуйста:
-[SRHR-2002] srhr-ms-sys-housekeep
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-sys-housekeep/pulls/2422654
+switch (systemParams.getRequestType()) {
+            case "salarychange_staff_dependency":
+                return getSalarychangeStaffDependency(requestEntity, systemParams);
+            case "salarychange_staff_dependency_exp":
+                return getSalarychangeStaffDependencyExp(requestEntity, systemParams);
+            case "salarychange_staff_detail":
+                return getSalarychangeStaffDetail(requestEntity, systemParams, listId, listType, dependencyCode, staffTabNum, staffPositionId, expand);
+            case "salarychange_post_staff_detail":
+                return getSalarychangePostStaffDetail(requestEntity, systemParams, requestValues);
+            case "salarychange_staff_delegation_list":
+                return getSalarychangeStaffDelegationList(requestEntity, systemParams, filter, expand, orderBy, linesTop, linesSkip, searchString);
+            case "salarychange_staff_list":
+                return getSalarychangeStaffList(requestEntity, systemParams, expand, listId);
+            case "salarychange_staff_list_detail":
+                return getSalarychangeStaffListDetail(requestEntity, systemParams, listId, listType, dependencyCode, expand);
+            case "salarychange_post_staff_list":
+                return getSalarychangePostStaffList(requestEntity, systemParams, requestValues);
+            case "salarychange_post_staff_multi_list_action":
+                return getSalarychangePostStaffMultiListAction(requestEntity, systemParams, requestValues);
+            case "salarychange_post_staff_multi_list_rebase":
+                return getSalarychangePostStaffMultiListRebase(requestEntity, systemParams, requestValues);
 
-[SRHR-2003] srhr-ms-bscs-integration
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-bscs-integration/pulls/2422680
+
+
+
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-developer-guidelines/code/browse/branch/master?view=dir
