@@ -6,12 +6,7 @@ git push origin 7.4.0
 
 
 
-$ git push --force-with-lease origin master
-Total 0 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0)
-remote: pre-receive hook: rejected: repository 'SRHR/srhr-ms-bscs-integration' protected branch 'master' can't be updated, please create pull request to update protected branch (request_id=4244d6f0-4581-4e7e-a9c0-152d1bd0ffd1)
-To ssh://git.sfera.inno.local:7999/SRHR/srhr-ms-bscs-integration.git
- ! [remote rejected] master -> master (pre-receive hook declined)
-error: failed to push some refs to 'ssh://git.sfera.inno.local:7999/SRHR/srhr-ms-bscs-integration.git'
+git branch -r
 
 
 # 1. слить master в релиз стратегией ours и запушить
