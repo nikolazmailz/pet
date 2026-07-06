@@ -62,3 +62,16 @@ public enum SalarychangeType {
 
     public String code() { return code; }
 }
+
+
+@Service
+public class StaffDependencyHandler implements SalarychangeHandler {
+
+    @Override
+    public String requestType() {
+        return SalarychangeType.STAFF_DEPENDENCY.code();
+    }
+
+    @Override
+    public Result handle(SalarychangeRequest req) { ... }
+}
