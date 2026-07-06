@@ -1,14 +1,38 @@
-  switch (systemParams.getRequestType()) {
-            case "requisition_dict":
-                return getRequisitionDict(requestEntity, systemParams);
-            case "requisition_ui_state":
-                return getRequisitionUiState(requestEntity, systemParams, requestValues.getDelegatorTn());
-            case "requisition_delegations":
-                return getRequisitionDelegations(requestEntity, systemParams);
-            case "requisition_org_units_allowable":
-                return getRequisitionOrgUnitsAllowable(requestEntity, systemParams, requestValues.getDelegatorTn());
-            case "requisition_post_list":
-                return getRequisitionPostList(requestEntity, systemParams, requestValues);
-            case "requisition_user_info":
-                return getRequisitionUserInfo(requestEntity, systemParams);
-            case "requisition_vacancy_details":
+public record SalarychangeRequest(
+    RequestEntity requestEntity,
+    SystemParams systemParams,
+    SalarychangeParams params   // listId, filter, expand, orderBy, paging, requestValues...
+) {}
+
+
+public interface SalarychangeHandler {
+    String requestType();
+    Result handle(SalarychangeRequest req);
+}
+
+@Service
+public class SalarychangeDispatcher {
+    private final Map<String, SalarychangeHandler> handlers;
+
+    public SalarychangeDispatcher(List<SalarychangeHandler> beans) {
+        this.handlers = beans.stream()
+            .collect(toMap(SalarychangeHandler::requestType, identity()));
+    }
+
+    public Result dispatch(SalarychangeRequest req) {
+        var h = handlers.get(req.systemParams().getRequestType());
+        if (h == null) throw new UnknownRequestTypeException(req.systemParams().getRequestType());
+        return h.handle(req);   // тут же закрывается ветка default → Introduce Special Case
+    }
+}
+
+
+  var req = new SalarychangeRequest(
+        requestEntity,
+        systemParams,
+        new SalarychangeParams(listId, listType, dependencyCode, staffTabNum,
+                               staffPositionId, expand, filter, orderBy,
+                               linesTop, linesSkip, searchString, requestValues)
+    );
+
+    return dispatcher.dispatch(req);
