@@ -1,0 +1,64 @@
+public record SalarychangeRequest(
+    RequestEntity requestEntity,
+    SystemParams systemParams,
+    SalarychangeParams params   // listId, filter, expand, orderBy, paging, requestValues...
+) {}
+
+public interface SalarychangeHandler {
+    String requestType();
+    Result handle(SalarychangeRequest req);
+}
+
+@Service
+public class SalarychangeDispatcher {
+    private final Map<String, SalarychangeHandler> handlers;
+
+    public SalarychangeDispatcher(List<SalarychangeHandler> beans) {
+        this.handlers = beans.stream()
+            .collect(toMap(SalarychangeHandler::requestType, identity()));
+    }
+
+    public Result dispatch(SalarychangeRequest req) {
+        var h = handlers.get(req.systemParams().getRequestType());
+        if (h == null) throw new UnknownRequestTypeException(req.systemParams().getRequestType());
+        return h.handle(req);   // тут же закрывается ветка default → Introduce Special Case
+    }
+}
+
+
+@Service
+public class StaffDetailHandler implements SalarychangeHandler {
+
+    @Override
+    public String requestType() {
+        return "salarychange_staff_detail";
+    }
+
+    @Override
+    public Result handle(SalarychangeRequest req) {
+        var p = req.params();
+        // ровно то, что раньше было в getSalarychangeStaffDetail(...)
+        return ...;
+    }
+}
+
+
+
+public enum SalarychangeType {
+    STAFF_DEPENDENCY("salarychange_staff_dependency"),
+    STAFF_DEPENDENCY_EXP("salarychange_staff_dependency_exp"),
+    STAFF_DETAIL("salarychange_staff_detail"),
+    POST_STAFF_DETAIL("salarychange_post_staff_detail"),
+    STAFF_DELEGATION_LIST("salarychange_staff_delegation_list"),
+    STAFF_LIST("salarychange_staff_list"),
+    STAFF_LIST_DETAIL("salarychange_staff_list_detail"),
+    POST_STAFF_LIST("salarychange_post_staff_list"),
+    POST_STAFF_MULTI_LIST_ACTION("salarychange_post_staff_multi_list_action"),
+    POST_STAFF_MULTI_LIST_REBASE("salarychange_post_staff_multi_list_rebase");
+
+    private final String code;
+
+    SalarychangeType(String code) { this.code = code; }
+
+    public String code() { return code; }
+}
