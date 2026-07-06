@@ -25,3 +25,58 @@ git checkout master
 git reset --hard origin/master
 git tag -a 7.4.0 -m "7.4.0"
 git push origin 7.4.0
+
+
+
+
+@Service
+@RequiredArgsConstructor
+public class StaffInfoIntegrationServiceImpl implements StaffInfoIntegrationService {
+
+    private final KafkaProducerServiceImpl kafkaProducerService;
+    private final RedisAdapter redisAdapter;
+    @Value("${spring.kafka.timeout-limit}") Integer timeoutLimit;
+    @Value("${spring.kafka.topic.name.to-staff}")
+    String kafkaTopicNameToStaff;
+
+    @Override
+    public MessageToStaffDto getTabNumber(String id, String adLogin, String sessionId, String traceId) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        MessageToStaffDto messageOut = new MessageToStaffDto();
+        messageOut.setUuid(id);
+        messageOut.setType("getTabNumber");
+        Map<String,String> data = new HashMap<>();
+        data.put("adlogin", adLogin);
+        data.put("sessionId", sessionId);
+        messageOut.setTraceId(traceId);
+        messageOut.setData(data);
+        kafkaProducerService.produce(kafkaTopicNameToStaff, mapper.writeValueAsString(messageOut));
+        LogUtil.logKafkaMessageSent(adLogin, sessionId, messageOut.getType(), kafkaTopicNameToStaff, traceId);
+        final int giveUp = timeoutLimit;   int noRecordsCount = 0;
+        RedisResponse redisResponse;
+        String message = null;
+        while (noRecordsCount != giveUp) {
+            try {
+                redisResponse = redisAdapter.getObjectFromDb(id+"_staff", RedisResponse.class);
+                if (redisResponse != null) {
+                    message = redisResponse.getBody();
+                    break;
+                } else {
+                    noRecordsCount++;
+                    Thread.sleep(50);
+                }
+            }
+            catch (Exception e) {
+                noRecordsCount++;
+                Thread.sleep(50);
+            }
+        }
+        if (message != null) {
+            return mapper.readValue(message, MessageToStaffDto.class);
+        }
+        else {
+            return null;
+        }
+    }
+}
+
