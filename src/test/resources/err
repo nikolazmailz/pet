@@ -1,0 +1,16 @@
+Executing pre-compile tasks…
+Running 'before' tasks
+Checking sources
+Copying resources... [srhr-ms-task-blocker]
+Copying resources... [srhr-mod-commons]
+Parsing java… [srhr-mod-commons]
+java: java.lang.NoSuchFieldError: Class com.sun.tools.javac.tree.JCTree$JCImport does not have member field 'com.sun.tools.javac.tree.JCTree qualid'
+java: java.lang.NoSuchFieldError: Class com.sun.tools.javac.tree.JCTree$JCImport does not have member field 'com.sun.tools.javac.tree.JCTree qualid'
+Checking dependencies… [srhr-mod-commons]
+Dependency analysis found 0 affected files
+Errors occurred while compiling module 'srhr-mod-commons'
+javac 21.0.6 was used to compile java sources
+Finished, saving caches…
+Executing post-compile tasks…
+Synchronizing output directories…
+06.07.2026 18:44 - Build completed with 2 errors and 0 warnings in 8 sec, 34 ms
