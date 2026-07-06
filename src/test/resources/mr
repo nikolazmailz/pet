@@ -1,1 +1,14 @@
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-developer-guidelines/pulls/2439792/diff
+  switch (systemParams.getRequestType()) {
+            case "requisition_dict":
+                return getRequisitionDict(requestEntity, systemParams);
+            case "requisition_ui_state":
+                return getRequisitionUiState(requestEntity, systemParams, requestValues.getDelegatorTn());
+            case "requisition_delegations":
+                return getRequisitionDelegations(requestEntity, systemParams);
+            case "requisition_org_units_allowable":
+                return getRequisitionOrgUnitsAllowable(requestEntity, systemParams, requestValues.getDelegatorTn());
+            case "requisition_post_list":
+                return getRequisitionPostList(requestEntity, systemParams, requestValues);
+            case "requisition_user_info":
+                return getRequisitionUserInfo(requestEntity, systemParams);
+            case "requisition_vacancy_details":
