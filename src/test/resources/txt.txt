@@ -153,4 +153,65 @@ public class EasupIntegrationServiceImpl implements EasupIntegrationService {
 }
 
 
+package ru.ntdev.srhr.ms.paystub.client;
+
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.message.BasicHeader;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestTemplate;
+import ru.ntdev.srhr.common.dto.api.SapSystemParamsDto;
+import ru.ntdev.srhr.ms.paystub.filter.IntegrationRequestInterceptor;
+
+import java.util.*;
+
+
+@Component
+public class EasupIntegrationClient {
+
+    public RestTemplate buildRestTemplate(SapSystemParamsDto systemParams) {
+
+        Header headerPernr = new BasicHeader("pernr", systemParams.getTabNumber());
+        Header headerSessionId = new BasicHeader("sessionId", systemParams.getSessionId());
+        Header headerRole = new BasicHeader("role", systemParams.getRole());
+        Header headerLogin = new BasicHeader("X-user-login", systemParams.getAdLogin());
+        Header headerRoles = new BasicHeader("Roles", systemParams.getRolesHeader());
+        Header traceHeader = new BasicHeader("logId", systemParams.getTraceId());
+        Header realmHeader = new BasicHeader("realm", systemParams.getRealm());
+        List<Header> headers = new ArrayList<>(Arrays.asList(headerPernr, headerSessionId, headerRole, headerLogin, traceHeader, realmHeader, headerRoles));
+
+
+        HttpClient client = HttpClients
+                .custom()
+                .setDefaultHeaders(headers)
+                .build();
+
+        Map<String,String> headersValue = new HashMap<>(headers.size());
+        for (Header header : headers ) {
+            headersValue.put(header.getName(),header.getValue());
+        }
+
+        RestTemplate restTemplate = new RestTemplateBuilder()
+                .defaultHeader(HttpHeaders.CONTENT_TYPE,"application/json;charset=UTF-8")
+                .defaultHeader("pernr", headersValue.get("pernr"))
+                .defaultHeader("sessionId", headersValue.get("sessionId"))
+                .defaultHeader("logId", headersValue.get("logId"))
+                .build();
+
+        restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(client));
+        List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
+        if (CollectionUtils.isEmpty(interceptors)) {
+            interceptors = new ArrayList<>();
+        }
+        interceptors.add(new IntegrationRequestInterceptor());
+        restTemplate.setInterceptors(interceptors);
+        return restTemplate;
+    }
+}
 
