@@ -80,3 +80,77 @@ public class StaffInfoIntegrationServiceImpl implements StaffInfoIntegrationServ
     }
 }
 
+
+
+@Service
+@RequiredArgsConstructor
+public class EasupIntegrationServiceImpl implements EasupIntegrationService {
+
+    @Value("${easup.integration.service.url}")
+    String easupIntegrationServiceUrl;
+
+    /**
+     * Первый параметр урла - pernr, табельный номер юзера.
+     * Второй параметр урла - sessionId, айди сессии запроса.
+     * Третий параметр урла - role, функциональная роль юзера.
+     */
+
+    private final static String integrationUrlMail = "/paystub/mail/subject";
+    private final static String integrationUrlPeriod = "/paystub/period";
+
+    /**
+     * Первый параметр урла - pernr, табельный номер юзера.
+     * Второй параметр урла - sessionId, айди сессии запроса.
+     * Третий параметр урла - role, функциональная роль юзера.
+     * Четвертый параметр урла - year, год запроса расчетного листа.
+     * Пятый параметр урла - month, месяц запроса расчетного листа.
+     */
+    private final static String integrationUrlPayPdf = "/paystub/salary/pdf/%s/%s";
+    private final static String integrationUrlPayHead = "/paystub/salary/head/%s/%s";
+    private final static String integrationUrlPayBody = "/paystub/salary/body/%s/%s";
+
+    private final EasupIntegrationClient easupClient;
+
+
+    @Override
+    public ResponseEntity<PaystubPeriodDto> getPaystubPeriod(SapSystemParamsDto systemParams) {
+        RestTemplate restTemplate = easupClient.buildRestTemplate(systemParams);
+        String uri = easupIntegrationServiceUrl+integrationUrlPeriod;
+        return restTemplate.getForEntity(uri, PaystubPeriodDto.class);
+    }
+
+    @Override
+    public ResponseEntity<PaystubMailSubjectDto> getMailSubjects(SapSystemParamsDto systemParams) {
+        RestTemplate restTemplate = easupClient.buildRestTemplate(systemParams);
+        String uri = easupIntegrationServiceUrl+integrationUrlMail;
+        return restTemplate.getForEntity(uri, PaystubMailSubjectDto.class);
+    }
+
+    @Override
+    public ResponseEntity<PaystubSalaryPdfDto> getPaystubSalaryPdf(SapSystemParamsDto systemParams, String year, String month) {
+        RestTemplate restTemplate = easupClient.buildRestTemplate(systemParams);
+        String uri = String.format(integrationUrlPayPdf, year, month);
+        uri = easupIntegrationServiceUrl+uri;
+        return restTemplate.getForEntity(uri, PaystubSalaryPdfDto.class);
+    }
+
+    @Override
+    public ResponseEntity<PaystubSalaryHeadDto> getPaystubSalaryHead(SapSystemParamsDto systemParams, String year, String month) {
+        RestTemplate restTemplate = easupClient.buildRestTemplate(systemParams);
+        String uri = String.format(integrationUrlPayHead, year, month);
+        uri = easupIntegrationServiceUrl+uri;
+        return restTemplate.getForEntity(uri, PaystubSalaryHeadDto.class);
+    }
+
+    @Override
+    public ResponseEntity<PaystubSalaryBodyDto> getPaystubSalaryBody(SapSystemParamsDto systemParams, String year, String month) {
+        RestTemplate restTemplate = easupClient.buildRestTemplate(systemParams);
+        String uri = String.format(integrationUrlPayBody, year, month);
+        uri = easupIntegrationServiceUrl+uri;
+        return restTemplate.getForEntity(uri, PaystubSalaryBodyDto.class);
+    }
+
+}
+
+
+
