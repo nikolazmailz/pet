@@ -1,5 +1,7 @@
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition/pulls/2444237
 
+https://docs.google.com/spreadsheets/d/1xfyrOGUgEyjD7FsPvQB6qJKg7XFP8nofm10ohWm16jk/edit?hl=ru&gid=2117738890#gid=2117738890
+
 public record SalarychangeRequest(
     RequestEntity requestEntity,
     SystemParams systemParams,
