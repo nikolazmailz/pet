@@ -42,7 +42,10 @@ public class SalarychangeDispatcher {
     return dispatcher.dispatch(req);
 
 
-private final GetStaffDetailUseCase useCase;   // ← чистый use case
+@Service
+public class StaffDetailHandler implements SalarychangeHandler {
+
+    private final GetStaffDetailUseCase useCase;   // ← чистый use case
 
     @Override
     public SalarychangeType type() { return SalarychangeType.STAFF_DETAIL; }
@@ -58,6 +61,7 @@ private final GetStaffDetailUseCase useCase;   // ← чистый use case
         var result = useCase.execute(query);   // use case не видит SystemParams
         return toResult(result);               // домен → транспортный ответ
     }
+}
 
 
 ENV
