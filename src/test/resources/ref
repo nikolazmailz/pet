@@ -1,188 +1,92 @@
-
-package ru.ntdev.srhr.ms.requisition.application;
-
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.HttpStatusCodeException;
-import ru.ntdev.srhr.common.constant.RequestStatusConstant;
-import ru.ntdev.srhr.common.dto.api.SapSystemParamsDto;
-import ru.ntdev.srhr.common.dto.api.error.ErrorResponse;
-import ru.ntdev.srhr.common.dto.api.response.SapResponseDtoExtended;
-import ru.ntdev.srhr.common.dto.api.response.requisition.RequisitionDictDto;
-import ru.ntdev.srhr.ms.requisition.entity.RequisitionRequestEntity;
-import ru.ntdev.srhr.ms.requisition.service.DatabaseService;
-import ru.ntdev.srhr.ms.requisition.service.FilestorageService;
-import ru.ntdev.srhr.ms.requisition.service.impl.EntityServiceImpl;
-import ru.ntdev.srhr.ms.requisition.service.kafka.RequisitionContext;
-
-@Service
-@Slf4j
-public class GetRequisitionDictUseCase extends AbstractRequisitionUseCase {
-    
-    private final DatabaseService databaseService;
-    private final EntityServiceImpl entityService;
-    
-
-    protected GetRequisitionDictUseCase(EntityServiceImpl entityService, DatabaseService databaseService, EntityServiceImpl entityService1, FilestorageService filestorageService) {
-        super(entityService, filestorageService);
-        this.databaseService = databaseService;
-        this.entityService = entityService1;
-    }
-
-    public String execute(RequisitionContext req) {
-        try {
-            return getRequisitionDict(req.requestEntity(), req.systemParams());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+@Override
+    public RequisitionDictDto getRequisitionDict() {
+        List<TabEntity> tabEntities = tabRepository.findAll();
+        List<StatusMappingEntity> statusMappingEntities = statusMappingRepository.findDistinctOnLkrCodeStatusMapping();
+        List<RequisitionStatusItem> requisitionStatusItemList = new ArrayList<>();
+        List<RequisitionTabItem> tabItemList = new ArrayList<>();
+        if (!tabEntities.isEmpty()) {
+            for (TabEntity tabEntity : tabEntities) {
+                tabItemList.add(mapperService.mapTabEntity(tabEntity));
+            }
         }
-    }
+        if (!tabEntities.isEmpty()) {
+            for (StatusMappingEntity statusMappingEntity : statusMappingEntities) {
+                List<TabMappingEntity> tabMappingEntities = tabMappingRepository.findTabMappingEntitiesByLkrCode(statusMappingEntity.getLkrCode());
+                List<String> availableTabs = tabMappingEntities.stream().map(TabMappingEntity::getTabCode).toList();
+                requisitionStatusItemList.add(mapperService.mapStatusMappingEntity(statusMappingEntity, availableTabs));
 
-    private String getRequisitionDict(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams) throws Exception {
-        long start = System.currentTimeMillis();
-        ResponseEntity<RequisitionDictDto> dtoResponseEntity;
+            }
+        }
+
+        // этапы рассмотрения кандидатов
+        List<CandidateStageItem> stageList = new ArrayList<>();
+        List<CandidateStageEntity> stageEntities = candidateStageRepository.findAll();
+        Map<Integer, CandidateStageEntity> stages = new HashMap<>();
+        if (!stageEntities.isEmpty()) {
+            stageEntities.forEach(e -> {
+                stages.put(e.getId(), e);
+                stageList.add(mapperService.mapCandidateStageEntity(e));
+            });
+        }
+
+        // статусы этапов рассмотрения
+        List<CandidateStageStatusItem> stageStatusList = new ArrayList<>();
+
+        List<CandidateStatusEntity> statusEntities = candidateStatusRepository.findAll();
+        Map<Integer, CandidateStatusEntity> statuses = getCandidateStatusEntitiesMap(statusEntities);
+
+        List<CandidateStageStatusEntity> stageStatusEntities = candidateStageStatusRepository.findAll();
+        if (!stageStatusEntities.isEmpty()) {
+            stageStatusEntities.forEach(stageStatus -> {
+                CandidateStageStatusItem item = mapperService.mapStageStatusEntities(
+                        stages.get(stageStatus.getStageId()),
+                        statuses.get(stageStatus.getStatusId())
+                );
+                stageStatusList.add(item);
+            });
+        }
+
+        // действия с кандидатами
+        List<CandidateActionItem> candidateActionList = new ArrayList<>();
+        List<CandidateActionEntity> actionEntities = candidateActionRepository.findAll();
+        if (!actionEntities.isEmpty()) {
+            actionEntities.forEach(e -> {
+                candidateActionList.add(mapperService.mapCandidateActionEntity(e));
+            });
+        }
+
+        // вкладки кандидатов
+        List<CandidateTabItem> candidateTabList = new ArrayList<>();
+        List<CandidateTabEntity> candidateTabEntities = candidateTabRepository.findAll();
+        if (!candidateTabEntities.isEmpty()) {
+            candidateTabEntities.forEach(e -> {
+                candidateTabList.add(mapperService.mapCandidateTabEntity(e));
+            });
+        }
+
+        // действия с интервьюерами
+        List<InterviewersActionItem> interviewersActionList = new ArrayList<>();
+        List<InterviewersActionEntity> interviewersActionEntities = interviewersActionRepository.findAllSorted();
+        if (!interviewersActionEntities.isEmpty()) {
+            interviewersActionEntities.forEach(e -> {
+                if (!e.getCode().equals("create")) { //TODO Убрать костыль когда кнопка создания должна появиться
+                    interviewersActionList.add(mapperService.mapInterviewersActionEntity(e));
+                }
+            });
+        }
+
+
+        RequisitionPagination pagination = new RequisitionPagination();
+        pagination.setDefaultPageSize(defaultPageSize);
+        pagination.setPageSizeOptionList(defaultPageSizeOptions);
         RequisitionDictDto dto = new RequisitionDictDto();
-        dto.setAdLogin(systemParams.getAdLogin());
-        dto.setSessionId(systemParams.getSessionId());
-        dto.setChannel(systemParams.getChannel());
-
-        String code = "200";
-        try {
-            dto = databaseService.getRequisitionDict();
-            dto.setResponseCode(code);
-
-        } catch (HttpClientErrorException | HttpServerErrorException e) {
-            code = e.getStatusCode().toString();
-            handleHttpClientOrServerErrorException(
-                    e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
-        } catch (Exception e) {
-            code = "500";
-            handleException(
-                    e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
-        }
-
-        return finishProcessingMessage(start, systemParams, dto, requestEntity, code);
+        dto.setTabList(tabItemList);
+        dto.setStatusList(requisitionStatusItemList);
+        dto.setPagination(pagination);
+        dto.setStageList(stageList);
+        dto.setStageStatusList(stageStatusList);
+        dto.setCandidateActionList(candidateActionList);
+        dto.setCandidateTabList(candidateTabList);
+        dto.setInterviewersActionList(interviewersActionList);
+        return dto;
     }
-
-    private void handleHttpClientOrServerErrorException(HttpStatusCodeException e, SapResponseDtoExtended dto, SapSystemParamsDto systemParams, String errorMessage) {
-        dto.setResponseCode(e.getStatusCode().toString());
-        dto.setErrorMessage(e.getMessage());
-        entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.ERROR_REPLY);
-        log.warn(errorMessage + ": [{}]", e.getMessage());
-    }
-
-    private void handleException(Exception e, SapResponseDtoExtended dto, SapSystemParamsDto systemParams, String errorMessage) {
-        dto.setResponseCode(HttpStatus.INTERNAL_SERVER_ERROR.toString());
-        dto.setErrorMessage(e.getMessage());
-        entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.ERROR_REPLY);
-        log.warn(errorMessage + ": [{}]", e.getMessage());
-    }
-}
-
-
-
-package ru.ntdev.srhr.ms.requisition.application;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import ru.ntdev.srhr.common.dto.api.SapSystemParamsDto;
-import ru.ntdev.srhr.common.dto.api.response.SapResponseDtoExtended;
-import ru.ntdev.srhr.common.dto.api.response.filestorage.MessagePostDto;
-import ru.ntdev.srhr.ms.requisition.entity.RequisitionRequestEntity;
-import ru.ntdev.srhr.ms.requisition.entity.RequisitionResponseEntity;
-import ru.ntdev.srhr.ms.requisition.service.FilestorageService;
-import ru.ntdev.srhr.ms.requisition.service.impl.EntityServiceImpl;
-
-@Slf4j
-abstract public class AbstractRequisitionUseCase {
-
-    private final EntityServiceImpl entityService;
-    private final FilestorageService filestorageService;
-
-    @Value("${spring.kafka.producer.max-inner-message-size-kb}")
-    Integer kafkaProducerMaxInnerMessageSizeKb;
-
-    protected AbstractRequisitionUseCase(EntityServiceImpl entityService, FilestorageService filestorageService) {
-        this.entityService = entityService;
-        this.filestorageService = filestorageService;
-    }
-
-    protected String finishProcessingMessage(Long start, SapSystemParamsDto systemParams, SapResponseDtoExtended dto, RequisitionRequestEntity requestEntity, String code) throws Exception {
-        long end = System.currentTimeMillis();
-        long processingTime = end - start;
-
-        checkDtoUuid(systemParams, dto);
-
-        dto.setRolesList(systemParams.getRolesHeader());
-        dto.setTabNumber(systemParams.getTabNumber());
-
-        ObjectMapper mapper = new ObjectMapper();
-        String messageOutcoming = mapper.writeValueAsString(dto);
-        RequisitionResponseEntity responseEntity = saveAndGetResponse(systemParams.getUuid(), requestEntity, messageOutcoming, processingTime, code);
-
-        if (code.equals("200")) {
-            entityService.deleteResponseByUidAndId(systemParams.getUuid(), responseEntity.getId().toString());
-            entityService.deleteRequestByUidAndId(systemParams.getUuid(), requestEntity.getId().toString());
-        }
-
-        messageOutcoming = checkMessageSize(dto, messageOutcoming);
-
-        return messageOutcoming;
-    }
-
-    private void checkDtoUuid(SapSystemParamsDto systemParams, SapResponseDtoExtended dto) {
-        if (systemParams.getUuid() != null) {
-            dto.setUuid(systemParams.getUuid());
-            dto.setAdLogin(systemParams.getAdLogin());
-            dto.setSessionId(systemParams.getSessionId());
-            dto.setTraceId(systemParams.getTraceId());
-        }
-    }
-
-    private RequisitionResponseEntity saveAndGetResponse(String uid, RequisitionRequestEntity requestEntity, String messageOutcoming, Long processingTime, String code) {
-        try {
-            return entityService.saveAndReturnResponse(uid, requestEntity, messageOutcoming, processingTime, code);
-        } catch (Exception e) {
-            log.warn("Ошибка записи в базу: [{}]", e.getMessage());
-        }
-        return null;
-    }
-
-    private String checkMessageSize(SapResponseDtoExtended dto, String message) throws JsonProcessingException {
-        int messageSize = ((2 * message.length()) + 32) / 1000;
-        if (messageSize < kafkaProducerMaxInnerMessageSizeKb) {
-            return message;
-        } else {
-            ObjectMapper mapper = new ObjectMapper();
-            SapResponseDtoExtended storagedDto = new SapResponseDtoExtended();
-
-            storagedDto.setRequestType(dto.getRequestType());
-            storagedDto.setUuid(dto.getUuid());
-            storagedDto.setAdLogin(dto.getAdLogin());
-            storagedDto.setErrorMessage(dto.getErrorMessage());
-            storagedDto.setChannel(dto.getChannel());
-            storagedDto.setTraceId(dto.getRequestType());
-
-            String messageUuid = storeMessageContent(
-                    dto.getAdLogin(),
-                    dto.getSessionId(),
-                    dto.getTraceId(),
-                    dto.getAdLogin() + '_' + dto.getRequestType(),
-                    message,
-                    dto.getUuid());
-            storagedDto.setFileUuid(messageUuid);
-            return mapper.writeValueAsString(storagedDto);
-        }
-    }
-
-    private String storeMessageContent(String adlogin, String sessionId, String traceId, String messageName, String messageContent, String requestUid) {
-        MessagePostDto messagePostDto = filestorageService.putMessageToDb(adlogin, sessionId, traceId, requestUid, messageName, messageContent);
-        return messagePostDto.getMessageUID();
-    }
-}
