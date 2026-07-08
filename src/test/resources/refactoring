@@ -1,19 +1,6 @@
+  long start = System.currentTimeMillis();
+        OrgUnitsPathsDto orgUnitsPathsDto = orgUnitService.getOrgUnitsPaths(requestDto);
+        long end = System.currentTimeMillis();
+        log.info("Total time: {} ms", end - start);
 
-            Set<String> uniqueStructUnitIds = new HashSet<>();
-
-            for (Map.Entry<String, String> entry : structUnitIdMap.entrySet()) {
-                structUnitIdList.add(entry.getValue());
-                uniqueStructUnitIds.add(entry.getValue());
-            }
-
-            List<String> structUnitIdList = new ArrayList<>(uniqueStructUnitIds);
-
-
-
-List<String> structUnitIdList = structUnitIdMap.values()
-        .stream()
-        .distinct()
-        .toList();
-
-
-List<String> structUnitIdList = new ArrayList<>(new HashSet<>(structUnitIdMap.values()));
+        return orgUnitsPathsDto;
