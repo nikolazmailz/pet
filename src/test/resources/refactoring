@@ -1,21 +1,8 @@
-do {
+        do {
             structUnitPathList = addElementToList(orgUnitEntity, structUnitPathList);
-            addElementToList(orgUnitEntity, structUnitPathList);
-            visitedOrgUnitIds.add(orgUnitEntity.getOrgUnitParentId());
-
-            if (parentOrgUnitsCache.containsKey(parentOrgUnitId)) {
-                parentOrgUnitEntity = parentOrgUnitsCache.get(parentOrgUnitId);
-            } else {
-                parentOrgUnitEntity = getParentOrgUnitEntity(parentOrgUnitId, currentDateTime);
+            parentOrgUnitEntity = getParentOrgUnitEntity(parentOrgUnitId, currentDateTime);
             if (parentOrgUnitEntity.getOrgUnitIndependence().equals("0")) {
-                parentOrgUnitsCache.put(parentOrgUnitId, parentOrgUnitEntity);
-            }
-
-            parentOrgUnitIndependence = parentOrgUnitEntity.getOrgUnitIndependence();
-
-            if ("0".equals(parentOrgUnitIndependence)) {
                 orgUnitEntity = parentOrgUnitEntity;
                 parentOrgUnitId = orgUnitEntity.getOrgUnitParentId();
             }
         } while (!(parentOrgUnitEntity.getOrgUnitIndependence().equals("1")));
-        } while ((!"1".equals(parentOrgUnitIndependence)) || !visitedOrgUnitIds.contains(parentOrgUnitId));
