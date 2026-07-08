@@ -585,3 +585,50 @@ public String getResponse(String uuid, String json) throws InterruptedException 
         }
         return message;
     }
+
+
+
+
+@Slf4j
+@Component
+public class KafkaListener implements Runnable {
+
+    private final RedisAdapter redisAdapter;
+    @Value("${spring.kafka.topic.name.from-requisition}")
+    String kafkaTopicNameFromRequisition;
+
+    public KafkaListener(RedisAdapter redisAdapter) {
+        this.redisAdapter = redisAdapter;
+    }
+
+    @org.springframework.kafka.annotation.KafkaListener(
+            id = "${spring.kafka.listener.id}",
+            topics = "${spring.kafka.topic.name.from-requisition}",
+            groupId = "${spring.kafka.listener.group-id}",
+            concurrency = "${spring.kafka.listener.partition.number}",
+            autoStartup = "true",
+            containerFactory = "kafkaListenerContainerFactory"
+    ) public void listen(String data, Acknowledgment ack) {
+                try {
+                    RedisResponse redisResponse = new RedisResponse();
+                    Map<String, String> requestValues = StringUtil.convertStringToMap(data);
+                    String uuid = requestValues.get("uuid");
+                    String requestType = requestValues.get("requestType");
+                    String sessionId = requestValues.get("sessionId");
+                    String adlogin = requestValues.get("adlogin");
+                    String traceId = requestValues.get("traceId");
+                    redisResponse.setUid(uuid);
+                    redisResponse.setBody(data);
+                    redisAdapter.putObjectToDb(uuid, redisResponse, 1000);
+                    LogUtil.logKafkaMessageGot(adlogin, sessionId, requestType, kafkaTopicNameFromRequisition, traceId);
+                    ack.acknowledge();
+                } catch (Exception e) {
+                    log.warn("Ошибка в листенере [manage_console_rest_listener]: [{}]", e.getMessage());
+                    ack.acknowledge();
+                }
+    }
+
+    @Override
+    public void run() {
+    }
+}
