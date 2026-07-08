@@ -1,0 +1,9 @@
+
+            Set<String> uniqueStructUnitIds = new HashSet<>();
+
+            for (Map.Entry<String, String> entry : structUnitIdMap.entrySet()) {
+                structUnitIdList.add(entry.getValue());
+                uniqueStructUnitIds.add(entry.getValue());
+            }
+
+            List<String> structUnitIdList = new ArrayList<>(uniqueStructUnitIds);
