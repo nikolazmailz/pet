@@ -541,6 +541,13 @@ public class RedisUtils {
 
 --------------------
 
+package ru.ntdev.srhr.ms.master.data.integration.config;
+
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import ru.ntdev.srhr.common.redis.RedisAdapter;
+
 @Configuration
 @Import({
     RedisAdapter.class,
