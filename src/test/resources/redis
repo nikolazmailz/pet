@@ -556,3 +556,32 @@ import ru.ntdev.srhr.common.redis.RedisAdapter;
 public class RedisConfig {
 
 }
+
+
+
+public String getResponse(String uuid, String json) throws InterruptedException {
+        RedisRequest redisRequest = new RedisRequest();
+        redisRequest.setUid(uuid);
+        redisRequest.setBody(json);
+        redisAdapter.putToQueue(ScheduleHolidayRequestQueue,json);
+        final int giveUp = timeoutLimit;   int noRecordsCount = 0;
+        RedisResponse redisResponse;
+        String message = null;
+        while (noRecordsCount != giveUp) {
+            try {
+                redisResponse = redisAdapter.getObjectFromDb(uuid, RedisResponse.class);
+                if (redisResponse != null) {
+                    message = redisResponse.getBody();
+                    break;
+                } else {
+                    noRecordsCount++;
+                    Thread.sleep(50);
+                }
+            }
+            catch (Exception e) {
+                noRecordsCount++;
+                Thread.sleep(50);
+            }
+        }
+        return message;
+    }
