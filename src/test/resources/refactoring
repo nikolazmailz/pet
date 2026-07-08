@@ -1,3 +1,4 @@
+INDEPENDENT_UNIT = "1"
     private List<StructUnitPath> fillStructUnitPathList(OrgUnitEntity orgUnitEntity, LocalDateTime currentDateTime) {
         List<StructUnitPath> structUnitPathList = new ArrayList<>();
 
