@@ -1,0 +1,536 @@
+package ru.ntdev.srhr.common.redis;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import io.lettuce.core.RedisURI;
+import io.lettuce.core.api.sync.RedisCommands;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import ru.ntdev.srhr.common.util.JSONUtil;
+
+import java.lang.reflect.Type;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @author vminakov
+ */
+@Slf4j
+@Component
+@Scope("prototype")
+public class RedisAdapter {
+
+    private RedisCommands<String, String> syncCommands;
+    public static Boolean isAvailable = true;
+    private static Boolean isEnabled = false;
+    public Integer keyDefaultLifetime = 30;
+    public final String NOT_AVAILABLE = "Redis отключен в параметрах сервиса.";
+
+    /**
+     * Redis Standalone <br>
+     * redis :// [password@] host [: port] [/ database] [? [timeout=timeout[d|h|m|s|ms|us|ns]][&_database=database_]]
+     * <p>
+     * Redis Sentinel <br>
+     * redis-sentinel://[[username:]password@]host1 [: port1][, host2 [:port2]][, hostN [:portN]][/ database][? [timeout=timeout[d|h|m|s|ms|us|ns]] [ &sentinelMasterId=sentinelMasterId] [&database=database]]
+     */
+    @Autowired
+    public RedisAdapter(RedisProperties redisProperties,
+                        @Value("${spring.data.redis.database}") Integer database,
+                        @Value("${spring.data.redis.enabled}") Boolean redisEnabled) {
+        isEnabled = redisEnabled;
+        if (!isEnabled) {
+            log.info(NOT_AVAILABLE);
+            isAvailable = false;
+            return;
+        }
+
+        try {
+            //Перезаписывает базу, для сервисов, у которых используется database.name
+            RedisUtils.resetDatabase(redisProperties, database);
+            //Формируем URI для обращения к Redis;
+            RedisURI redisUri = RedisUtils.formRedisUri(redisProperties);
+            //redis://localhost:12000?timeout=60000000ns
+            //Создаём подключение к Redis
+            syncCommands = RedisUtils.createRedisClientConnection(redisUri);
+            log.info("Соединение с Redis установлено");
+            isAvailable = true;
+        } catch (Exception e) {
+            isAvailable = false;
+            isEnabled = false;
+            log.warn("Ошибка подключения к Redis: [{}]", e.getMessage());
+            log.error("Redis не доступен");
+        }
+    }
+
+    /**
+     * Вставка значения по ключу
+     * Срок хранения 5
+     *
+     * @param key   Ключ
+     * @param value Значение
+     */
+    public void set(String key, String value) {
+        syncCommands.set(key, value);
+        syncCommands.expire(key, 5);
+    }
+
+    /**
+     * Вставка значения по ключу со сроком хранения
+     *
+     * @param key      Ключ
+     * @param value    Значение
+     * @param lifetime Срок хранения
+     */
+    public void setToTime(String key, String value, Integer lifetime) {
+        syncCommands.set(key, value);
+        syncCommands.expire(key, lifetime);
+    }
+
+    /**
+     * Вставка значения по ключу со сроком хранения
+     *
+     * @param key      Ключ
+     * @param value    Значение
+     * @param lifetime Срок хранения
+     */
+    public void setToTime(String key, String value, Duration lifetime) {
+        syncCommands.set(key, value);
+        syncCommands.expire(key, lifetime);
+    }
+
+    /**
+     * Добавление Объекта в Redis по ключу со сроком хранения
+     *
+     * @param key      Ключ
+     * @param object   Значение
+     * @param lifeTime Срок хранения
+     */
+    public void putObjectToDb(String key, Object object, Integer lifeTime) {
+        String _json = JSONUtil.gson.toJson(object);
+        setToTime(key, _json, lifeTime);
+    }
+
+    /**
+     * Добавление Объекта в Redis по ключу со сроком хранения и форматированием даты
+     *
+     * @param key        Ключ
+     * @param object     Значение
+     * @param lifeTime   Срок хранения
+     * @param dateFormat Формат даты
+     */
+    public void putObjectToDbWithDateFormat(String key, Object object, Integer lifeTime, String dateFormat) {
+        Gson _gson = new GsonBuilder().setDateFormat(dateFormat).create();
+        String _json = _gson.toJson(object);
+
+        setToTime(key, _json, lifeTime);
+    }
+
+    /**
+     * Получение значение из Redis по ключу
+     *
+     * @param key   Ключ
+     * @param clazz Класс
+     * @param <T>   Тип значения
+     * @return Значение
+     */
+    public <T> T getObjectFromDb(String key, Class<T> clazz) {
+        String _value = syncCommands.get(key);
+        if (_value != null) {
+            return JSONUtil.gson.fromJson(_value, clazz);
+        }
+        return null;
+    }
+
+    /**
+     * Получение списка объектов из Redis
+     *
+     * @param key   Ключ
+     * @param clazz Класс
+     * @param <T>   Тип объекта
+     * @return Список LinkedTreeMap
+     */
+    public <T> ArrayList<T> getListObjectFromDb(String key, Class<T> clazz) {
+        String _value = syncCommands.get(key);
+        if (_value != null) {
+            Type _type = new TypeToken<ArrayList<T>>() {
+            }.getType();
+            return JSONUtil.gson.fromJson(_value, _type);
+        }
+        return null;
+    }
+
+    /**
+     * Получение списка объектов из Redis
+     *
+     * @param key   Ключ
+     * @param clazz Класс
+     * @param <T>   Тип массив
+     * @return Список типизированных объектов
+     */
+    public <T> ArrayList<T> getTypedListObjectFromDb(String key, Class<T[]> clazz) {
+        String _value = syncCommands.get(key);
+        return JSONUtil.convertJsonToTypedList(_value, clazz);
+    }
+
+    /**
+     * Очищение очереди по имени
+     *
+     * @param queueName Имя очереди
+     */
+    public void clearQueue(String queueName) {
+        syncCommands.del(queueName);
+    }
+
+    /**
+     * Добавление значения в очередь слева
+     *
+     * @param queueName Имя очереди
+     * @param object    Значение
+     */
+    public void putToQueue(String queueName, String object) {
+        syncCommands.lpush(queueName, object);
+    }
+
+    /**
+     * Получение значения из очереди справа
+     *
+     * @param queueName Имя очереди
+     * @return Значение
+     */
+    public String getFromQueue(String queueName) {
+        return syncCommands.rpop(queueName);
+    }
+
+    /**
+     * Очищение Redis
+     */
+    public void clearAll() {
+        syncCommands.flushall();
+    }
+
+    /**
+     * Добавление элементов в хэш таблицу
+     *
+     * @param db     Имя таблицы
+     * @param values Значения
+     */
+    public void putMapToDb(String db, Map<String, String> values) {
+        syncCommands.hset(db, values);
+    }
+
+    /**
+     * Получение элементов хэш таблицы
+     *
+     * @param db Имя таблицы
+     * @return Значения
+     */
+    public Map<String, String> getMapFromDb(String db) {
+        return syncCommands.hgetall(db);
+    }
+
+    /**
+     * Очищение Redis по префиксу ключа
+     *
+     * @param prefix Префикс ключа в Redis
+     */
+    public void clearByPrefix(String prefix) {
+        List<String> _keys = syncCommands.keys(prefix.concat("*"));
+        _keys.forEach(_key -> syncCommands.del(_key));
+    }
+
+    /**
+     * Добавление объекта в Redis бессрочно
+     *
+     * @param key    Ключ
+     * @param object Объект
+     */
+    public void putObjectToDbWithoutLifeTime(String key, Object object) {
+        String _json = JSONUtil.gson.toJson(object);
+        setWithoutLifeTime(key, _json);
+    }
+
+    /**
+     * Добавление значения в Redis бессрочно
+     *
+     * @param key   Ключ
+     * @param value Значение
+     */
+    public void setWithoutLifeTime(String key, String value) {
+        syncCommands.set(key, value);
+    }
+
+    /**
+     * Увеличение значения ключа
+     *
+     * @param key Ключ
+     */
+    public void decrementKey(String key) {
+        syncCommands.decr(key);
+    }
+
+    /**
+     * Получение кол-в элементов очереди
+     *
+     * @param queueName Имя очереди
+     * @return Кол-во элементов
+     */
+    public Long lengthOfQueue(String queueName) {
+        try {
+            return syncCommands.llen(queueName);
+        } catch (Exception e) {
+            log.debug("Не удалось получить длину очереди", e);
+            return 0L;
+        }
+    }
+
+    /**
+     * Получение флага доступности Redis, указанного в конфигурации сервиса
+     *
+     * @return флаг доступности Redis
+     */
+    public static Boolean getIsEnabled() {
+        return isEnabled;
+    }
+}
+
+
+package ru.ntdev.srhr.common.redis;
+
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+
+import java.time.Duration;
+
+@Configuration
+public class RedisConfig {
+    @Bean("customRedisProperties")
+    @Primary
+    public RedisProperties redisProperties(){
+        RedisProperties redisProperties = new RedisProperties();
+        redisProperties.setTimeout(Duration.ofMinutes(60));
+        redisProperties.setUsername("Administrator");
+        redisProperties.setPassword("masterpass");
+        redisProperties.setHost("redis-12000.srhr.com");
+        redisProperties.setPort(12000);
+        return redisProperties;
+    }
+}
+
+
+
+package ru.ntdev.srhr.common.redis;
+
+import io.lettuce.core.RedisChannelHandler;
+import io.lettuce.core.RedisConnectionStateListener;
+import lombok.extern.slf4j.Slf4j;
+
+import java.net.SocketAddress;
+
+/**
+ * Слушатель состояния Redis
+ * <p>
+ *  Для событий Отключения и Ошибок добавлено отключение RedisAdapter.isAvailable
+ * </p>
+ */
+@Slf4j
+public class RedisConnectionStateListenerImpl implements RedisConnectionStateListener {
+
+    @Override
+    public void onRedisDisconnected(RedisChannelHandler<?, ?> redisChannelHandler) {
+        if (RedisAdapter.isAvailable) {
+            RedisAdapter.isAvailable = false;
+        }
+        log.debug("Отключение от Redis.");
+    }
+
+    @Override
+    public void onRedisExceptionCaught(RedisChannelHandler<?, ?> redisChannelHandler, Throwable throwable) {
+        if (RedisAdapter.isAvailable) {
+            RedisAdapter.isAvailable = false;
+        }
+        log.error("Ошибка выполнения операции в Redis: [{}].", throwable.getMessage());
+    }
+
+    @Override
+    public void onRedisConnected(RedisChannelHandler<?, ?> connection, SocketAddress socketAddress) {
+        if (!RedisAdapter.isAvailable) {
+            log.debug(
+                    "Соединение с Redis: isOpen: [{}], isClosed: [{}], Addr: [{}].",
+                    connection.isOpen(),
+                    connection.isClosed(),
+                    socketAddress != null ? socketAddress.toString() : null
+            );
+        }
+    }
+}
+
+
+package ru.ntdev.srhr.common.redis;
+
+import lombok.Data;
+
+import java.io.Serializable;
+
+
+@Data
+public class RedisRequest implements Serializable {
+    private String uid;
+    private String body;
+}
+
+
+package ru.ntdev.srhr.common.redis;
+
+import lombok.Data;
+
+import java.io.Serializable;
+
+
+@Data
+public class RedisResponse implements Serializable {
+    private String uid;
+    private String body;
+}
+
+
+
+package ru.ntdev.srhr.common.redis;
+
+import io.lettuce.core.RedisClient;
+import io.lettuce.core.RedisURI;
+import io.lettuce.core.api.sync.RedisCommands;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
+import ru.ntdev.srhr.common.util.StringUtil;
+
+/**
+ * Утилиты для Redis
+ */
+@Slf4j
+public class RedisUtils {
+
+    /**
+     * Проверка наличия настроек Sentinel
+     *
+     * @param redisProperties Настройки Redis
+     * @return true - ожидается подключение к Sentinel, иначе false
+     */
+    public static boolean isSentinel(RedisProperties redisProperties) {
+        return redisProperties.getSentinel() != null
+                && redisProperties.getSentinel().getMaster() != null
+                && !redisProperties.getSentinel().getMaster().isEmpty();
+    }
+
+    /**
+     * Формирование URI Redis по конфигурации
+     *
+     * @param redisProperties Настройки Redis
+     * @return URI
+     */
+    public static RedisURI formRedisUri(RedisProperties redisProperties) {
+        RedisURI.Builder uriBuilder;
+
+        if (RedisUtils.isSentinel(redisProperties)) {
+            uriBuilder = formRedisSentinelUriBuilder(redisProperties);
+        } else {
+            uriBuilder = formRedisUriBuilder(redisProperties);
+        }
+
+        return uriBuilder.build();
+    }
+
+    /**
+     * Подготовка Builder для соединения с Redis
+     *
+     * @param redisProperties Настройки Redis
+     * @return RedisURI.Builder
+     */
+    public static RedisURI.Builder formRedisUriBuilder(RedisProperties redisProperties) {
+        return RedisURI.builder()
+                .withTimeout(redisProperties.getTimeout())
+                .withDatabase(redisProperties.getDatabase())
+                .withHost(redisProperties.getHost())
+                .withPort(redisProperties.getPort())
+                ;
+    }
+
+    /**
+     * Подготовка Builder для соединения с Redis Sentinel
+     *
+     * @param redisProperties Настройки Redis
+     * @return RedisURI.Builder
+     */
+    public static RedisURI.Builder formRedisSentinelUriBuilder(RedisProperties redisProperties) {
+        RedisURI.Builder uriBuilder = RedisURI.builder()
+                .withTimeout(redisProperties.getTimeout())
+                .withDatabase(redisProperties.getDatabase())
+                .withSentinelMasterId(redisProperties.getSentinel().getMaster());
+        fillRedisAuth(uriBuilder, redisProperties.getUsername(), redisProperties.getPassword().toCharArray());
+        redisProperties.getSentinel().getNodes().forEach(node -> {
+            if (StringUtil.isNullOrEmpty(node)) return;
+            String[] nodeHostPort = node.split(":");
+            if (nodeHostPort.length < 2) return;
+            RedisURI.Builder sentinelUriBuilder = RedisURI.builder()
+                    .withHost(nodeHostPort[0])
+                    .withPort(Integer.parseInt(nodeHostPort[1]));
+            fillRedisAuth(
+                    sentinelUriBuilder,
+                    redisProperties.getUsername(),
+                    redisProperties.getSentinel().getPassword().toCharArray()
+            );
+            uriBuilder.withSentinel(sentinelUriBuilder.build());
+        });
+        return uriBuilder;
+    }
+
+    /**
+     * Создание Redis клиента
+     *
+     * @param redisUri URI Redis
+     * @return Redis клиент
+     */
+    public static RedisCommands<String, String> createRedisClientConnection(RedisURI redisUri) {
+        RedisClient redisClient = RedisClient.create(redisUri);
+        redisClient.addListener(new RedisConnectionStateListenerImpl());
+        RedisCommands<String, String> redisCommands = redisClient.connect().sync();
+        return redisCommands;
+    }
+
+    /**
+     * @param redisProperties Настройки redis
+     * @param database        База
+     * @deprecated Перезаписываем значение базы в RedisProperties, т.к. в сервисах используется не стандартный путь
+     */
+    public static void resetDatabase(RedisProperties redisProperties, Integer database) {
+        if (database == null || database < 0) return;
+        redisProperties.setDatabase(database);
+    }
+
+    /**
+     * Заполнение авторизации в Redis
+     *
+     * @param builder  Строитель uri
+     * @param userName Имя пользователя
+     * @param password Пароль
+     */
+    private static void fillRedisAuth(
+            RedisURI.Builder builder,
+            String userName,
+            char[] password
+    ) {
+        if (StringUtil.isNullOrEmpty(userName)) {
+            builder.withPassword(password);
+        } else {
+            builder.withAuthentication(userName, password);
+        }
+    }
+}
