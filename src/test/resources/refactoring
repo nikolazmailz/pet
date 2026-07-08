@@ -7,3 +7,13 @@
             }
 
             List<String> structUnitIdList = new ArrayList<>(uniqueStructUnitIds);
+
+
+
+List<String> structUnitIdList = structUnitIdMap.values()
+        .stream()
+        .distinct()
+        .toList();
+
+
+List<String> structUnitIdList = new ArrayList<>(new HashSet<>(structUnitIdMap.values()));
