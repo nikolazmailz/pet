@@ -534,3 +534,18 @@ public class RedisUtils {
         }
     }
 }
+
+
+
+
+
+--------------------
+
+@Configuration
+@Import({
+    RedisAdapter.class,
+    RedisProperties.class
+})
+public class RedisConfig {
+
+}
