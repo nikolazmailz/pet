@@ -1,0 +1,12 @@
+
+java.lang.IllegalArgumentException: Either targetObject or targetClass for the field must be specified
+
+	at org.springframework.util.Assert.isTrue(Assert.java:111)
+	at org.springframework.test.util.ReflectionTestUtils.setField(ReflectionTestUtils.java:178)
+	at org.springframework.test.util.ReflectionTestUtils.setField(ReflectionTestUtils.java:107)
+	at org.springframework.test.util.ReflectionTestUtils.setField(ReflectionTestUtils.java:91)
+	at ru.ntdev.srhr.ms.requisition.application.common.RequisitionResponseProcessorTest.setUp(RequisitionResponseProcessorTest.java:52)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
