@@ -1,12 +1,215 @@
+package ru.ntdev.srhr.ms.requisition.application.common;
 
-java.lang.IllegalArgumentException: Either targetObject or targetClass for the field must be specified
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
+import ru.ntdev.srhr.common.dto.api.SapSystemParamsDto;
+import ru.ntdev.srhr.common.dto.api.response.SapResponseDtoExtended;
+import ru.ntdev.srhr.common.dto.api.response.filestorage.MessagePostDto;
+import ru.ntdev.srhr.ms.requisition.entity.RequisitionRequestEntity;
+import ru.ntdev.srhr.ms.requisition.entity.RequisitionResponseEntity;
+import ru.ntdev.srhr.ms.requisition.service.FilestorageService;
+import ru.ntdev.srhr.ms.requisition.service.impl.EntityServiceImpl;
 
-	at org.springframework.util.Assert.isTrue(Assert.java:111)
-	at org.springframework.test.util.ReflectionTestUtils.setField(ReflectionTestUtils.java:178)
-	at org.springframework.test.util.ReflectionTestUtils.setField(ReflectionTestUtils.java:107)
-	at org.springframework.test.util.ReflectionTestUtils.setField(ReflectionTestUtils.java:91)
-	at ru.ntdev.srhr.ms.requisition.application.common.RequisitionResponseProcessorTest.setUp(RequisitionResponseProcessorTest.java:52)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@TestPropertySource(properties = {"spring.kafka.producer.max-inner-message-size-kb=2000"})
+class RequisitionResponseProcessorTest {
+
+    @Mock
+    private EntityServiceImpl entityService;
+
+    @Mock
+    private FilestorageService filestorageService;
+
+    @Mock
+    private ObjectMapper objectMapper;
+
+    @InjectMocks
+    private RequisitionResponseProcessor processor;
+
+    @Value("${spring.kafka.producer.max-inner-message-size-kb}")
+    private Integer kafkaProducerMaxInnerMessageSizeKb = 10; // Для тестов установим 10 КБ
+
+    private SapSystemParamsDto systemParams;
+    private SapResponseDtoExtended dto;
+    private RequisitionRequestEntity requestEntity;
+    private String testMessage;
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(processor, "kafkaProducerMaxInnerMessageSizeKb", 10000);
+
+        MockitoAnnotations.openMocks(this);
+
+        systemParams = new SapSystemParamsDto();
+        systemParams.setUuid("test-uuid");
+        systemParams.setAdLogin("adlogin");
+        systemParams.setSessionId("session-id");
+        systemParams.setTraceId("trace-id");
+        systemParams.setRolesHeader("roles");
+        systemParams.setTabNumber("tab123");
+
+        dto = new SapResponseDtoExtended();
+        dto.setRequestType("request-type");
+        dto.setErrorMessage("error");
+        dto.setChannel("channel");
+
+        requestEntity = new RequisitionRequestEntity();
+        requestEntity.setId(1);
+
+        testMessage = "{\"key\":\"" + "x".repeat(10_000) + "\"}"; // ~10 КБ
+    }
+
+    @Test
+    void finishProcessingMessage_shouldReturnOriginalMessageWhenSizeBelowLimit() throws Exception {
+        when(objectMapper.writeValueAsString(dto)).thenReturn(testMessage);
+        when(entityService.saveAndReturnResponse(any(), any(), any(), anyLong(), any())).thenReturn(new RequisitionResponseEntity());
+
+        String result = processor.finishProcessingMessage(System.currentTimeMillis(), systemParams, dto, requestEntity, "201");
+
+        assertEquals(testMessage, result);
+        verify(entityService, never()).deleteResponseByUidAndId(any(), any());
+        verify(entityService, never()).deleteRequestByUidAndId(any(), any());
+    }
+
+    @Test
+    void finishProcessingMessage_shouldDeleteEntitiesWhenCodeIs200() throws Exception {
+        when(objectMapper.writeValueAsString(dto)).thenReturn(testMessage);
+        when(entityService.saveAndReturnResponse(any(), any(), any(), anyLong(), any())).thenReturn(new RequisitionResponseEntity());
+
+        processor.finishProcessingMessage(System.currentTimeMillis(), systemParams, dto, requestEntity, "200");
+
+        verify(entityService).deleteResponseByUidAndId("test-uuid", any());
+        verify(entityService).deleteRequestByUidAndId("test-uuid", any());
+    }
+
+    @Test
+    void finishProcessingMessage_shouldSetSystemParamsFieldsToDto() throws Exception {
+        when(objectMapper.writeValueAsString(dto)).thenReturn(testMessage);
+        when(entityService.saveAndReturnResponse(any(), any(), any(), anyLong(), any())).thenReturn(new RequisitionResponseEntity());
+
+        processor.finishProcessingMessage(System.currentTimeMillis(), systemParams, dto, requestEntity, "201");
+
+        assertEquals("test-uuid", dto.getUuid());
+        assertEquals("adlogin", dto.getAdLogin());
+        assertEquals("session-id", dto.getSessionId());
+        assertEquals("trace-id", dto.getTraceId());
+        assertEquals("roles", dto.getRolesList());
+        assertEquals("tab123", dto.getTabNumber());
+    }
+}
+
+
+
+
+package ru.ntdev.srhr.ms.requisition.application.common;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import ru.ntdev.srhr.common.dto.api.SapSystemParamsDto;
+import ru.ntdev.srhr.common.dto.api.response.SapResponseDtoExtended;
+import ru.ntdev.srhr.common.dto.api.response.filestorage.MessagePostDto;
+import ru.ntdev.srhr.ms.requisition.entity.RequisitionRequestEntity;
+import ru.ntdev.srhr.ms.requisition.entity.RequisitionResponseEntity;
+import ru.ntdev.srhr.ms.requisition.service.FilestorageService;
+import ru.ntdev.srhr.ms.requisition.service.impl.EntityServiceImpl;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class RequisitionResponseProcessor {
+    private final EntityServiceImpl entityService;
+    private final FilestorageService filestorageService;
+
+    @Value("${spring.kafka.producer.max-inner-message-size-kb}")
+    Integer kafkaProducerMaxInnerMessageSizeKb;
+
+    public String finishProcessingMessage(Long start, SapSystemParamsDto systemParams, SapResponseDtoExtended dto, RequisitionRequestEntity requestEntity, String code) throws Exception {
+        long end = System.currentTimeMillis();
+        long processingTime = end - start;
+
+        checkDtoUuid(systemParams, dto);
+
+        dto.setRolesList(systemParams.getRolesHeader());
+        dto.setTabNumber(systemParams.getTabNumber());
+
+        ObjectMapper mapper = new ObjectMapper();
+        String messageOutcoming = mapper.writeValueAsString(dto);
+        RequisitionResponseEntity responseEntity = saveAndGetResponse(systemParams.getUuid(), requestEntity, messageOutcoming, processingTime, code);
+
+        if (code.equals("200")) {
+            entityService.deleteResponseByUidAndId(systemParams.getUuid(), responseEntity.getId().toString());
+            entityService.deleteRequestByUidAndId(systemParams.getUuid(), requestEntity.getId().toString());
+        }
+
+        messageOutcoming = checkMessageSize(dto, messageOutcoming);
+
+        return messageOutcoming;
+    }
+
+    private void checkDtoUuid(SapSystemParamsDto systemParams, SapResponseDtoExtended dto) {
+        if (systemParams.getUuid() != null) {
+            dto.setUuid(systemParams.getUuid());
+            dto.setAdLogin(systemParams.getAdLogin());
+            dto.setSessionId(systemParams.getSessionId());
+            dto.setTraceId(systemParams.getTraceId());
+        }
+    }
+
+    private RequisitionResponseEntity saveAndGetResponse(String uid, RequisitionRequestEntity requestEntity, String messageOutcoming, Long processingTime, String code) {
+        try {
+            return entityService.saveAndReturnResponse(uid, requestEntity, messageOutcoming, processingTime, code);
+        } catch (Exception e) {
+            log.warn("Ошибка записи в базу: [{}]", e.getMessage());
+        }
+        return null;
+    }
+
+    private String checkMessageSize(SapResponseDtoExtended dto, String message) throws JsonProcessingException {
+        int messageSize = ((2 * message.length()) + 32) / 1000;
+        if (messageSize < kafkaProducerMaxInnerMessageSizeKb) {
+            return message;
+        } else {
+            ObjectMapper mapper = new ObjectMapper();
+            SapResponseDtoExtended storagedDto = new SapResponseDtoExtended();
+
+            storagedDto.setRequestType(dto.getRequestType());
+            storagedDto.setUuid(dto.getUuid());
+            storagedDto.setAdLogin(dto.getAdLogin());
+            storagedDto.setErrorMessage(dto.getErrorMessage());
+            storagedDto.setChannel(dto.getChannel());
+            storagedDto.setTraceId(dto.getRequestType());
+
+            String messageUuid = storeMessageContent(
+                    dto.getAdLogin(),
+                    dto.getSessionId(),
+                    dto.getTraceId(),
+                    dto.getAdLogin() + '_' + dto.getRequestType(),
+                    message,
+                    dto.getUuid());
+            storagedDto.setFileUuid(messageUuid);
+            return mapper.writeValueAsString(storagedDto);
+        }
+    }
+
+    private String storeMessageContent(String adlogin, String sessionId, String traceId, String messageName, String messageContent, String requestUid) {
+        MessagePostDto messagePostDto = filestorageService.putMessageToDb(adlogin, sessionId, traceId, requestUid, messageName, messageContent);
+        return messagePostDto.getMessageUID();
+    }
+}
