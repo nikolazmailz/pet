@@ -68,3 +68,37 @@ public ResponseEntity<PaystubMailSubjectDto> getMailSubjects(SapSystemParamsDto 
     HttpEntity<Void> request = new HttpEntity<>(IntegrationHeaders.sap(systemParams));
     return integrationRestTemplate.exchange(uri, HttpMethod.GET, request, PaystubMailSubjectDto.class);
 }
+
+
+package ru.ntdev.srhr.common.integration;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRequest;
+import org.springframework.http.client.ClientHttpRequestExecution;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.ClientHttpResponse;
+import ru.ntdev.srhr.common.util.LogUtil;
+
+import java.io.IOException;
+
+public class IntegrationRequestInterceptor implements ClientHttpRequestInterceptor {
+
+    @Override
+    public ClientHttpResponse intercept(HttpRequest request, byte[] body,
+                                        ClientHttpRequestExecution execution) throws IOException {
+        HttpHeaders headers = request.getHeaders();
+        String pernr = headers.getFirst("pernr");
+        String sessionId = headers.getFirst("sessionId");
+        String logId = headers.getFirst("logId");
+        String method = request.getMethod().name();
+        String uri = request.getURI().toString();
+
+        LogUtil.logRequest(pernr, sessionId, method, uri, false, null, logId);
+
+        ClientHttpResponse response = execution.execute(request, body);
+
+        LogUtil.logResponse(pernr, sessionId, method, uri,
+                String.valueOf(response.getStatusCode().value()), null, false, null, logId);
+        return response;
+    }
+}
