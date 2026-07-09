@@ -1,14 +1,28 @@
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+ @Test
+    void shouldReturnOriginalMessageWhenSizeBelowLimit() throws Exception {
+        var response = new RequisitionResponseEntity();
+        response.setId(1);
+        when(entityService.saveAndReturnResponse(any(), any(), any(), anyLong(), any()))
+                .thenReturn(response);
 
-org.mockito.exceptions.misusing.UnnecessaryStubbingException: 
-Unnecessary stubbings detected.
-Clean & maintainable test code requires zero unnecessary code.
-Following stubbings are unnecessary (click to navigate to relevant line of code):
-  1. -> at ru.ntdev.srhr.ms.requisition.application.common.RequisitionResponseProcessorTest.finishProcessingMessage_shouldSetSystemParamsFieldsToDto(RequisitionResponseProcessorTest.java:98)
-  2. -> at ru.ntdev.srhr.ms.requisition.application.common.RequisitionResponseProcessorTest.finishProcessingMessage_shouldSetSystemParamsFieldsToDto(RequisitionResponseProcessorTest.java:99)
-Please remove unnecessary stubbings or use 'lenient' strictness. More info: javadoc for UnnecessaryStubbingException class.
+        String result = processor.finishProcessingMessage(
+                System.currentTimeMillis(), systemParams, dto, requestEntity, "201");
 
-	at org.mockito.junit.jupiter.MockitoExtension.afterEach(MockitoExtension.java:192)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+        // при размере ниже лимита filestorage не дёргается, возвращается сериализованный dto
+        assertEquals(objectMapper.writeValueAsString(dto), result);
+        verify(filestorageService, never()).putMessageToDb(any(), any(), any(), any(), any(), any());
+    }
 
+    @Test
+    void shouldDeleteEntitiesWhenCodeIs200() throws Exception {
+        var response = new RequisitionResponseEntity();
+        response.setId(1);
+        when(entityService.saveAndReturnResponse(any(), any(), any(), anyLong(), any()))
+                .thenReturn(response);
+
+        processor.finishProcessingMessage(
+                System.currentTimeMillis(), systemParams, dto, requestEntity, "200");
+
+        verify(entityService).deleteResponseByUidAndId("test-uuid", "1");
+        verify(entityService).deleteRequestByUidAndId("test-uuid", "1");
+    }
