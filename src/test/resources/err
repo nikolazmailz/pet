@@ -1,215 +1,163 @@
-package ru.ntdev.srhr.ms.requisition.application.common;
+package ru.ntdev.srhr.ms.requisition.application;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import ru.ntdev.srhr.common.constant.RequestStatusConstant;
 import ru.ntdev.srhr.common.dto.api.SapSystemParamsDto;
 import ru.ntdev.srhr.common.dto.api.response.SapResponseDtoExtended;
-import ru.ntdev.srhr.common.dto.api.response.filestorage.MessagePostDto;
+import ru.ntdev.srhr.common.dto.api.response.requisition.RequisitionDictDto;
+import ru.ntdev.srhr.ms.requisition.application.common.RequisitionResponseProcessor;
 import ru.ntdev.srhr.ms.requisition.entity.RequisitionRequestEntity;
-import ru.ntdev.srhr.ms.requisition.entity.RequisitionResponseEntity;
-import ru.ntdev.srhr.ms.requisition.service.FilestorageService;
+import ru.ntdev.srhr.ms.requisition.service.DatabaseService;
 import ru.ntdev.srhr.ms.requisition.service.impl.EntityServiceImpl;
+import ru.ntdev.srhr.ms.requisition.service.kafka.RequisitionContext;
 
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@TestPropertySource(properties = {"spring.kafka.producer.max-inner-message-size-kb=2000"})
-class RequisitionResponseProcessorTest {
+@ExtendWith(MockitoExtension.class)
+class GetRequisitionDictUseCaseTest {
+
+    @Mock
+    private DatabaseService databaseService;
 
     @Mock
     private EntityServiceImpl entityService;
 
     @Mock
-    private FilestorageService filestorageService;
-
-    @Mock
-    private ObjectMapper objectMapper;
+    private RequisitionResponseProcessor requisitionResponseProcessor;
 
     @InjectMocks
-    private RequisitionResponseProcessor processor;
-
-    @Value("${spring.kafka.producer.max-inner-message-size-kb}")
-    private Integer kafkaProducerMaxInnerMessageSizeKb = 10; // Для тестов установим 10 КБ
+    private GetRequisitionDictUseCase useCase;
 
     private SapSystemParamsDto systemParams;
-    private SapResponseDtoExtended dto;
     private RequisitionRequestEntity requestEntity;
-    private String testMessage;
+    private RequisitionContext context;
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(processor, "kafkaProducerMaxInnerMessageSizeKb", 10000);
-
-        MockitoAnnotations.openMocks(this);
-
         systemParams = new SapSystemParamsDto();
         systemParams.setUuid("test-uuid");
         systemParams.setAdLogin("adlogin");
         systemParams.setSessionId("session-id");
-        systemParams.setTraceId("trace-id");
-        systemParams.setRolesHeader("roles");
-        systemParams.setTabNumber("tab123");
-
-        dto = new SapResponseDtoExtended();
-        dto.setRequestType("request-type");
-        dto.setErrorMessage("error");
-        dto.setChannel("channel");
+        systemParams.setChannel("channel");
 
         requestEntity = new RequisitionRequestEntity();
         requestEntity.setId(1);
 
-        testMessage = "{\"key\":\"" + "x".repeat(10_000) + "\"}"; // ~10 КБ
+        context = mock(RequisitionContext.class);
+        when(context.requestEntity()).thenReturn(requestEntity);
+        when(context.systemParams()).thenReturn(systemParams);
     }
 
     @Test
-    void finishProcessingMessage_shouldReturnOriginalMessageWhenSizeBelowLimit() throws Exception {
-        when(objectMapper.writeValueAsString(dto)).thenReturn(testMessage);
-        when(entityService.saveAndReturnResponse(any(), any(), any(), anyLong(), any())).thenReturn(new RequisitionResponseEntity());
+    void execute_returnsProcessedMessage_whenDbSucceeds() throws Exception {
+        RequisitionDictDto dbDto = new RequisitionDictDto();
+        when(databaseService.getRequisitionDict()).thenReturn(dbDto);
+        when(requisitionResponseProcessor.finishProcessingMessage(anyLong(), any(), any(), any(), anyString()))
+                .thenReturn("processed");
 
-        String result = processor.finishProcessingMessage(System.currentTimeMillis(), systemParams, dto, requestEntity, "201");
+        String result = useCase.execute(context);
 
-        assertEquals(testMessage, result);
-        verify(entityService, never()).deleteResponseByUidAndId(any(), any());
-        verify(entityService, never()).deleteRequestByUidAndId(any(), any());
+        assertEquals("processed", result);
+
+        ArgumentCaptor<SapResponseDtoExtended> dtoCaptor = ArgumentCaptor.forClass(SapResponseDtoExtended.class);
+        ArgumentCaptor<String> codeCaptor = ArgumentCaptor.forClass(String.class);
+        verify(requisitionResponseProcessor).finishProcessingMessage(
+                anyLong(), eq(systemParams), dtoCaptor.capture(), eq(requestEntity), codeCaptor.capture());
+
+        assertEquals("200", codeCaptor.getValue());
+        assertSame(dbDto, dtoCaptor.getValue());          // в happy path идёт dto из БД, а не преднастроенный
+        assertEquals("200", dbDto.getResponseCode());
+        verify(entityService, never()).updateRequestStatus(any(), any());
     }
 
     @Test
-    void finishProcessingMessage_shouldDeleteEntitiesWhenCodeIs200() throws Exception {
-        when(objectMapper.writeValueAsString(dto)).thenReturn(testMessage);
-        when(entityService.saveAndReturnResponse(any(), any(), any(), anyLong(), any())).thenReturn(new RequisitionResponseEntity());
+    void execute_handlesHttpClientError() throws Exception {
+        HttpClientErrorException ex = new HttpClientErrorException(HttpStatus.NOT_FOUND);
+        when(databaseService.getRequisitionDict()).thenThrow(ex);
+        when(requisitionResponseProcessor.finishProcessingMessage(anyLong(), any(), any(), any(), anyString()))
+                .thenReturn("error-processed");
 
-        processor.finishProcessingMessage(System.currentTimeMillis(), systemParams, dto, requestEntity, "200");
+        String result = useCase.execute(context);
 
-        verify(entityService).deleteResponseByUidAndId("test-uuid", any());
-        verify(entityService).deleteRequestByUidAndId("test-uuid", any());
+        assertEquals("error-processed", result);
+
+        ArgumentCaptor<SapResponseDtoExtended> dtoCaptor = ArgumentCaptor.forClass(SapResponseDtoExtended.class);
+        ArgumentCaptor<String> codeCaptor = ArgumentCaptor.forClass(String.class);
+        verify(requisitionResponseProcessor).finishProcessingMessage(
+                anyLong(), eq(systemParams), dtoCaptor.capture(), eq(requestEntity), codeCaptor.capture());
+
+        assertEquals(HttpStatus.NOT_FOUND.toString(), codeCaptor.getValue());
+        SapResponseDtoExtended dto = dtoCaptor.getValue();
+        assertEquals(HttpStatus.NOT_FOUND.toString(), dto.getResponseCode());
+        assertEquals(ex.getMessage(), dto.getErrorMessage());
+        verify(entityService).updateRequestStatus("test-uuid", RequestStatusConstant.ERROR_REPLY);
     }
 
     @Test
-    void finishProcessingMessage_shouldSetSystemParamsFieldsToDto() throws Exception {
-        when(objectMapper.writeValueAsString(dto)).thenReturn(testMessage);
-        when(entityService.saveAndReturnResponse(any(), any(), any(), anyLong(), any())).thenReturn(new RequisitionResponseEntity());
+    void execute_handlesHttpServerError() throws Exception {
+        HttpServerErrorException ex = new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
+        when(databaseService.getRequisitionDict()).thenThrow(ex);
+        when(requisitionResponseProcessor.finishProcessingMessage(anyLong(), any(), any(), any(), anyString()))
+                .thenReturn("error-processed");
 
-        processor.finishProcessingMessage(System.currentTimeMillis(), systemParams, dto, requestEntity, "201");
+        useCase.execute(context);
 
-        assertEquals("test-uuid", dto.getUuid());
-        assertEquals("adlogin", dto.getAdLogin());
-        assertEquals("session-id", dto.getSessionId());
-        assertEquals("trace-id", dto.getTraceId());
-        assertEquals("roles", dto.getRolesList());
-        assertEquals("tab123", dto.getTabNumber());
-    }
-}
+        ArgumentCaptor<String> codeCaptor = ArgumentCaptor.forClass(String.class);
+        verify(requisitionResponseProcessor).finishProcessingMessage(
+                anyLong(), eq(systemParams), any(), eq(requestEntity), codeCaptor.capture());
 
-
-
-
-package ru.ntdev.srhr.ms.requisition.application.common;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import ru.ntdev.srhr.common.dto.api.SapSystemParamsDto;
-import ru.ntdev.srhr.common.dto.api.response.SapResponseDtoExtended;
-import ru.ntdev.srhr.common.dto.api.response.filestorage.MessagePostDto;
-import ru.ntdev.srhr.ms.requisition.entity.RequisitionRequestEntity;
-import ru.ntdev.srhr.ms.requisition.entity.RequisitionResponseEntity;
-import ru.ntdev.srhr.ms.requisition.service.FilestorageService;
-import ru.ntdev.srhr.ms.requisition.service.impl.EntityServiceImpl;
-
-@Service
-@RequiredArgsConstructor
-@Slf4j
-public class RequisitionResponseProcessor {
-    private final EntityServiceImpl entityService;
-    private final FilestorageService filestorageService;
-
-    @Value("${spring.kafka.producer.max-inner-message-size-kb}")
-    Integer kafkaProducerMaxInnerMessageSizeKb;
-
-    public String finishProcessingMessage(Long start, SapSystemParamsDto systemParams, SapResponseDtoExtended dto, RequisitionRequestEntity requestEntity, String code) throws Exception {
-        long end = System.currentTimeMillis();
-        long processingTime = end - start;
-
-        checkDtoUuid(systemParams, dto);
-
-        dto.setRolesList(systemParams.getRolesHeader());
-        dto.setTabNumber(systemParams.getTabNumber());
-
-        ObjectMapper mapper = new ObjectMapper();
-        String messageOutcoming = mapper.writeValueAsString(dto);
-        RequisitionResponseEntity responseEntity = saveAndGetResponse(systemParams.getUuid(), requestEntity, messageOutcoming, processingTime, code);
-
-        if (code.equals("200")) {
-            entityService.deleteResponseByUidAndId(systemParams.getUuid(), responseEntity.getId().toString());
-            entityService.deleteRequestByUidAndId(systemParams.getUuid(), requestEntity.getId().toString());
-        }
-
-        messageOutcoming = checkMessageSize(dto, messageOutcoming);
-
-        return messageOutcoming;
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.toString(), codeCaptor.getValue());
+        verify(entityService).updateRequestStatus("test-uuid", RequestStatusConstant.ERROR_REPLY);
     }
 
-    private void checkDtoUuid(SapSystemParamsDto systemParams, SapResponseDtoExtended dto) {
-        if (systemParams.getUuid() != null) {
-            dto.setUuid(systemParams.getUuid());
-            dto.setAdLogin(systemParams.getAdLogin());
-            dto.setSessionId(systemParams.getSessionId());
-            dto.setTraceId(systemParams.getTraceId());
-        }
+    @Test
+    void execute_handlesGenericException() throws Exception {
+        when(databaseService.getRequisitionDict()).thenThrow(new IllegalStateException("boom"));
+        when(requisitionResponseProcessor.finishProcessingMessage(anyLong(), any(), any(), any(), anyString()))
+                .thenReturn("error-processed");
+
+        useCase.execute(context);
+
+        ArgumentCaptor<SapResponseDtoExtended> dtoCaptor = ArgumentCaptor.forClass(SapResponseDtoExtended.class);
+        ArgumentCaptor<String> codeCaptor = ArgumentCaptor.forClass(String.class);
+        verify(requisitionResponseProcessor).finishProcessingMessage(
+                anyLong(), eq(systemParams), dtoCaptor.capture(), eq(requestEntity), codeCaptor.capture());
+
+        // code = "500" (хардкод), а responseCode внутри dto = "500 INTERNAL_SERVER_ERROR" — рассинхрон, см. ниже
+        assertEquals("500", codeCaptor.getValue());
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.toString(), dtoCaptor.getValue().getResponseCode());
+        assertEquals("boom", dtoCaptor.getValue().getErrorMessage());
+        verify(entityService).updateRequestStatus("test-uuid", RequestStatusConstant.ERROR_REPLY);
     }
 
-    private RequisitionResponseEntity saveAndGetResponse(String uid, RequisitionRequestEntity requestEntity, String messageOutcoming, Long processingTime, String code) {
-        try {
-            return entityService.saveAndReturnResponse(uid, requestEntity, messageOutcoming, processingTime, code);
-        } catch (Exception e) {
-            log.warn("Ошибка записи в базу: [{}]", e.getMessage());
-        }
-        return null;
-    }
+    @Test
+    void execute_wrapsCheckedExceptionInRuntimeException_whenProcessorThrows() throws Exception {
+        when(databaseService.getRequisitionDict()).thenReturn(new RequisitionDictDto());
+        Exception checked = new Exception("processing failed");
+        when(requisitionResponseProcessor.finishProcessingMessage(anyLong(), any(), any(), any(), anyString()))
+                .thenThrow(checked);
 
-    private String checkMessageSize(SapResponseDtoExtended dto, String message) throws JsonProcessingException {
-        int messageSize = ((2 * message.length()) + 32) / 1000;
-        if (messageSize < kafkaProducerMaxInnerMessageSizeKb) {
-            return message;
-        } else {
-            ObjectMapper mapper = new ObjectMapper();
-            SapResponseDtoExtended storagedDto = new SapResponseDtoExtended();
+        RuntimeException ex = assertThrows(RuntimeException.class, () -> useCase.execute(context));
 
-            storagedDto.setRequestType(dto.getRequestType());
-            storagedDto.setUuid(dto.getUuid());
-            storagedDto.setAdLogin(dto.getAdLogin());
-            storagedDto.setErrorMessage(dto.getErrorMessage());
-            storagedDto.setChannel(dto.getChannel());
-            storagedDto.setTraceId(dto.getRequestType());
-
-            String messageUuid = storeMessageContent(
-                    dto.getAdLogin(),
-                    dto.getSessionId(),
-                    dto.getTraceId(),
-                    dto.getAdLogin() + '_' + dto.getRequestType(),
-                    message,
-                    dto.getUuid());
-            storagedDto.setFileUuid(messageUuid);
-            return mapper.writeValueAsString(storagedDto);
-        }
-    }
-
-    private String storeMessageContent(String adlogin, String sessionId, String traceId, String messageName, String messageContent, String requestUid) {
-        MessagePostDto messagePostDto = filestorageService.putMessageToDb(adlogin, sessionId, traceId, requestUid, messageName, messageContent);
-        return messagePostDto.getMessageUID();
+        assertSame(checked, ex.getCause());
     }
 }
