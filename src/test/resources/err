@@ -1,4 +1,78 @@
- @Test
+package ru.ntdev.srhr.ms.requisition.application.common;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
+import ru.ntdev.srhr.common.dto.api.SapSystemParamsDto;
+import ru.ntdev.srhr.common.dto.api.response.SapResponseDtoExtended;
+import ru.ntdev.srhr.common.dto.api.response.filestorage.MessagePostDto;
+import ru.ntdev.srhr.ms.requisition.entity.RequisitionRequestEntity;
+import ru.ntdev.srhr.ms.requisition.entity.RequisitionResponseEntity;
+import ru.ntdev.srhr.ms.requisition.service.FilestorageService;
+import ru.ntdev.srhr.ms.requisition.service.impl.EntityServiceImpl;
+
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class RequisitionResponseProcessorTest {
+
+    @Mock
+    private EntityServiceImpl entityService;
+
+    @Mock
+    private FilestorageService filestorageService;
+
+
+    private ObjectMapper objectMapper = new ObjectMapper();
+
+    private RequisitionResponseProcessor processor = new RequisitionResponseProcessor(
+            entityService,
+            filestorageService,
+            objectMapper);
+
+    private SapSystemParamsDto systemParams;
+    private SapResponseDtoExtended dto;
+    private RequisitionRequestEntity requestEntity;
+    private String testMessage;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        ReflectionTestUtils.setField(processor, "kafkaProducerMaxInnerMessageSizeKb", 10000);
+
+        systemParams = new SapSystemParamsDto();
+        systemParams.setUuid("test-uuid");
+        systemParams.setAdLogin("adlogin");
+        systemParams.setSessionId("session-id");
+        systemParams.setTraceId("trace-id");
+        systemParams.setRolesHeader("roles");
+        systemParams.setTabNumber("tab123");
+
+        dto = new SapResponseDtoExtended();
+        dto.setRequestType("request-type");
+        dto.setErrorMessage("error");
+        dto.setChannel("channel");
+
+        requestEntity = new RequisitionRequestEntity();
+        requestEntity.setId(1);
+
+        testMessage = "{\"key\":\"" + "x".repeat(10_000) + "\"}"; // ~10 КБ
+    }
+
+    @Test
     void shouldReturnOriginalMessageWhenSizeBelowLimit() throws Exception {
         var response = new RequisitionResponseEntity();
         response.setId(1);
@@ -26,3 +100,118 @@
         verify(entityService).deleteResponseByUidAndId("test-uuid", "1");
         verify(entityService).deleteRequestByUidAndId("test-uuid", "1");
     }
+
+    @Test
+    void finishProcessingMessage_shouldReturnOriginalMessageWhenSizeBelowLimit() throws Exception {
+        when(objectMapper.writeValueAsString(dto)).thenReturn(testMessage);
+        when(entityService.saveAndReturnResponse(any(), any(), any(), anyLong(), any())).thenReturn(new RequisitionResponseEntity());
+
+        String result = processor.finishProcessingMessage(System.currentTimeMillis(), systemParams, dto, requestEntity, "201");
+
+        assertEquals(testMessage, result);
+        verify(entityService, never()).deleteResponseByUidAndId(any(), any());
+        verify(entityService, never()).deleteRequestByUidAndId(any(), any());
+    }
+
+    @Test
+    void finishProcessingMessage_shouldDeleteEntitiesWhenCodeIs200() throws Exception {
+        when(objectMapper.writeValueAsString(dto)).thenReturn(testMessage);
+        when(entityService.saveAndReturnResponse(any(), any(), any(), anyLong(), any())).thenReturn(new RequisitionResponseEntity());
+
+        processor.finishProcessingMessage(System.currentTimeMillis(), systemParams, dto, requestEntity, "200");
+
+        verify(entityService).deleteResponseByUidAndId("test-uuid", any());
+        verify(entityService).deleteRequestByUidAndId("test-uuid", any());
+    }
+
+    @Test
+    void finishProcessingMessage_shouldSetSystemParamsFieldsToDto() throws Exception {
+        when(objectMapper.writeValueAsString(dto)).thenReturn(testMessage);
+        when(entityService.saveAndReturnResponse(any(), any(), any(), anyLong(), any())).thenReturn(new RequisitionResponseEntity());
+
+        processor.finishProcessingMessage(System.currentTimeMillis(), systemParams, dto, requestEntity, "201");
+
+        assertEquals("test-uuid", dto.getUuid());
+        assertEquals("adlogin", dto.getAdLogin());
+        assertEquals("session-id", dto.getSessionId());
+        assertEquals("trace-id", dto.getTraceId());
+        assertEquals("roles", dto.getRolesList());
+        assertEquals("tab123", dto.getTabNumber());
+    }
+
+//    @Test
+//    void checkMessageSize_shouldReturnFileUuidWhenMessageExceedsLimit() throws JsonProcessingException {
+//        String largeMessage = "{\"key\":\"" + "x".repeat(20_000) + "\"}"; // >20 КБ
+//        String storedUuid = UUID.randomUUID().toString();
+//        MessagePostDto messagePostDto = new MessagePostDto();
+//        messagePostDto.setMessageUID(storedUuid);
+//
+//        when(objectMapper.writeValueAsString(dto)).thenReturn(largeMessage);
+//        when(filestorageService.putMessageToDb(any(), any(), any(), any(), any(), any())).thenReturn(messagePostDto);
+//        when(objectMapper.writeValueAsString(any(SapResponseDtoExtended.class))).thenReturn("{\"fileUuid\":\"" + storedUuid + "\"}");
+//
+//        String result = processor.checkMessageSize(dto, largeMessage);
+//
+//        assertTrue(result.contains(storedUuid));
+//        verify(filestorageService).putMessageToDb(eq("adlogin"), eq("session-id"), eq("trace-id"), eq("adlogin_request-type"), eq(largeMessage), eq("test-uuid"));
+//    }
+//
+//    @Test
+//    void checkMessageSize_shouldReturnOriginalMessageWhenSizeWithinLimit() throws JsonProcessingException {
+//        String smallMessage = "{\"key\":\"test\"}";
+//        when(objectMapper.writeValueAsString(dto)).thenReturn(smallMessage);
+//
+//        String result = processor.checkMessageSize(dto, smallMessage);
+//
+//        assertEquals(smallMessage, result);
+//    }
+//
+//    @Test
+//    void saveAndGetResponse_shouldReturnNullOnException() {
+//        when(entityService.saveAndReturnResponse(any(), any(), any(), anyLong(), any())).thenThrow(new RuntimeException("DB error"));
+//
+//        RequisitionResponseEntity result = processor.saveAndGetResponse("test-uuid", requestEntity, "{}", 100L, "200");
+//
+//        assertNull(result);
+//    }
+//
+//    @Test
+//    void checkDtoUuid_shouldSetFieldsWhenUuidIsPresent() {
+//        processor.checkDtoUuid(systemParams, dto);
+//
+//        assertEquals("test-uuid", dto.getUuid());
+//        assertEquals("adlogin", dto.getAdLogin());
+//        assertEquals("session-id", dto.getSessionId());
+//        assertEquals("trace-id", dto.getTraceId());
+//    }
+//
+//    @Test
+//    void checkDtoUuid_shouldNotSetFieldsWhenUuidIsNull() {
+//        systemParams.setUuid(null);
+//        dto.setUuid("existing-uuid");
+//        dto.setAdLogin("existing-ad");
+//        dto.setSessionId("existing-session");
+//        dto.setTraceId("existing-trace");
+//
+//        processor.checkDtoUuid(systemParams, dto);
+//
+//        assertEquals("existing-uuid", dto.getUuid());
+//        assertEquals("existing-ad", dto.getAdLogin());
+//        assertEquals("existing-session", dto.getSessionId());
+//        assertEquals("existing-trace", dto.getTraceId());
+//    }
+//
+//    @Test
+//    void storeMessageContent_shouldDelegateToFilestorageService() {
+//        String expectedUuid = UUID.randomUUID().toString();
+//        MessagePostDto messagePostDto = new MessagePostDto();
+//        messagePostDto.setMessageUID(expectedUuid);
+//
+//        when(filestorageService.putMessageToDb(any(), any(), any(), any(), any(), any())).thenReturn(messagePostDto);
+//
+//        String result = processor.storeMessageContent("adlogin", "session-id", "trace-id", "name", "content", "uid");
+//
+//        assertEquals(expectedUuid, result);
+//        verify(filestorageService).putMessageToDb(eq("adlogin"), eq("session-id"), eq("trace-id"), eq("uid"), eq("name"), eq("content"));
+//    }
+}
