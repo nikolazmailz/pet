@@ -1,0 +1,70 @@
+@AutoConfiguration
+public class IntegrationRestTemplateAutoConfiguration {
+
+    @Bean
+    @ConditionalOnMissingBean(name = "integrationRestTemplate")
+    public RestTemplate integrationRestTemplate(
+            ObjectProvider<MappingJackson2HttpMessageConverter> converter) {
+
+        PoolingHttpClientConnectionManager cm = PoolingHttpClientConnectionManagerBuilder.create()
+                .setMaxConnTotal(100)        // вынести в @ConfigurationProperties
+                .setMaxConnPerRoute(20)
+                .build();
+
+        CloseableHttpClient client = HttpClients.custom()
+                .setConnectionManager(cm)
+                .build();
+
+        RestTemplateBuilder builder = new RestTemplateBuilder()
+                .requestFactory(() -> new HttpComponentsClientHttpRequestFactory(client))
+                .additionalInterceptors(new IntegrationRequestInterceptor());
+
+        MappingJackson2HttpMessageConverter c = converter.getIfAvailable();
+        if (c != null) {
+            builder = builder.additionalMessageConverters(c);
+        }
+        return builder.build();
+    }
+}
+
+
+public final class IntegrationHeaders {
+
+    public static HttpHeaders sap(SapSystemParamsDto p) {
+        HttpHeaders h = new HttpHeaders();
+        h.setContentType(MediaType.APPLICATION_JSON);
+        h.set("pernr", p.getTabNumber());
+        h.set("sessionId", p.getSessionId());
+        h.set("role", p.getRole());
+        h.set("X-user-login", p.getAdLogin());
+        h.set("Roles", p.getRolesHeader());
+        h.set("logId", p.getTraceId());
+        h.set("realm", p.getRealm());
+        return h;
+    }
+
+    public static HttpHeaders minimal(String pernr, String sessionId, String traceId) {
+        HttpHeaders h = new HttpHeaders();
+        h.setContentType(MediaType.APPLICATION_JSON);
+        h.set("pernr", pernr);
+        h.set("sessionId", sessionId);
+        h.set("logId", traceId);
+        return h;
+    }
+}
+
+private final RestTemplate integrationRestTemplate; // constructor injection
+
+@Override
+public ResponseEntity<PaystubPeriodDto> getPaystubPeriod(SapSystemParamsDto systemParams) {
+    String uri = easupIntegrationServiceUrl + integrationUrlPeriod;
+    HttpEntity<Void> request = new HttpEntity<>(IntegrationHeaders.sap(systemParams));
+    return integrationRestTemplate.exchange(uri, HttpMethod.GET, request, PaystubPeriodDto.class);
+}
+
+@Override
+public ResponseEntity<PaystubMailSubjectDto> getMailSubjects(SapSystemParamsDto systemParams) {
+    String uri = easupIntegrationServiceUrl + integrationUrlMail;
+    HttpEntity<Void> request = new HttpEntity<>(IntegrationHeaders.sap(systemParams));
+    return integrationRestTemplate.exchange(uri, HttpMethod.GET, request, PaystubMailSubjectDto.class);
+}
