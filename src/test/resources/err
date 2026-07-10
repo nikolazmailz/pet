@@ -1,13 +1,67 @@
-    private void handleHttpClientOrServerErrorException(HttpStatusCodeException e, SapResponseDtoExtended dto, SapSystemParamsDto systemParams, String errorMessage) {
-        dto.setResponseCode(e.getStatusCode().toString());
-        dto.setErrorMessage(e.getMessage());
-        entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.ERROR_REPLY);
-        log.warn(errorMessage + ": [{}]", e.getMessage());
+private boolean validateDelegations(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, String delegatorTn) throws Exception {
+        String key = "delegations:" + systemParams.getChannel() + ":" + systemParams.getAdLogin();
+
+        RequisitionDelegationsCachedDto cachedDto = redisAdapter
+                .getObjectFromDb(key, RequisitionDelegationsCachedDto.class);
+
+        if (cachedDto == null) {
+            log.info("Кэш по делегатам для логина [{}] пуст, делается запрос в еасуп", systemParams.getAdLogin());
+            RequisitionRequestEntity newRequestEntity = saveAndGetEntity(requestEntity.getUid(), requestEntity.getFunctionalRole(), requestEntity.getUid(),
+                    requestEntity.getRequestBody(), requestEntity.getTabNumber(), requestEntity.getStatus());
+            getRequisitionDelegations(newRequestEntity, systemParams);
+            cachedDto = redisAdapter.getObjectFromDb(key, RequisitionDelegationsCachedDto.class);
+            if (cachedDto == null) {
+                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "DELEGATION_VALIDATION_FAILED_NOT_FOUND_DELEGATIONS_IN_CACHE");
+            }
+        }
+        // Проверка на наличие делегирования в целом
+        if (cachedDto.getDelegations().isEmpty()) {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "DELEGATION_VALIDATION_FAILED_NOT_FOUND_DELEGATIONS_BY_ADLOGIN");
+        }
+        List<RequisitionDelegationsItem> cachedDelegations = cachedDto.getDelegations();
+
+        // Проверка что есть совпадающий таб.номер делегата с таб.номером в кэше делегирования и его срок не истек
+        for (RequisitionDelegationsItem delegationsItem : cachedDelegations) {
+            if (delegationsItem.getEmployee() != null && delegationsItem.getEmployee().getId().equals(delegatorTn)) {
+                return validateDelegationDate(delegationsItem);
+            }
+        }
+        // Кидаем ошибку, что не найден совпадающий делегат
+        throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "DELEGATION_VALIDATION_FAILED_NOT_FOUND_MATCHING_DELEGATOR_TN");
     }
 
-    private void handleException(Exception e, SapResponseDtoExtended dto, SapSystemParamsDto systemParams, String errorMessage) {
-        dto.setResponseCode(HttpStatus.INTERNAL_SERVER_ERROR.toString());
-        dto.setErrorMessage(e.getMessage());
-        entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.ERROR_REPLY);
-        log.warn(errorMessage + ": [{}]", e.getMessage());
+
+private String getRequisitionDelegations(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams) throws Exception {
+        long start = System.currentTimeMillis();
+        ResponseEntity<RequisitionDelegationsDto> dtoResponseEntity;
+        RequisitionDelegationsDto dto = new RequisitionDelegationsDto();
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setSessionId(systemParams.getSessionId());
+        dto.setChannel(systemParams.getChannel());
+
+        String code = "200";
+        try {
+            dtoResponseEntity = easupIntegrationService.getRequisitionDelegations(
+                    systemParams);
+            dto = (RequisitionDelegationsDto) setDtoIfResponseEntityNotNull(
+                    dtoResponseEntity, dto, systemParams);
+            dto = filterDelegations(dto);
+            if (dto.getDelegationsList() != null) {
+                RequisitionDelegationsCachedDto cachedDto = new RequisitionDelegationsCachedDto();
+                cachedDto.setRefreshedAt(LocalDateTime.now());
+                cachedDto.setDelegations(dto.getDelegationsList());
+                String key = "delegations:" + systemParams.getChannel() + ":" + systemParams.getAdLogin();
+                redisAdapter.putObjectToDb(key, cachedDto, ttlDelegations);
+            }
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            code = e.getStatusCode().toString();
+            handleHttpClientOrServerErrorException(
+                    e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
+        } catch (Exception e) {
+            code = "500";
+            handleException(
+                    e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
+        }
+
+        return finishProcessingMessage(start, systemParams, dto, requestEntity, code);
     }
