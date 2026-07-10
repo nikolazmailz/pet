@@ -1,4 +1,79 @@
-private boolean validateDelegations(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, String delegatorTn) throws Exception {
+package ru.ntdev.srhr.ms.requisition.application;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import ru.ntdev.srhr.common.adapter.RedisAdapter;
+import ru.ntdev.srhr.common.dto.api.SapSystemParamsDto;
+import ru.ntdev.srhr.common.dto.api.error.ErrorResponse;
+import ru.ntdev.srhr.common.dto.api.response.requisition.RequisitionDelegationsCachedDto;
+import ru.ntdev.srhr.common.dto.api.response.requisition.RequisitionUiStateDto;
+import ru.ntdev.srhr.common.dto.api.response.requisition.objects.RequisitionDelegationsItem;
+import ru.ntdev.srhr.ms.requisition.application.common.HttpErrorExceptionHandler;
+import ru.ntdev.srhr.ms.requisition.application.common.RequisitionResponseProcessor;
+import ru.ntdev.srhr.ms.requisition.application.dto.RequisitionContext;
+import ru.ntdev.srhr.ms.requisition.entity.RequisitionRequestEntity;
+import ru.ntdev.srhr.ms.requisition.service.DatabaseService;
+import ru.ntdev.srhr.ms.requisition.service.impl.EntityServiceImpl;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class GetRequisitionUiStateUseCase {
+
+    private final DatabaseService databaseService;
+    private final HttpErrorExceptionHandler httpErrorExceptionHandler;
+    private final RequisitionResponseProcessor requisitionResponseProcessor;
+
+    private final RedisAdapter redisAdapter;
+    private final EntityServiceImpl entityService;
+    
+    // todo странное решение
+    private final GetRequisitionDelegationsUseCase getRequisitionDelegationsUseCase;
+
+    public String execute(RequisitionContext req) {
+        try {
+            return getRequisitionUiState(req.requestEntity(), req.systemParams(), req.requestValues().getDelegatorTn());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String getRequisitionUiState(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, String delegatorTabnum) throws Exception {
+        long start = System.currentTimeMillis();
+        RequisitionUiStateDto dto = new RequisitionUiStateDto();
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setSessionId(systemParams.getSessionId());
+        dto.setChannel(systemParams.getChannel());
+
+        String code = "200";
+        try {
+            if (delegatorTabnum == null || delegatorTabnum.isEmpty() || validateDelegations(requestEntity, systemParams, delegatorTabnum)) {
+                dto = databaseService.getRequisitionUiState(systemParams, delegatorTabnum, systemParams.getTabNumber(), systemParams.getRole());
+                dto.setResponseCode(code);
+                dto.setUserTn(systemParams.getTabNumber());
+            }
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            code = e.getStatusCode().toString();
+            httpErrorExceptionHandler.handleHttpClientOrServerErrorException(
+                    e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
+        } catch (Exception e) {
+            code = "500";
+            httpErrorExceptionHandler.handleException(
+                    e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
+        }
+
+        return requisitionResponseProcessor.finishProcessingMessage(start, systemParams, dto, requestEntity, code);
+    }
+
+    private boolean validateDelegations(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, String delegatorTn) throws Exception {
         String key = "delegations:" + systemParams.getChannel() + ":" + systemParams.getAdLogin();
 
         RequisitionDelegationsCachedDto cachedDto = redisAdapter
@@ -8,7 +83,7 @@ private boolean validateDelegations(RequisitionRequestEntity requestEntity, SapS
             log.info("Кэш по делегатам для логина [{}] пуст, делается запрос в еасуп", systemParams.getAdLogin());
             RequisitionRequestEntity newRequestEntity = saveAndGetEntity(requestEntity.getUid(), requestEntity.getFunctionalRole(), requestEntity.getUid(),
                     requestEntity.getRequestBody(), requestEntity.getTabNumber(), requestEntity.getStatus());
-            getRequisitionDelegations(newRequestEntity, systemParams);
+            getRequisitionDelegationsUseCase.execute(new RequisitionContext(newRequestEntity, systemParams, null));
             cachedDto = redisAdapter.getObjectFromDb(key, RequisitionDelegationsCachedDto.class);
             if (cachedDto == null) {
                 throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "DELEGATION_VALIDATION_FAILED_NOT_FOUND_DELEGATIONS_IN_CACHE");
@@ -30,8 +105,104 @@ private boolean validateDelegations(RequisitionRequestEntity requestEntity, SapS
         throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "DELEGATION_VALIDATION_FAILED_NOT_FOUND_MATCHING_DELEGATOR_TN");
     }
 
+    private RequisitionRequestEntity saveAndGetEntity(String uid, String role, String sessionId, String messageIncoming, String tabNumber, String requestStatus) {
+        try {
+            return entityService.saveAndReturnRequest(uid, role, sessionId, messageIncoming, tabNumber, requestStatus);
+        } catch (Exception e) {
+            log.warn("Ошибка записи в базу: [{}]", e.getMessage());
+        }
+        return null;
+    }
 
-private String getRequisitionDelegations(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams) throws Exception {
+    private boolean validateDelegationDate(RequisitionDelegationsItem delegationsItem) {
+        if (delegationsItem.getEndDate() != null && delegationsItem.getStartDate() != null) {
+            // 0 - означает бессрочное делегирование, в таком случае дату не проверяем
+            if (delegationsItem.getEndDate() == 0) {
+                return true;
+            }
+            // совпадение startDate и endDate - это однодневное делегирование (если создали сегодня то в 00:00 оно станет невалидным)
+            if (delegationsItem.getEndDate().equals(delegationsItem.getStartDate())) {
+                long oneDayDelegationExpireDate = LocalDate.now().plusDays(1)
+                        .atStartOfDay(ZoneOffset.UTC)
+                        .toInstant()
+                        .toEpochMilli();
+
+                if (delegationsItem.getEndDate() < oneDayDelegationExpireDate) {
+                    return true;
+                } else {
+                    throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "DELEGATION_VALIDATION_FAILED_END_DATE_EXPIRED");
+                }
+            } else {
+                LocalDate endDate = Instant.ofEpochMilli(delegationsItem.getEndDate())
+                        .atZone(ZoneOffset.UTC)
+                        .toLocalDate();
+                LocalDate currentDate = LocalDate.now();
+                if (currentDate.isBefore(endDate) || currentDate.equals(endDate)) {
+                    return true;
+                } else {
+                    throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "DELEGATION_VALIDATION_FAILED_END_DATE_EXPIRED");
+                }
+            }
+        } else {
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "DELEGATION_VALIDATION_FAILED_END_OR_START_DATE_NULL");
+        }
+    }
+}
+
+
+package ru.ntdev.srhr.ms.requisition.application;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import ru.ntdev.srhr.common.adapter.RedisAdapter;
+import ru.ntdev.srhr.common.constant.RequestStatusConstant;
+import ru.ntdev.srhr.common.dto.api.SapSystemParamsDto;
+import ru.ntdev.srhr.common.dto.api.error.ErrorResponse;
+import ru.ntdev.srhr.common.dto.api.response.SapResponseDtoExtended;
+import ru.ntdev.srhr.common.dto.api.response.requisition.RequisitionDelegationsCachedDto;
+import ru.ntdev.srhr.common.dto.api.response.requisition.RequisitionDelegationsDto;
+import ru.ntdev.srhr.common.dto.api.response.requisition.objects.RequisitionDelegationsItem;
+import ru.ntdev.srhr.ms.requisition.application.common.HttpErrorExceptionHandler;
+import ru.ntdev.srhr.ms.requisition.application.common.RequisitionResponseProcessor;
+import ru.ntdev.srhr.ms.requisition.application.dto.RequisitionContext;
+import ru.ntdev.srhr.ms.requisition.entity.RequisitionRequestEntity;
+import ru.ntdev.srhr.ms.requisition.service.impl.EntityServiceImpl;
+import ru.ntdev.srhr.ms.requisition.service.impl.MasterDataIntegrationServiceImpl;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class GetRequisitionDelegationsUseCase {
+
+    private final HttpErrorExceptionHandler httpErrorExceptionHandler;
+    private final RequisitionResponseProcessor requisitionResponseProcessor;
+
+    private final MasterDataIntegrationServiceImpl easupIntegrationService;
+    private final EntityServiceImpl entityService;
+
+    private final RedisAdapter redisAdapter;
+
+    @Value(value = "${spring.data.redis.ttl_delegations}")
+    private int ttlDelegations; //ttl для orgunits в секундах
+    @Value(value = "${app.validation.recruitment-service_id}")
+    private String recruitmentServiceId;
+
+    public String execute(RequisitionContext req) {
+        try {
+            return getRequisitionDelegations(req.requestEntity(), req.systemParams());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String getRequisitionDelegations(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams) throws Exception {
         long start = System.currentTimeMillis();
         ResponseEntity<RequisitionDelegationsDto> dtoResponseEntity;
         RequisitionDelegationsDto dto = new RequisitionDelegationsDto();
@@ -55,13 +226,31 @@ private String getRequisitionDelegations(RequisitionRequestEntity requestEntity,
             }
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             code = e.getStatusCode().toString();
-            handleHttpClientOrServerErrorException(
+            httpErrorExceptionHandler.handleHttpClientOrServerErrorException(
                     e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
         } catch (Exception e) {
             code = "500";
-            handleException(
+            httpErrorExceptionHandler.handleException(
                     e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
         }
 
-        return finishProcessingMessage(start, systemParams, dto, requestEntity, code);
+        return requisitionResponseProcessor.finishProcessingMessage(start, systemParams, dto, requestEntity, code);
     }
+
+    private SapResponseDtoExtended setDtoIfResponseEntityNotNull(ResponseEntity<? extends SapResponseDtoExtended> dtoResponseEntity, SapResponseDtoExtended dto, SapSystemParamsDto systemParams) {
+        if (dtoResponseEntity != null) {
+            dto = dtoResponseEntity.getBody();
+            dto.setResponseCode(dtoResponseEntity.getStatusCode().toString());
+            entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.REPLY);
+        }
+        return dto;
+    }
+
+    private RequisitionDelegationsDto filterDelegations(RequisitionDelegationsDto dto) {
+        List<RequisitionDelegationsItem> filteredDelegations = dto.getDelegationsList().stream()
+                .filter(e -> recruitmentServiceId.equals(e.getId()))
+                .toList();
+        dto.setDelegationsList(filteredDelegations);
+        return dto;
+    }
+}
