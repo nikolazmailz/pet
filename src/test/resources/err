@@ -1,51 +1,425 @@
-package ru.ntdev.srhr.ms.requisition.application;
+package ru.ntdev.srhr.ms.requisition.service.impl;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.util.List;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import ru.ntdev.srhr.common.adapter.RedisAdapter;
+import ru.ntdev.srhr.common.constant.RequestStatusConstant;
+import ru.ntdev.srhr.common.constant.RolesConstant;
 import ru.ntdev.srhr.common.dto.api.SapSystemParamsDto;
 import ru.ntdev.srhr.common.dto.api.error.ErrorResponse;
-import ru.ntdev.srhr.common.dto.api.response.requisition.RequisitionDelegationsCachedDto;
-import ru.ntdev.srhr.common.dto.api.response.requisition.RequisitionUiStateDto;
+import ru.ntdev.srhr.common.dto.api.request.masterDataIntegrations.objects.InterviewerActionItem;
+import ru.ntdev.srhr.common.dto.api.request.requisition.RequisitionPostCandidateActionRequest;
+import ru.ntdev.srhr.common.dto.api.request.requisition.RequisitionPostListRequest;
+import ru.ntdev.srhr.common.dto.api.request.requisition.RequisitionPostVacancyCandidatesRequest;
+import ru.ntdev.srhr.common.dto.api.request.requisition.RequisitionRequestDto;
+import ru.ntdev.srhr.common.dto.api.response.SapResponseDtoExtended;
+import ru.ntdev.srhr.common.dto.api.response.filestorage.FileGetByIdDto;
+import ru.ntdev.srhr.common.dto.api.response.filestorage.FilePostDto;
+import ru.ntdev.srhr.common.dto.api.response.filestorage.MessageGetByIdDto;
+import ru.ntdev.srhr.common.dto.api.response.filestorage.MessagePostDto;
+import ru.ntdev.srhr.common.dto.api.response.osrf.OrgUnitsPathsDto;
+import ru.ntdev.srhr.common.dto.api.response.osrf.inner.StructUnit;
+import ru.ntdev.srhr.common.dto.api.response.requisition.*;
+import ru.ntdev.srhr.common.dto.api.response.requisition.objects.RequisitionCandidateInfoEvent;
 import ru.ntdev.srhr.common.dto.api.response.requisition.objects.RequisitionDelegationsItem;
-import ru.ntdev.srhr.ms.requisition.application.common.HttpErrorExceptionHandler;
-import ru.ntdev.srhr.ms.requisition.application.common.RequisitionResponseProcessor;
-import ru.ntdev.srhr.ms.requisition.application.dto.RequisitionContext;
+import ru.ntdev.srhr.common.dto.api.response.requisition.objects.RequisitionOrganizationFunctionalListItem;
+import ru.ntdev.srhr.common.dto.api.response.requisition.objects.RequisitionOrganizationLinearListItem;
+import ru.ntdev.srhr.common.dto.bscs.employee.BscsEmployeeDto;
+import ru.ntdev.srhr.common.dto.bscs.employee.BscsStaffSearchDto;
+import ru.ntdev.srhr.common.dto.role.ActorRoleDto;
+import ru.ntdev.srhr.common.dto.role.RoleListDto;
+import ru.ntdev.srhr.common.dto.role.SystemParamsRoleListDto;
+import ru.ntdev.srhr.common.util.LogUtil;
+import ru.ntdev.srhr.ms.requisition.entity.RequisitionEntity;
 import ru.ntdev.srhr.ms.requisition.entity.RequisitionRequestEntity;
-import ru.ntdev.srhr.ms.requisition.service.DatabaseService;
-import ru.ntdev.srhr.ms.requisition.service.impl.EntityServiceImpl;
+import ru.ntdev.srhr.ms.requisition.entity.RequisitionResponseEntity;
+import ru.ntdev.srhr.ms.requisition.service.*;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
+import ru.ntdev.srhr.ms.requisition.service.kafka.RequisitionDispatcher;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
-public class GetRequisitionUiStateUseCase {
+@Slf4j
+public class KafkaRequisitionTaskService {
 
-    private final DatabaseService databaseService;
-    private final HttpErrorExceptionHandler httpErrorExceptionHandler;
-    private final RequisitionResponseProcessor requisitionResponseProcessor;
-
-    private final RedisAdapter redisAdapter;
     private final EntityServiceImpl entityService;
-    
-    // todo странное решение
-    private final GetRequisitionDelegationsUseCase getRequisitionDelegationsUseCase;
+    private final MasterDataIntegrationServiceImpl easupIntegrationService;
+    private final StaffInfoIntegrationService staffInfoIntegrationService;
+    private final TsrmIntegrationService tsrmIntegrationService;
+    private final BscsIntegrationService bscsIntegrationService;
+    private final OsrfIntegrationService osrfIntegrationService;
+    private final MapperService mapperService;
+    private final FilestorageService filestorageService;
+    private final DatabaseService databaseService;
+    private final RedisAdapter redisAdapter;
+    private final InterviewerService interviewerService;
+    private final CandidateService candidateService;
 
-    public String execute(RequisitionContext req) {
+    // todo
+    private final RequisitionDispatcher requisitionDispatcher;
+
+    @Value("${filestorage.rest.service.dto-storage}")
+    private Boolean isDtoFilestorageStoreOn;
+
+    @Value("${spring.kafka.topic.name.to-easup}")
+    String kafkaTopicNameToEasup;
+
+    @Value("${spring.kafka.producer.max-inner-message-size-kb}")
+    Integer kafkaProducerMaxInnerMessageSizeKb;
+
+    @Value(value = "${spring.data.redis.ttl_orgunits}")
+    private int ttlOrgUnits; //ttl для orgunits в секундах
+
+    @Value(value = "${spring.data.redis.ttl_candidate_info}")
+    private int ttlCandidateInfo; //ttl для candidate-info в секундах
+
+    @Value(value = "${spring.data.redis.ttl_delegations}")
+    private int ttlDelegations; //ttl для orgunits в секундах
+
+    @Value(value = "${app.validation.orgunit}")
+    private String orgunitValidationState;
+
+    @Value(value = "${app.validation.vacancy-details}")
+    private String vacancyDetailsValidationState;
+
+    @Value(value = "${app.validation.recruitment-service_id}")
+    private String recruitmentServiceId;
+    @Value(value = "${app.validation.candidate-info}")
+    private String candidateInfoValidationState;
+
+
+    private RoleListDto getRoles(String adlogin, String channel, String sessionId, String traceId) {
+        return tsrmIntegrationService.getRole(adlogin, channel, sessionId, traceId);
+    }
+
+    public String chooseHighestPriorityRole(List<ActorRoleDto> rolesList) {
+        Map<Integer, String> rolePriority = new HashMap<>();
+        for (ActorRoleDto role : rolesList) {
+            String roleName = role.getRoleId();
+            switch (roleName) {
+                case RolesConstant.MSS_FULL:
+                    rolePriority.put(400, roleName);
+                    break;
+                case RolesConstant.MSS_STANDARD:
+                    rolePriority.put(300, roleName);
+                    break;
+                case RolesConstant.MSS_LIMITED:
+                    rolePriority.put(200, roleName);
+                    break;
+                case RolesConstant.ESS:
+                    rolePriority.put(100, roleName);
+                    break;
+            }
+        }
+        Optional<Map.Entry<Integer, String>> maxEntry = rolePriority.entrySet()
+                .stream()
+                .max(Map.Entry.comparingByKey());
+        return maxEntry.get().getValue();
+    }
+
+    // todo удалить использовать сразу entityService
+    private RequisitionRequestEntity saveAndGetEntity(String uid, String role, String sessionId, String messageIncoming, String tabNumber, String requestStatus) {
         try {
-            return getRequisitionUiState(req.requestEntity(), req.systemParams(), req.requestValues().getDelegatorTn());
+            return entityService.saveAndReturnRequest(uid, role, sessionId, messageIncoming, tabNumber, requestStatus);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.warn("Ошибка записи в базу: [{}]", e.getMessage());
+        }
+        return null;
+    }
+
+    private void saveResponse(String uid, RequisitionRequestEntity requestEntity, String messageOutcoming, Long processingTime, String code) {
+        try {
+            entityService.saveResponse(uid, requestEntity, messageOutcoming, processingTime, code);
+        } catch (Exception e) {
+            log.warn("Ошибка записи в базу: [{}]", e.getMessage());
         }
     }
 
+    private RequisitionResponseEntity saveAndGetResponse(String uid, RequisitionRequestEntity requestEntity, String messageOutcoming, Long processingTime, String code) {
+        try {
+            return entityService.saveAndReturnResponse(uid, requestEntity, messageOutcoming, processingTime, code);
+        } catch (Exception e) {
+            log.warn("Ошибка записи в базу: [{}]", e.getMessage());
+        }
+        return null;
+    }
+
+    private SapSystemParamsDto setSystemParams(RequisitionRequestDto requestValues) {
+        SapSystemParamsDto systemParams = new SapSystemParamsDto();
+        systemParams.setRequestType(requestValues.getRequestType());
+        systemParams.setAdLogin(requestValues.getAdLogin());
+        systemParams.setChannel(requestValues.getChannel());
+        systemParams.setSessionId(requestValues.getSessionId());
+        systemParams.setTraceId(requestValues.getTraceId());
+        systemParams.setUuid(requestValues.getUuid());
+        systemParams.setRealm(requestValues.getRealm());
+        return systemParams;
+    }
+
+    public String processMessage(String messageIncoming) throws Exception {
+        long start = System.currentTimeMillis();
+        ObjectMapper mapper = new ObjectMapper();
+        SapResponseDtoExtended dto = new SapResponseDtoExtended();
+
+        RequisitionRequestDto requestValues = mapper.readValue(messageIncoming, RequisitionRequestDto.class);
+        //Проверка не было ли входящее сообщение помещено в filestorage из-за размера
+        if (requestValues.getFileUuid() != null && !requestValues.getFileUuid().isEmpty()) {
+            String storedMessage = getOutStoredMessage(requestValues.getAdLogin(), requestValues.getSessionId(), requestValues.getTraceId(), requestValues.getFileUuid());
+            requestValues = mapper.readValue(storedMessage, RequisitionRequestDto.class);
+        }
+
+        SapSystemParamsDto systemParams = setSystemParams(requestValues);
+
+
+        LogUtil.logKafkaMessageGot(
+                systemParams.getAdLogin(),
+                systemParams.getSessionId(),
+                systemParams.getRequestType(),
+                kafkaTopicNameToEasup,
+                systemParams.getTraceId());
+        RequisitionRequestEntity requestEntity = saveAndGetEntity(
+                systemParams.getUuid(), null,
+                systemParams.getSessionId(), messageIncoming,
+                null, RequestStatusConstant.SENT);
+
+        String rolesJson = setRoles(systemParams, requestEntity, dto, start);
+        SystemParamsRoleListDto systemRolesDto = mapper.readValue(rolesJson, SystemParamsRoleListDto.class);
+        RoleListDto rolesDto = new RoleListDto();
+        BeanUtils.copyProperties(systemRolesDto, rolesDto);
+        if (systemRolesDto.getErrorMessage() != null || systemRolesDto.getRoles().isEmpty()) {
+            return mapper.writeValueAsString(dto);
+        }
+        systemParams.setRolesHeader(mapper.writeValueAsString(rolesDto));
+        systemParams.setRole(chooseHighestPriorityRole(rolesDto.getRoles()));
+
+        requestEntity.setFunctionalRole(systemParams.getRole());
+        entityService.updateRequestRole(systemParams.getUuid(), systemParams.getRole());
+
+        String systemParamsWithTabnumberJson = setTabnumberToSystemParams(systemParams, requestEntity, dto, start);
+
+        systemParams = mapper.readValue(systemParamsWithTabnumberJson, SapSystemParamsDto.class);
+        if (systemParams.getErrorMessage() != null || systemParams.getTabNumber() == null) {
+            return mapper.writeValueAsString(dto);
+        }
+        requestEntity.setTabNumber(systemParams.getTabNumber());
+        entityService.updateRequestTabnum(systemParams.getUuid(), systemParams.getTabNumber());
+
+        String requestType = systemParams.getRequestType();
+
+//        requisitionDispatcher.dispatch(
+//                new RequisitionContext(
+//                        requestEntity,
+//                        systemParams
+//                )
+//        );
+
+        switch (requestType) {
+            // todo requisition_dict
+            case "requisition_dict":
+                return getRequisitionDict(requestEntity, systemParams);
+            // todo
+            case "requisition_ui_state":
+                return getRequisitionUiState(requestEntity, systemParams, requestValues.getDelegatorTn());
+            // todo ?
+            case "requisition_delegations":
+                return getRequisitionDelegations(requestEntity, systemParams);
+            // todo ?
+            case "requisition_org_units_allowable":
+                return getRequisitionOrgUnitsAllowable(requestEntity, systemParams, requestValues.getDelegatorTn());
+            case "requisition_post_list":
+                return getRequisitionPostList(requestEntity, systemParams, requestValues);
+            case "requisition_user_info":
+                return getRequisitionUserInfo(requestEntity, systemParams);
+            case "requisition_staff_search":
+                return getRequisitionStaffSearch(requestEntity, systemParams, requestValues.getSearchString());
+            case "requisition_vacancy_details":
+                return getRequisitionVacancyDetails(requestEntity, systemParams, requestValues.getDelegatorTn(), requestValues.getVacancyId());
+            case "requisition_get_interviewers":
+                return getInterviewers(requestEntity, systemParams, requestValues.getVacancyId());
+            case "requisition_interviewers_action":
+                return getInterviewersActionResponse(requestEntity, systemParams, requestValues.getVacancyId(), requestValues.getInterviewers());
+            case "requisition_post_vacancy_candidates":
+                return getRequisitionPostVacancyCandidates(requestEntity, systemParams, requestValues);
+            case "requisition_candidate_info":
+                return getCandidateInfo(requestEntity, systemParams, requestValues.getVacancyId(), requestValues.getCandidateId());
+            case "requisition_post_candidate_action":
+                return getRequisitionPostCandidateAction(requestEntity, systemParams, requestValues);
+            case "requisition_vacancy_statistic":
+                return getRequisitionVacancyStatistic(requestEntity, systemParams, requestValues.getVacancyId());
+            case "requisition_post_add_comment":
+                return getRequisitionPostAddComment(requestEntity, systemParams, requestValues);
+            case "requisition_candidate_resume":
+                return getCandidateResume(requestEntity, systemParams, requestValues.getVacancyId(), requestValues.getCandidateId());
+            default:
+                throw new IllegalStateException("Unexpected requestType value: " + systemParams.getRequestType());
+        }
+    }
+
+    private String getRequisitionVacancyStatistic(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, String vacancyId) throws Exception {
+        long start = System.currentTimeMillis();
+        RequisitionVacancyStatisticDto dto = new RequisitionVacancyStatisticDto();
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setSessionId(systemParams.getSessionId());
+        dto.setChannel(systemParams.getChannel());
+
+        String code = "200";
+        try {
+
+            dto = candidateService.getVacancyStatistic(systemParams, vacancyId);
+            dto.setResponseCode(code);
+            entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.REPLY);
+
+        } catch (Exception e) {
+            code = "500";
+            handleException(e, dto, systemParams, e.getMessage());
+        }
+        return finishProcessingMessage(start, systemParams, dto, requestEntity, code);
+    }
+
+    private String getRequisitionPostAddComment(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, RequisitionRequestDto requestValues) throws Exception {
+        long start = System.currentTimeMillis();
+        RequisitionCandidateInfoDto dto = new RequisitionCandidateInfoDto();
+        RequisitionGeneralCandidateDto dtoOut = new RequisitionGeneralCandidateDto();
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setSessionId(systemParams.getSessionId());
+        dto.setChannel(systemParams.getChannel());
+
+        String code = "200";
+        try {
+
+            dto = candidateService.addCommentToCandidate(
+                    systemParams,
+                    requestValues.getVacancyId(),
+                    requestValues.getCandidateId(),
+                    requestValues.getComment()
+            );
+            dto.setResponseCode(code);
+            entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.REPLY);
+
+            dtoOut = mapperService.mapToGeneralCandidateInfoDto(dto);
+
+        } catch (Exception e) {
+            code = "500";
+            handleException(e, dtoOut, systemParams, e.getMessage());
+        }
+
+        return finishProcessingMessage(start, systemParams, dtoOut, requestEntity, code);
+    }
+
+    private String getCandidateInfo(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, String vacancyId, String candidateId) throws Exception {
+        long start = System.currentTimeMillis();
+        RequisitionCandidateInfoDto dto = new RequisitionCandidateInfoDto();
+        RequisitionGeneralCandidateDto dtoOut = new RequisitionGeneralCandidateDto();
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setSessionId(systemParams.getSessionId());
+        dto.setChannel(systemParams.getChannel());
+
+        // Валидация вакансии
+        boolean vacancyAllowed = true;
+        if (candidateInfoValidationState.equals("ENABLE")) {
+            try {
+                validateVacancy(requestEntity, systemParams, vacancyId);
+            } catch (Exception e) {
+                log.error("Произошла ошибка при валидации запроса [requisition_candidate_info], текст ошибки: {}", e.getMessage());
+                vacancyAllowed = false;
+            }
+        }
+
+        String code = "200";
+        boolean candidateAllowed = true;
+        try {
+            dto = candidateService.getCandidateInfo(systemParams, vacancyId, candidateId);
+            dto.setResponseCode(code);
+            entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.REPLY);
+
+            // Сохранение кэша информации по кандидату
+            if (dto != null) {
+                RequisitionCandidateInfoCacheDto cachedDto = new RequisitionCandidateInfoCacheDto();
+                cachedDto.setRefreshedAt(LocalDateTime.now());
+                cachedDto.setResumeId(dto.getCandidate().getResumeId());
+                String key = "candidateInfo:" + systemParams.getChannel() + ":" + vacancyId + ":" + candidateId;
+                redisAdapter.putObjectToDb(key, cachedDto, ttlCandidateInfo);
+            }
+
+            // Валидация доступа к кандидату
+            if (candidateInfoValidationState.equals("ENABLE")) {
+                try {
+                    validateCandidate(systemParams, dto);
+                } catch (Exception e) {
+                    log.error("Произошла ошибка при валидации запроса [requisition_candidate_info], текст ошибки: {}", e.getMessage());
+                    candidateAllowed = false;
+                }
+            }
+
+            dtoOut = mapperService.mapToGeneralCandidateInfoDto(dto);
+
+        } catch (Exception e) {
+            code = "500";
+            handleException(e, dtoOut, systemParams, e.getMessage());
+        }
+
+        if (!candidateAllowed && !vacancyAllowed) {
+            entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.ERROR_REPLY);
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "CANDIDATE_INFO_VALIDATION_FAILED");
+        }
+
+        return finishProcessingMessage(start, systemParams, dtoOut, requestEntity, code);
+    }
+
+    private void validateCandidate(SapSystemParamsDto systemParams, RequisitionCandidateInfoDto dto) {
+        List<RequisitionCandidateInfoEvent> events = dto.getCandidate().getEvents();
+        String currentPernr = systemParams.getTabNumber();
+        for (RequisitionCandidateInfoEvent event : events) {
+            if (event.getPlanApprover().getId().equals(currentPernr)) {
+                return;
+            }
+        }
+        throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "CANDIDATE_INFO_VALIDATION_FAILED");
+    }
+
+    // todo requisition_dict
+    private String getRequisitionDict(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams) throws Exception {
+        long start = System.currentTimeMillis();
+        ResponseEntity<RequisitionDictDto> dtoResponseEntity;
+        RequisitionDictDto dto = new RequisitionDictDto();
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setSessionId(systemParams.getSessionId());
+        dto.setChannel(systemParams.getChannel());
+
+        String code = "200";
+        try {
+            dto = databaseService.getRequisitionDict();
+            dto.setResponseCode(code);
+
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            code = e.getStatusCode().toString();
+            handleHttpClientOrServerErrorException(
+                    e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
+        } catch (Exception e) {
+            code = "500";
+            handleException(
+                    e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
+        }
+
+        return finishProcessingMessage(start, systemParams, dto, requestEntity, code);
+    }
+
+    // todo
     private String getRequisitionUiState(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, String delegatorTabnum) throws Exception {
         long start = System.currentTimeMillis();
         RequisitionUiStateDto dto = new RequisitionUiStateDto();
@@ -62,17 +436,416 @@ public class GetRequisitionUiStateUseCase {
             }
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             code = e.getStatusCode().toString();
-            httpErrorExceptionHandler.handleHttpClientOrServerErrorException(
+            handleHttpClientOrServerErrorException(
                     e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
         } catch (Exception e) {
             code = "500";
-            httpErrorExceptionHandler.handleException(
+            handleException(
                     e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
         }
 
-        return requisitionResponseProcessor.finishProcessingMessage(start, systemParams, dto, requestEntity, code);
+        return finishProcessingMessage(start, systemParams, dto, requestEntity, code);
     }
 
+    // todo странное использование
+    private String getRequisitionDelegations(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams) throws Exception {
+        long start = System.currentTimeMillis();
+        ResponseEntity<RequisitionDelegationsDto> dtoResponseEntity;
+        RequisitionDelegationsDto dto = new RequisitionDelegationsDto();
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setSessionId(systemParams.getSessionId());
+        dto.setChannel(systemParams.getChannel());
+
+        String code = "200";
+        try {
+            dtoResponseEntity = easupIntegrationService.getRequisitionDelegations(
+                    systemParams);
+            dto = (RequisitionDelegationsDto) setDtoIfResponseEntityNotNull(
+                    dtoResponseEntity, dto, systemParams);
+            dto = filterDelegations(dto);
+            if (dto.getDelegationsList() != null) {
+                RequisitionDelegationsCachedDto cachedDto = new RequisitionDelegationsCachedDto();
+                cachedDto.setRefreshedAt(LocalDateTime.now());
+                cachedDto.setDelegations(dto.getDelegationsList());
+                String key = "delegations:" + systemParams.getChannel() + ":" + systemParams.getAdLogin();
+                redisAdapter.putObjectToDb(key, cachedDto, ttlDelegations);
+            }
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            code = e.getStatusCode().toString();
+            handleHttpClientOrServerErrorException(
+                    e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
+        } catch (Exception e) {
+            code = "500";
+            handleException(
+                    e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
+        }
+
+        return finishProcessingMessage(start, systemParams, dto, requestEntity, code);
+    }
+
+    // todo one use
+    private RequisitionDelegationsDto filterDelegations(RequisitionDelegationsDto dto) {
+        List<RequisitionDelegationsItem> filteredDelegations = dto.getDelegationsList().stream()
+                .filter(e -> recruitmentServiceId.equals(e.getId()))
+                .toList();
+        dto.setDelegationsList(filteredDelegations);
+        return dto;
+    }
+
+    private String getRequisitionPostList(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, RequisitionRequestDto requestValues) throws Exception {
+        long start = System.currentTimeMillis();
+        RequisitionPostListDto dto = new RequisitionPostListDto();
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setSessionId(systemParams.getSessionId());
+        dto.setChannel(systemParams.getChannel());
+
+        if (requestValues.getFilters().getStructureFilter() != null && requestValues.getFilters().getStructureFilter().getOrgUnitIdList() != null
+                && !requestValues.getFilters().getStructureFilter().getOrgUnitIdList().isEmpty()) {
+            if (orgunitValidationState.equals("ENABLE")) {
+                validateRequestOrgUnits(requestEntity, systemParams, requestValues);
+            }
+        }
+
+        if (requestValues.getDelegatorTn() != null && !requestValues.getDelegatorTn().isEmpty()) {
+            validateDelegations(requestEntity, systemParams, requestValues.getDelegatorTn());
+        }
+        RequisitionPostListRequest requestBody = new RequisitionPostListRequest();
+        BeanUtils.copyProperties(requestValues, requestBody);
+        String code = "200";
+        try {
+            dto = databaseService.getRequisitionPostList(
+                    requestBody, systemParams);
+            dto.setResponseCode(code);
+            dto.setUserTn(systemParams.getTabNumber());
+            entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.REPLY);
+        } catch (Exception e) {
+            code = "500";
+            handleException(
+                    e, dto, systemParams, ErrorResponse.REQUISITION_UNEXPECTED_ERROR);
+        }
+
+        return finishProcessingMessage(start, systemParams, dto, requestEntity, code);
+    }
+
+    private String getInterviewers(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, String vacancyId) throws Exception {
+        long start = System.currentTimeMillis();
+        RequisitionGetInterviewersDto dto = new RequisitionGetInterviewersDto();
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setSessionId(systemParams.getSessionId());
+        dto.setChannel(systemParams.getChannel());
+
+        String code = "200";
+        try {
+            dto = interviewerService.getInterviewers(systemParams, vacancyId);
+            dto.setResponseCode(code);
+            entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.REPLY);
+        } catch (Exception e) {
+            code = "500";
+            handleException(e, dto, systemParams, e.getMessage());
+        }
+
+        return finishProcessingMessage(start, systemParams, dto, requestEntity, code);
+    }
+
+
+    private String getInterviewersActionResponse(
+            RequisitionRequestEntity requestEntity,
+            SapSystemParamsDto systemParams,
+            String vacancyId,
+            List<InterviewerActionItem> interviewers
+    ) throws Exception {
+        long start = System.currentTimeMillis();
+        RequisitionGetInterviewersDto dto = new RequisitionGetInterviewersDto();
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setSessionId(systemParams.getSessionId());
+        dto.setChannel(systemParams.getChannel());
+
+        String code = "200";
+        try {
+            dto = interviewerService.getInterviewersActionResponse(systemParams, vacancyId, interviewers);
+            dto.setResponseCode(code);
+            entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.REPLY);
+        } catch (Exception e) {
+            code = "500";
+            handleException(e, dto, systemParams, e.getMessage());
+        }
+
+        return finishProcessingMessage(start, systemParams, dto, requestEntity, code);
+    }
+
+    private String getRequisitionVacancyDetails(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, String delegatorTn, String vacancyId) throws Exception {
+        long start = System.currentTimeMillis();
+        RequisitionVacancyDetailsDto dto = new RequisitionVacancyDetailsDto();
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setSessionId(systemParams.getSessionId());
+        dto.setChannel(systemParams.getChannel());
+
+        if (vacancyDetailsValidationState.equals("ENABLE")) {
+            try {
+                validateVacancy(requestEntity, systemParams, vacancyId);
+            } catch (Exception e) {
+                log.error("Произошла ошибка при валидации запроса [requisition_vacancy_details], текст ошибки: {}", e.getMessage());
+                throw e;
+            }
+        }
+        String code = "200";
+        try {
+            dto = databaseService.getRequisitionVacancyDetails(
+                    systemParams, delegatorTn, vacancyId);
+            dto.setResponseCode(code);
+            entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.REPLY);
+        } catch (Exception e) {
+            code = "500";
+            handleException(
+                    e, dto, systemParams, e.getMessage());
+        }
+
+        return finishProcessingMessage(start, systemParams, dto, requestEntity, code);
+    }
+
+    private String getRequisitionOrgUnitsAllowable(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, String delegatorTn) throws Exception {
+        long start = System.currentTimeMillis();
+        RequisitionOrgUnitsAllowableDto dto = new RequisitionOrgUnitsAllowableDto();
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setSessionId(systemParams.getSessionId());
+        dto.setChannel(systemParams.getChannel());
+
+        boolean isDelegationOn = false;
+        if (delegatorTn != null && !delegatorTn.isEmpty()) {
+            isDelegationOn = validateDelegations(requestEntity, systemParams, delegatorTn);
+        }
+
+        String code = "200";
+        try {
+            String tabNum = systemParams.getTabNumber();
+            if (isDelegationOn) {
+                tabNum = delegatorTn;
+            }
+            dto = getCachedRequisitionOrgUnitsAllowableDto(systemParams, tabNum, dto);
+
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            code = e.getStatusCode().toString();
+            handleHttpClientOrServerErrorException(
+                    e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
+        } catch (Exception e) {
+            code = "500";
+            handleException(
+                    e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
+        }
+
+        return finishProcessingMessage(start, systemParams, dto, requestEntity, code);
+    }
+
+    // todo use two point
+    private RequisitionOrgUnitsAllowableDto getCachedRequisitionOrgUnitsAllowableDto(SapSystemParamsDto systemParams, String tabNum, RequisitionOrgUnitsAllowableDto source) throws Exception {
+
+        log.info("Кэш по доступным орг.единицам для табельного номера [{}] пуст, делается запрос в еасуп", systemParams.getTabNumber());
+
+        ResponseEntity<RequisitionOrgUnitsAllowableDto> dtoResponseEntity = easupIntegrationService.getRequisitionOrgUnitsAllowable(
+                systemParams,
+                tabNum,
+                ""
+        );
+        source = (RequisitionOrgUnitsAllowableDto) setDtoIfResponseEntityNotNull(
+                dtoResponseEntity, source, systemParams);
+
+        if (source != null) {
+            String key = "orgunits:" + systemParams.getChannel() + ":" + systemParams.getTabNumber();
+            redisAdapter.putObjectToDb(key, source, ttlOrgUnits);
+        }
+        return source;
+    }
+
+    private String getRequisitionUserInfo(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams) throws Exception {
+        long start = System.currentTimeMillis();
+        BscsEmployeeDto bscsResponse;
+        RequisitionUserInfoDto dto = new RequisitionUserInfoDto();
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setSessionId(systemParams.getSessionId());
+        dto.setChannel(systemParams.getChannel());
+
+        String code = "200";
+        try {
+            bscsResponse = bscsIntegrationService.getStaffByLogin(
+                    systemParams.getAdLogin(),
+                    systemParams.getSessionId(),
+                    systemParams.getTraceId()
+            );
+            if (bscsResponse != null) {
+                dto = mapperService.mapBscsResponse(bscsResponse);
+                dto.setResponseCode(code);
+                entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.REPLY);
+            }
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            code = e.getStatusCode().toString();
+            handleHttpClientOrServerErrorException(
+                    e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
+        } catch (Exception e) {
+            code = "500";
+            handleException(
+                    e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
+        }
+
+        return finishProcessingMessage(start, systemParams, dto, requestEntity, code);
+    }
+
+    private String getRequisitionStaffSearch(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, String searchString) throws Exception {
+        long start = System.currentTimeMillis();
+        List<BscsStaffSearchDto> bscsResponse;
+        OrgUnitsPathsDto osrfResponse;
+        RequisitionStaffSearchDto dto = new RequisitionStaffSearchDto();
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setSessionId(systemParams.getSessionId());
+        dto.setChannel(systemParams.getChannel());
+
+        String code = "200";
+        try {
+            bscsResponse = bscsIntegrationService.getStaffSearch(
+                    systemParams.getAdLogin(),
+                    systemParams.getTabNumber(),
+                    systemParams.getSessionId(),
+                    systemParams.getTraceId(),
+                    searchString
+            );
+
+            if (!bscsResponse.isEmpty()) {
+                List<String> staffOrgUnitIdList = getOrgUnitListFromStaff(bscsResponse);
+
+                osrfResponse = osrfIntegrationService.getOrgUnitsPath(staffOrgUnitIdList);
+
+                List<StructUnit> staffStrustUnitList = new ArrayList<>();
+
+                if (osrfResponse != null) {
+                    staffStrustUnitList = osrfResponse.getStructUnitList();
+                }
+
+                dto = mapperService.mapBscsSearchResponse(bscsResponse, staffStrustUnitList);
+                dto.setResponseCode(code);
+                entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.REPLY);
+            }
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            code = e.getStatusCode().toString();
+            handleHttpClientOrServerErrorException(
+                    e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
+        } catch (Exception e) {
+            code = "500";
+            handleException(
+                    e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
+        }
+
+        return finishProcessingMessage(start, systemParams, dto, requestEntity, code);
+    }
+
+    private List<String> getOrgUnitListFromStaff(List<BscsStaffSearchDto> bscsResponse) {
+        List<String> staffOrgUnitIdList = new ArrayList<>();
+
+        for (BscsStaffSearchDto dto : bscsResponse) {
+            staffOrgUnitIdList.add(dto.getDepartmentId());
+        }
+
+        return staffOrgUnitIdList;
+    }
+
+    private String getRequisitionPostVacancyCandidates(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, RequisitionRequestDto requestValues) throws Exception {
+        long start = System.currentTimeMillis();
+        RequisitionPostVacancyCandidatesDto dto = new RequisitionPostVacancyCandidatesDto();
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setSessionId(systemParams.getSessionId());
+        dto.setChannel(systemParams.getChannel());
+
+        RequisitionPostVacancyCandidatesRequest requestBody = new RequisitionPostVacancyCandidatesRequest();
+        BeanUtils.copyProperties(requestValues, requestBody);
+        requestBody.setFilter(requestValues.getCandidateFilters());
+        String code = "200";
+        try {
+            dto = databaseService.getRequisitionPostVacancyCandidates(
+                    requestBody, systemParams);
+            dto.setResponseCode(code);
+            entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.REPLY);
+        } catch (Exception e) {
+            code = "500";
+            handleException(
+                    e, dto, systemParams, ErrorResponse.REQUISITION_UNEXPECTED_ERROR);
+        }
+
+        return finishProcessingMessage(start, systemParams, dto, requestEntity, code);
+    }
+
+    private String getRequisitionPostCandidateAction(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, RequisitionRequestDto requestValues) throws Exception {
+        long start = System.currentTimeMillis();
+        RequisitionPostCandidateActionDto dto = new RequisitionPostCandidateActionDto();
+        RequisitionGeneralCandidateDto dtoOut = new RequisitionGeneralCandidateDto();
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setSessionId(systemParams.getSessionId());
+        dto.setChannel(systemParams.getChannel());
+
+        RequisitionPostCandidateActionRequest requestBody = new RequisitionPostCandidateActionRequest();
+        BeanUtils.copyProperties(requestValues, requestBody);
+        String code = "200";
+        try {
+            dto = candidateService.getPostCandidateAction(
+                    systemParams, requestBody);
+            dto.setResponseCode(code);
+            entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.REPLY);
+
+            dtoOut = mapperService.mapToGeneralCandidateInfoDto(dto);
+        } catch (Exception e) {
+            code = "500";
+            handleException(
+                    e, dtoOut, systemParams, ErrorResponse.REQUISITION_UNEXPECTED_ERROR);
+        }
+
+        return finishProcessingMessage(start, systemParams, dtoOut, requestEntity, code);
+    }
+
+    private String getCandidateResume(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, String vacancyId, String candidateId) throws Exception {
+        long start = System.currentTimeMillis();
+        RequisitionCandidateResumeDto dto = new RequisitionCandidateResumeDto();
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setSessionId(systemParams.getSessionId());
+        dto.setChannel(systemParams.getChannel());
+
+        // Проверка на наличие кэша
+        String resumeId;
+        RequisitionCandidateInfoCacheDto cachedDto;
+        String key = "candidateInfo:" + systemParams.getChannel() + ":" + vacancyId + ":" + candidateId;
+        cachedDto = redisAdapter.getObjectFromDb(key, RequisitionCandidateInfoCacheDto.class);
+
+        if (cachedDto == null) {
+            try {
+                RequisitionRequestEntity newRequestEntity = saveAndGetEntity(requestEntity.getUid(), requestEntity.getFunctionalRole(), requestEntity.getUid(),
+                        requestEntity.getRequestBody(), requestEntity.getTabNumber(), requestEntity.getStatus());
+                getCandidateInfo(newRequestEntity, systemParams, vacancyId, candidateId);
+            } catch (Exception e) {
+                log.error("Произошла ошибка при вызове запроса [requisition_candidate_info] для получения идентификатор резюме для запроса [requisition_candidate_resume], текст ошибки: {}", e.getMessage());
+            }
+        }
+
+        // Повторный звпрос кэша
+        cachedDto = redisAdapter.getObjectFromDb(key, RequisitionCandidateInfoCacheDto.class);
+
+        if (cachedDto == null) {
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "Идентификатор резюме не был получен повторно после запроса [requisition_candidate_info]");
+        } else {
+            resumeId = cachedDto.getResumeId();
+        }
+
+        String code = "200";
+        try {
+            dto = candidateService.getCandidateResume(systemParams, vacancyId, candidateId, resumeId);
+            String fileUID = storeSingleContent(systemParams.getAdLogin(), systemParams.getSessionId(), systemParams.getTraceId(), "resume_" + resumeId, dto.getBase64(), dto.getUuid());
+            dto.setBase64(fileUID);
+            dto.setResponseCode(code);
+            entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.REPLY);
+        } catch (Exception e) {
+            code = "500";
+            handleException(e, dto, systemParams, e.getMessage());
+        }
+
+        return finishProcessingMessage(start, systemParams, dto, requestEntity, code);
+    }
+
+    // todo 3 use (getRequisitionUiState, )
     private boolean validateDelegations(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, String delegatorTn) throws Exception {
         String key = "delegations:" + systemParams.getChannel() + ":" + systemParams.getAdLogin();
 
@@ -83,7 +856,7 @@ public class GetRequisitionUiStateUseCase {
             log.info("Кэш по делегатам для логина [{}] пуст, делается запрос в еасуп", systemParams.getAdLogin());
             RequisitionRequestEntity newRequestEntity = saveAndGetEntity(requestEntity.getUid(), requestEntity.getFunctionalRole(), requestEntity.getUid(),
                     requestEntity.getRequestBody(), requestEntity.getTabNumber(), requestEntity.getStatus());
-            getRequisitionDelegationsUseCase.execute(new RequisitionContext(newRequestEntity, systemParams, null));
+            getRequisitionDelegations(newRequestEntity, systemParams);
             cachedDto = redisAdapter.getObjectFromDb(key, RequisitionDelegationsCachedDto.class);
             if (cachedDto == null) {
                 throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "DELEGATION_VALIDATION_FAILED_NOT_FOUND_DELEGATIONS_IN_CACHE");
@@ -105,15 +878,7 @@ public class GetRequisitionUiStateUseCase {
         throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "DELEGATION_VALIDATION_FAILED_NOT_FOUND_MATCHING_DELEGATOR_TN");
     }
 
-    private RequisitionRequestEntity saveAndGetEntity(String uid, String role, String sessionId, String messageIncoming, String tabNumber, String requestStatus) {
-        try {
-            return entityService.saveAndReturnRequest(uid, role, sessionId, messageIncoming, tabNumber, requestStatus);
-        } catch (Exception e) {
-            log.warn("Ошибка записи в базу: [{}]", e.getMessage());
-        }
-        return null;
-    }
-
+    // todo
     private boolean validateDelegationDate(RequisitionDelegationsItem delegationsItem) {
         if (delegationsItem.getEndDate() != null && delegationsItem.getStartDate() != null) {
             // 0 - означает бессрочное делегирование, в таком случае дату не проверяем
@@ -147,96 +912,228 @@ public class GetRequisitionUiStateUseCase {
             throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "DELEGATION_VALIDATION_FAILED_END_OR_START_DATE_NULL");
         }
     }
-}
 
+    private void validateRequestOrgUnits(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, RequisitionRequestDto requestValues) throws Exception {
+        String key = "orgunits:" + systemParams.getChannel() + ":" + systemParams.getTabNumber();
 
-package ru.ntdev.srhr.ms.requisition.application;
+        RequisitionOrgUnitsAllowableDto cachedDto = getRequisitionOrgUnitsAllowableCachedDto(requestEntity, systemParams);
 
-import java.time.LocalDateTime;
-import java.util.List;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import ru.ntdev.srhr.common.adapter.RedisAdapter;
-import ru.ntdev.srhr.common.constant.RequestStatusConstant;
-import ru.ntdev.srhr.common.dto.api.SapSystemParamsDto;
-import ru.ntdev.srhr.common.dto.api.error.ErrorResponse;
-import ru.ntdev.srhr.common.dto.api.response.SapResponseDtoExtended;
-import ru.ntdev.srhr.common.dto.api.response.requisition.RequisitionDelegationsCachedDto;
-import ru.ntdev.srhr.common.dto.api.response.requisition.RequisitionDelegationsDto;
-import ru.ntdev.srhr.common.dto.api.response.requisition.objects.RequisitionDelegationsItem;
-import ru.ntdev.srhr.ms.requisition.application.common.HttpErrorExceptionHandler;
-import ru.ntdev.srhr.ms.requisition.application.common.RequisitionResponseProcessor;
-import ru.ntdev.srhr.ms.requisition.application.dto.RequisitionContext;
-import ru.ntdev.srhr.ms.requisition.entity.RequisitionRequestEntity;
-import ru.ntdev.srhr.ms.requisition.service.impl.EntityServiceImpl;
-import ru.ntdev.srhr.ms.requisition.service.impl.MasterDataIntegrationServiceImpl;
+        List<String> requestLinOrgUnitIdList = requestValues.getFilters().getStructureFilter().getOrgUnitIdList();
+        List<String> requestFuncOrgUnitIdList = requestValues.getFilters().getStructureFilter().getFuncStructUnitIdList();
+        List<String> alloweqOrgUnitIdList = getAllowedOrgUnitIdList(cachedDto);
 
-@Service
-@Slf4j
-@RequiredArgsConstructor
-public class GetRequisitionDelegationsUseCase {
-
-    private final HttpErrorExceptionHandler httpErrorExceptionHandler;
-    private final RequisitionResponseProcessor requisitionResponseProcessor;
-
-    private final MasterDataIntegrationServiceImpl easupIntegrationService;
-    private final EntityServiceImpl entityService;
-
-    private final RedisAdapter redisAdapter;
-
-    @Value(value = "${spring.data.redis.ttl_delegations}")
-    private int ttlDelegations; //ttl для orgunits в секундах
-    @Value(value = "${app.validation.recruitment-service_id}")
-    private String recruitmentServiceId;
-
-    public String execute(RequisitionContext req) {
-        try {
-            return getRequisitionDelegations(req.requestEntity(), req.systemParams());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        for (String linOrgUnitId : requestLinOrgUnitIdList) {
+            if (!alloweqOrgUnitIdList.contains(linOrgUnitId)) {
+                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "STRUCTURE_FILTER_NOT_ALLOWED");
+            }
+        }
+        for (String funcOrgUnitId : requestFuncOrgUnitIdList) {
+            if (!alloweqOrgUnitIdList.contains(funcOrgUnitId)) {
+                throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "FUNCTION_STRUCTURE_FILTER_NOT_ALLOWED");
+            }
         }
     }
 
-    private String getRequisitionDelegations(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams) throws Exception {
-        long start = System.currentTimeMillis();
-        ResponseEntity<RequisitionDelegationsDto> dtoResponseEntity;
-        RequisitionDelegationsDto dto = new RequisitionDelegationsDto();
-        dto.setAdLogin(systemParams.getAdLogin());
-        dto.setSessionId(systemParams.getSessionId());
-        dto.setChannel(systemParams.getChannel());
+    private void validateVacancy(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, String vacancyId) throws Exception {
+        String requisitionGuid = entityService.findRequisitionGuidByVacancyId(vacancyId);
+        if (requisitionGuid != null) {
+            RequisitionEntity requisitionEntity = entityService.findRequisitionEntityByGuid(requisitionGuid);
+            if (requisitionEntity != null) {
+                String authorPernr = requisitionEntity.getAuthorPernr();
+                String delegatorPernr = requisitionEntity.getDelegatorPernr();
+                String pernr = systemParams.getTabNumber();
 
-        String code = "200";
-        try {
-            dtoResponseEntity = easupIntegrationService.getRequisitionDelegations(
-                    systemParams);
-            dto = (RequisitionDelegationsDto) setDtoIfResponseEntityNotNull(
-                    dtoResponseEntity, dto, systemParams);
-            dto = filterDelegations(dto);
-            if (dto.getDelegationsList() != null) {
-                RequisitionDelegationsCachedDto cachedDto = new RequisitionDelegationsCachedDto();
-                cachedDto.setRefreshedAt(LocalDateTime.now());
-                cachedDto.setDelegations(dto.getDelegationsList());
-                String key = "delegations:" + systemParams.getChannel() + ":" + systemParams.getAdLogin();
-                redisAdapter.putObjectToDb(key, cachedDto, ttlDelegations);
+                validateUserStaffPosition(systemParams, requisitionEntity);
+
+                Boolean pernrCheck = false;
+                Boolean orgUnitCheck = false;
+                if (pernr.equals(authorPernr) || pernr.equals(delegatorPernr)) {
+                    pernrCheck = true;
+                }
+
+                RequisitionOrgUnitsAllowableDto cachedDto = getRequisitionOrgUnitsAllowableCachedDto(requestEntity, systemParams);
+
+                orgUnitCheck = validateVacancyOrgunits(cachedDto, requisitionEntity.getStructUnitId());
+
+                if (!pernrCheck && !orgUnitCheck) {
+                    throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "VACANCY_VALIDATION_FAILED");
+                }
             }
+        }
+    }
+
+    /**
+     * Получаем кэш если он есть, если его нет добавляем и возвращаем
+     */
+    private RequisitionOrgUnitsAllowableDto getRequisitionOrgUnitsAllowableCachedDto(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams) throws Exception {
+        RequisitionOrgUnitsAllowableDto cachedDto;
+        String key = "orgunits:" + systemParams.getChannel() + ":" + systemParams.getTabNumber();
+        cachedDto = redisAdapter.getObjectFromDb(key, RequisitionOrgUnitsAllowableDto.class);
+
+        if (cachedDto == null) {
+            RequisitionOrgUnitsAllowableDto dto = new RequisitionOrgUnitsAllowableDto();
+            dto.setAdLogin(systemParams.getAdLogin());
+            dto.setSessionId(systemParams.getSessionId());
+            dto.setChannel(systemParams.getChannel());
+            cachedDto = getCachedRequisitionOrgUnitsAllowableDto(systemParams, requestEntity.getTabNumber(), dto);
+        }
+        return cachedDto;
+    }
+
+    private void validateUserStaffPosition(SapSystemParamsDto systemParams, RequisitionEntity requisitionEntity) {
+        BscsEmployeeDto bscsUserDto = bscsIntegrationService.getStaffByTabnum(
+                systemParams.getTabNumber(),
+                systemParams.getSessionId(),
+                systemParams.getTraceId()
+        );
+
+        String userPositionId = bscsUserDto.getPosition().getId();
+        String requisitionStaffPosition = requisitionEntity.getStaffPositionId();
+
+        if (requisitionStaffPosition != null) {
+            if (requisitionStaffPosition.equals(userPositionId)) {
+                throw new HttpServerErrorException(HttpStatus.FORBIDDEN, "VACANCY_NOT_ALLOWED");
+            }
+        }
+    }
+
+    private boolean validateVacancyOrgunits(
+            RequisitionOrgUnitsAllowableDto cachedDto,
+            String structureUnitId
+    ) {
+
+        List<String> alloweqOrgUnitIdList = getAllowedOrgUnitIdList(cachedDto);
+        return alloweqOrgUnitIdList.contains(structureUnitId);
+    }
+
+    private List<String> getAllowedOrgUnitIdList(RequisitionOrgUnitsAllowableDto dto) {
+        List<String> allowedOrgUnitIdList = new ArrayList<>();
+
+        for (RequisitionOrganizationLinearListItem linearListItem : dto.getOrganizationLinearList()) {
+            allowedOrgUnitIdList.add(linearListItem.getObject());
+        }
+        for (RequisitionOrganizationFunctionalListItem functionalListItem : dto.getOrganizationFunctionalList()) {
+            allowedOrgUnitIdList.add(functionalListItem.getObject());
+        }
+
+        return allowedOrgUnitIdList;
+    }
+
+    private String setRoles(SapSystemParamsDto systemParams, RequisitionRequestEntity requestEntity, SapResponseDtoExtended dto, Long start) throws Exception {
+        RoleListDto roles;
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        try {
+            roles = getRoles(
+                    systemParams.getAdLogin(),
+                    systemParams.getChannel(),
+                    systemParams.getSessionId(),
+                    systemParams.getTraceId());
+
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            String code = e.getStatusCode().toString();
+            return handleProcessMessageException(systemParams, requestEntity, e, dto, start, code);
+        } catch (Exception e) {
+            String code = "500";
+            return handleProcessMessageException(systemParams, requestEntity, e, dto, start, code);
+        }
+        if (roles == null) {
+            return setDtoIfRolesNull(systemParams, dto, requestEntity, start);
+        }
+
+        return objectMapper.writeValueAsString(roles);
+    }
+
+    private String setTabnumberToSystemParams(SapSystemParamsDto systemParams, RequisitionRequestEntity requestEntity, SapResponseDtoExtended dto, Long start) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        String code = "200";
+        String errorMessage = ErrorResponse.STAFFINFO_NOT_FOUND;
+        BscsEmployeeDto employeeDto = null;
+        try {
+            employeeDto = bscsIntegrationService.getStaffByLogin(
+                    systemParams.getAdLogin(),
+                    systemParams.getSessionId(),
+                    systemParams.getTraceId()
+            );
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             code = e.getStatusCode().toString();
-            httpErrorExceptionHandler.handleHttpClientOrServerErrorException(
-                    e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
         } catch (Exception e) {
             code = "500";
-            httpErrorExceptionHandler.handleException(
-                    e, dto, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
         }
 
-        return requisitionResponseProcessor.finishProcessingMessage(start, systemParams, dto, requestEntity, code);
+        if (!code.equals("200")) {
+            return setDtoIfTabnumInErrorMessageNotNull(systemParams, dto, requestEntity, code, errorMessage, start);
+        }
+        if (employeeDto == null) {
+            return setDtoIfTabnumIsNull(systemParams, dto, requestEntity, start);
+        } else {
+            systemParams.setTabNumber(employeeDto.getId());
+        }
+
+        return mapper.writeValueAsString(systemParams);
     }
 
+    private void checkDtoUuid(SapSystemParamsDto systemParams, SapResponseDtoExtended dto) {
+        if (systemParams.getUuid() != null) {
+            dto.setUuid(systemParams.getUuid());
+            dto.setAdLogin(systemParams.getAdLogin());
+            dto.setSessionId(systemParams.getSessionId());
+            dto.setTraceId(systemParams.getTraceId());
+        }
+    }
+
+    private String finishProcessingMessage(Long start, SapSystemParamsDto systemParams, SapResponseDtoExtended dto, RequisitionRequestEntity requestEntity, String code) throws Exception {
+        long end = System.currentTimeMillis();
+        long processingTime = end - start;
+
+        checkDtoUuid(systemParams, dto);
+
+        dto.setRolesList(systemParams.getRolesHeader());
+        dto.setTabNumber(systemParams.getTabNumber());
+
+        ObjectMapper mapper = new ObjectMapper();
+        String messageOutcoming = mapper.writeValueAsString(dto);
+        RequisitionResponseEntity responseEntity = saveAndGetResponse(systemParams.getUuid(), requestEntity, messageOutcoming, processingTime, code);
+
+        if (code.equals("200")) {
+            entityService.deleteResponseByUidAndId(systemParams.getUuid(), responseEntity.getId().toString());
+            entityService.deleteRequestByUidAndId(systemParams.getUuid(), requestEntity.getId().toString());
+        }
+
+        messageOutcoming = checkMessageSize(dto, messageOutcoming);
+
+        return messageOutcoming;
+    }
+
+    // Не используется метод getBytes, чтобы избежать создания большого массива байтов
+    private String checkMessageSize(SapResponseDtoExtended dto, String message) throws JsonProcessingException {
+        int messageSize = ((2 * message.length()) + 32) / 1000;
+        if (messageSize < kafkaProducerMaxInnerMessageSizeKb) {
+            return message;
+        } else {
+            ObjectMapper mapper = new ObjectMapper();
+            SapResponseDtoExtended storagedDto = new SapResponseDtoExtended();
+
+            storagedDto.setRequestType(dto.getRequestType());
+            storagedDto.setUuid(dto.getUuid());
+            storagedDto.setAdLogin(dto.getAdLogin());
+            storagedDto.setErrorMessage(dto.getErrorMessage());
+            storagedDto.setChannel(dto.getChannel());
+            storagedDto.setTraceId(dto.getRequestType());
+
+            String messageUuid = storeMessageContent(
+                    dto.getAdLogin(),
+                    dto.getSessionId(),
+                    dto.getTraceId(),
+                    dto.getAdLogin() + '_' + dto.getRequestType(),
+                    message,
+                    dto.getUuid());
+            storagedDto.setFileUuid(messageUuid);
+            return mapper.writeValueAsString(storagedDto);
+        }
+    }
+
+    // todo use two point
     private SapResponseDtoExtended setDtoIfResponseEntityNotNull(ResponseEntity<? extends SapResponseDtoExtended> dtoResponseEntity, SapResponseDtoExtended dto, SapSystemParamsDto systemParams) {
         if (dtoResponseEntity != null) {
             dto = dtoResponseEntity.getBody();
@@ -246,11 +1143,121 @@ public class GetRequisitionDelegationsUseCase {
         return dto;
     }
 
-    private RequisitionDelegationsDto filterDelegations(RequisitionDelegationsDto dto) {
-        List<RequisitionDelegationsItem> filteredDelegations = dto.getDelegationsList().stream()
-                .filter(e -> recruitmentServiceId.equals(e.getId()))
-                .toList();
-        dto.setDelegationsList(filteredDelegations);
+    private String setDtoIfTabnumInErrorMessageNotNull(SapSystemParamsDto systemParams, SapResponseDtoExtended dto, RequisitionRequestEntity requestEntity, String code, String errorMessage, Long start) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        long end = System.currentTimeMillis();
+        long processingTime = end - start;
+        dto.setUuid(systemParams.getUuid());
+        dto.setResponseCode(code);
+        dto.setErrorMessage(errorMessage);
+        dto.setTraceId(systemParams.getTraceId());
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setChannel(systemParams.getChannel());
+        dto.setRequestType(systemParams.getRequestType());
+        dto.setSessionId(systemParams.getSessionId());
+        saveResponse(systemParams.getUuid(), requestEntity, errorMessage, processingTime, code);
+        return mapper.writeValueAsString(dto);
+    }
+
+    private String setDtoIfTabnumIsNull(SapSystemParamsDto systemParams, SapResponseDtoExtended dto, RequisitionRequestEntity requestEntity, Long start) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        long end = System.currentTimeMillis();
+        long processingTime = end - start;
+        String errorMessage = "Табельный номер юзера " + systemParams.getAdLogin() + " не найден.";
+        dto.setUuid(systemParams.getUuid());
+        dto.setResponseCode("404");
+        dto.setErrorMessage(errorMessage);
+        dto.setTraceId(systemParams.getTraceId());
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setChannel(systemParams.getChannel());
+        dto.setRequestType(systemParams.getRequestType());
+        dto.setSessionId(systemParams.getSessionId());
+        saveResponse(systemParams.getUuid(), requestEntity, errorMessage, processingTime, "404");
+        return mapper.writeValueAsString(dto);
+    }
+
+    private String setDtoIfRolesNull(SapSystemParamsDto systemParams, SapResponseDtoExtended dto, RequisitionRequestEntity requestEntity, Long start) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        String errorMessage = "Роль для юзера " + systemParams.getAdLogin() + " не найдена.";
+        long end = System.currentTimeMillis();
+        long processingTime = end - start;
+        dto.setUuid(systemParams.getUuid());
+        dto.setResponseCode("404");
+        dto.setErrorMessage(errorMessage);
+        dto.setTraceId(systemParams.getTraceId());
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setChannel(systemParams.getChannel());
+        dto.setRequestType(systemParams.getRequestType());
+        dto.setSessionId(systemParams.getSessionId());
+        saveResponse(systemParams.getUuid(), requestEntity, errorMessage, processingTime, "404");
+        return mapper.writeValueAsString(dto);
+    }
+
+    private String handleProcessMessageException(SapSystemParamsDto systemParams, RequisitionRequestEntity requestEntity, Exception e, SapResponseDtoExtended dto, Long start, String code) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        log.error("Не удалось получить роль юзера [{}]: [{}]", systemParams.getAdLogin(), e.getMessage());
+        String errorText = e.getMessage();
+        String errorMessage = "Ошибка при получении роли юзера " + systemParams.getAdLogin() + " : " + errorText;
+        long end = System.currentTimeMillis();
+        long processingTime = end - start;
+        dto.setUuid(systemParams.getUuid());
+        dto.setResponseCode(code);
+        dto.setErrorMessage(errorMessage);
+        dto.setTraceId(systemParams.getTraceId());
+        dto.setAdLogin(systemParams.getAdLogin());
+        dto.setChannel(systemParams.getChannel());
+        dto.setRequestType(systemParams.getRequestType());
+        dto.setSessionId(systemParams.getSessionId());
+        saveResponse(systemParams.getUuid(), requestEntity, errorMessage, processingTime, code);
+        return mapper.writeValueAsString(dto);
+    }
+
+    private void handleHttpClientOrServerErrorException(HttpStatusCodeException e, SapResponseDtoExtended dto, SapSystemParamsDto systemParams, String errorMessage) {
+        dto.setResponseCode(e.getStatusCode().toString());
+        dto.setErrorMessage(e.getMessage());
+        entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.ERROR_REPLY);
+        log.warn(errorMessage + ": [{}]", e.getMessage());
+    }
+
+    private void handleException(Exception e, SapResponseDtoExtended dto, SapSystemParamsDto systemParams, String errorMessage) {
+        dto.setResponseCode(HttpStatus.INTERNAL_SERVER_ERROR.toString());
+        dto.setErrorMessage(e.getMessage());
+        entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.ERROR_REPLY);
+        log.warn(errorMessage + ": [{}]", e.getMessage());
+    }
+
+    private SapResponseDtoExtended createDtoWithBasicParams1(SapResponseDtoExtended dto, String adLogin, String sessionId, String channel) {
+        dto.setAdLogin(adLogin);
+        dto.setSessionId(sessionId);
+        dto.setChannel(channel);
         return dto;
+    }
+
+    private SapResponseDtoExtended createDtoWithBasicParams(String adLogin, String sessionId, String channel) {
+        SapResponseDtoExtended dto = new SapResponseDtoExtended();
+        dto.setAdLogin(adLogin);
+        dto.setSessionId(sessionId);
+        dto.setChannel(channel);
+        return dto;
+    }
+
+    private String getSingleContent(String adlogin, String sessionId, String traceId, String contentId) {
+        FileGetByIdDto fileGetByIdDto = filestorageService.getFileById(adlogin, sessionId, traceId, contentId);
+        return fileGetByIdDto.getContent();
+    }
+
+    private String storeSingleContent(String adlogin, String sessionId, String traceId, String filename, String base64, String requestUid) {
+        FilePostDto filePostDto = filestorageService.putFileToDb(adlogin, sessionId, traceId, requestUid, filename, base64);
+        return filePostDto.getFileUID();
+    }
+
+    private String storeMessageContent(String adlogin, String sessionId, String traceId, String messageName, String messageContent, String requestUid) {
+        MessagePostDto messagePostDto = filestorageService.putMessageToDb(adlogin, sessionId, traceId, requestUid, messageName, messageContent);
+        return messagePostDto.getMessageUID();
+    }
+
+    private String getOutStoredMessage(String adlogin, String sessionId, String traceId, String id) {
+        MessageGetByIdDto messageGetByIdDto = filestorageService.getMessageById(adlogin, sessionId, traceId, id);
+        return messageGetByIdDto.getMessageContent();
     }
 }
