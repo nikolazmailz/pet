@@ -1,22 +1,11 @@
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+RequisitionCandidateInfoEvent event = new RequisitionCandidateInfoEvent();
 
-org.mockito.exceptions.verification.NeverWantedButInvoked: 
-httpErrorExceptionHandler.handleException(
-    <any>,
-    <any>,
-    <any>,
-    <any>
-);
-Never wanted here:
--> at ru.ntdev.srhr.ms.requisition.application.common.HttpErrorExceptionHandler.handleException(HttpErrorExceptionHandler.java:28)
-But invoked here:
--> at ru.ntdev.srhr.ms.requisition.application.usecase.GetCandidateInfoUseCase.getCandidateInfo(GetCandidateInfoUseCase.java:122) with arguments: [java.lang.NullPointerException: Cannot invoke "ru.ntdev.srhr.common.dto.api.response.requisition.objects.RequisitionCandidateInfoEmployee.equals(Object)" because the return value of "ru.ntdev.srhr.common.dto.api.response.requisition.objects.RequisitionCandidateInfoEvent.getEventCreator()" is null, RequisitionGeneralCandidateDto(super=SapResponseDtoExtended(uuid=null, responseCode=null, errorMessage=null, tabNumber=null, adLogin=null, sessionId=null, channel=null, rolesList=null, traceId=null, requestType=null, requestTs=null, responseTs=null, realm=null, fileUuid=null), candidate=null), SapSystemParamsDto(super=SapResponseDtoExtended(uuid=test-uuid, responseCode=null, errorMessage=null, tabNumber=12345, adLogin=ad-login, sessionId=session-id, channel=channel, rolesList=null, traceId=null, requestType=null, requestTs=null, responseTs=null, realm=null, fileUuid=null), tabNumber=12345, role=null, rolesHeader=null, realm=null), Cannot invoke "ru.ntdev.srhr.common.dto.api.response.requisition.objects.RequisitionCandidateInfoEmployee.equals(Object)" because the return value of "ru.ntdev.srhr.common.dto.api.response.requisition.objects.RequisitionCandidateInfoEvent.getEventCreator()" is null]
+RequisitionCandidateInfoEmployee approver = new RequisitionCandidateInfoEmployee();
+approver.setId("12345");
+event.setPlanApprover(approver);
 
+RequisitionCandidateInfoEmployee creator = new RequisitionCandidateInfoEmployee();
+creator.setId("12345");   // подставьте то, что ожидает логика сравнения
+event.setEventCreator(creator);
 
-	at ru.ntdev.srhr.ms.requisition.application.common.HttpErrorExceptionHandler.handleException(HttpErrorExceptionHandler.java:28)
-	at ru.ntdev.srhr.ms.requisition.application.usecase.GetCandidateInfoUseCaseTest$HappyPath.shouldReturnSuccessResponseWhenBothValidationsPass(GetCandidateInfoUseCaseTest.java:137)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-
+dto.getCandidate().setEvents(List.of(event));
