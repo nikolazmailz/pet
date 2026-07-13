@@ -9,3 +9,27 @@ creator.setId("12345");   // подставьте то, что ожидает л
 event.setEventCreator(creator);
 
 dto.getCandidate().setEvents(List.of(event));
+
+
+// Given
+RequisitionCandidateInfo candidate = new RequisitionCandidateInfo();
+candidate.setResumeId("resume-1");
+
+RequisitionCandidateInfoEvent event = new RequisitionCandidateInfoEvent();
+
+RequisitionCandidateInfoEmployee approver = new RequisitionCandidateInfoEmployee();
+approver.setId("12345");
+event.setPlanApprover(approver);
+
+RequisitionCandidateInfoEmployee creator = new RequisitionCandidateInfoEmployee();
+creator.setId("12345");
+event.setEventCreator(creator);
+
+candidate.setEvents(List.of(event));
+
+RequisitionCandidateInfoDto dto = new RequisitionCandidateInfoDto();
+dto.setCandidate(candidate);
+
+RequisitionGeneralCandidateDto dtoOut = new RequisitionGeneralCandidateDto();
+when(candidateService.getCandidateInfo(any(), anyString(), anyString())).thenReturn(dto);
+when(mapperService.mapToGeneralCandidateInfoDto(dto)).thenReturn(dtoOut);
