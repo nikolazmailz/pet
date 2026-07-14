@@ -1,66 +1,43 @@
-package ru.ntdev.srhr.ms.requisition.filter;
-
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpRequest;
-import org.springframework.http.client.ClientHttpRequestExecution;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
-import org.springframework.http.client.ClientHttpResponse;
-import ru.ntdev.srhr.common.util.LogUtil;
-
-import java.io.IOException;
-
-public class IntegrationRequestInterceptor implements ClientHttpRequestInterceptor {
-
-    @Override
-    public ClientHttpResponse intercept(
-            HttpRequest request,
-            byte[] body,
-            ClientHttpRequestExecution execution
-            ) throws IOException {
-
-        HttpHeaders headers = request.getHeaders();
-        LogUtil.logRequest(headers.get("pernr").toString(),headers.get("sessionId").toString(), request.getMethod().name(), request.getURI().toString(),false,
-        null, headers.get("logId").toString());
-        ClientHttpResponse response = execution.execute(request, body);
-        if (response.getStatusCode().is2xxSuccessful()) {
-            LogUtil.logResponse(headers.get("pernr").toString(), headers.get("sessionId").toString(), request.getMethod().name(), request.getURI().toString(), String.valueOf(response.getStatusCode().value()), null, false, null, headers.get("logId").toString());
-        } else {
-            LogUtil.logResponse(headers.get("pernr").toString(), headers.get("sessionId").toString(), request.getMethod().name(), request.getURI().toString(), String.valueOf(response.getStatusCode().value()), null, false, null, headers.get("logId").toString());
-        }
-        return response;
-    }
-}
-
-
-
 package ru.ntdev.srhr.common.integration;
 
-import java.io.IOException;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpRequest;
-import org.springframework.http.client.ClientHttpRequestExecution;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
-import org.springframework.http.client.ClientHttpResponse;
-import ru.ntdev.srhr.common.util.LogUtil;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.client.RestTemplate;
 
-public class IntegrationRequestInterceptor implements ClientHttpRequestInterceptor {
+@Configuration
+public class IntegrationRestTemplateConfiguration {
 
-    @Override
-    public ClientHttpResponse intercept(HttpRequest request, byte[] body,
-                                        ClientHttpRequestExecution execution) throws IOException {
-        HttpHeaders headers = request.getHeaders();
-        String pernr = headers.getFirst("pernr");
-        String sessionId = headers.getFirst("sessionId");
-        String logId = headers.getFirst("logId");
-        String method = request.getMethod().name();
-        String uri = request.getURI().toString();
+    @Bean
+    @ConditionalOnMissingBean(name = "integrationRestTemplate")
+    public RestTemplate integrationRestTemplate(
+            ObjectProvider<MappingJackson2HttpMessageConverter> converter) {
 
-        LogUtil.logRequest(pernr, sessionId, method, uri, false, null, logId);
+        PoolingHttpClientConnectionManager cm = PoolingHttpClientConnectionManagerBuilder.create()
+                .setMaxConnTotal(100)
+                .setMaxConnPerRoute(20)
+                .build();
 
-        ClientHttpResponse response = execution.execute(request, body);
+        CloseableHttpClient client = HttpClients.custom()
+                .setConnectionManager(cm)
+                .build();
 
-        LogUtil.logResponse(pernr, sessionId, method, uri,
-                String.valueOf(response.getStatusCode().value()), null, false, null, logId);
-        return response;
+        RestTemplateBuilder builder = new RestTemplateBuilder()
+                .requestFactory(() -> new HttpComponentsClientHttpRequestFactory(client))
+                .additionalInterceptors(new IntegrationRequestInterceptor());
+
+        MappingJackson2HttpMessageConverter c = converter.getIfAvailable();
+        if (c != null) {
+            builder = builder.additionalMessageConverters(c);
+        }
+        return builder.build();
     }
 }
