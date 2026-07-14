@@ -4,40 +4,57 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
-import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.web.client.RestTemplateAutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
-@Configuration
-public class IntegrationRestTemplateConfiguration {
+@AutoConfiguration(after = RestTemplateAutoConfiguration.class)
+@ConditionalOnClass({RestTemplate.class, CloseableHttpClient.class})
+public class IntegrationRestTemplateAutoConfiguration {
 
+    private static final int MAX_CONN_TOTAL = 100;
+    private static final int MAX_CONN_PER_ROUTE = 20;
+
+    @Bean(destroyMethod = "close")
+    @ConditionalOnMissingBean(name = "integrationHttpClient")
+    public CloseableHttpClient integrationHttpClient() {
+        PoolingHttpClientConnectionManager cm = PoolingHttpClientConnectionManagerBuilder.create()
+                .setMaxConnTotal(MAX_CONN_TOTAL)
+                .setMaxConnPerRoute(MAX_CONN_PER_ROUTE)
+                .build();
+
+        return HttpClients.custom()
+                .setConnectionManager(cm)
+                .build();
+    }
+
+    /** Без логирования. */
     @Bean
     @ConditionalOnMissingBean(name = "integrationRestTemplate")
     public RestTemplate integrationRestTemplate(
-            ObjectProvider<MappingJackson2HttpMessageConverter> converter) {
+            RestTemplateBuilder builder,
+            CloseableHttpClient integrationHttpClient) {
 
-        PoolingHttpClientConnectionManager cm = PoolingHttpClientConnectionManagerBuilder.create()
-                .setMaxConnTotal(100)
-                .setMaxConnPerRoute(20)
+        return builder
+                .requestFactory(() -> new HttpComponentsClientHttpRequestFactory(integrationHttpClient))
                 .build();
+    }
 
-        CloseableHttpClient client = HttpClients.custom()
-                .setConnectionManager(cm)
+    /** С логированием запросов/ответов. */
+    @Bean
+    @ConditionalOnMissingBean(name = "loggingIntegrationRestTemplate")
+    public RestTemplate loggingIntegrationRestTemplate(
+            RestTemplateBuilder builder,
+            CloseableHttpClient integrationHttpClient) {
+
+        return builder
+                .requestFactory(() -> new HttpComponentsClientHttpRequestFactory(integrationHttpClient))
+                .additionalInterceptors(new IntegrationRequestInterceptor())
                 .build();
-
-        RestTemplateBuilder builder = new RestTemplateBuilder()
-                .requestFactory(() -> new HttpComponentsClientHttpRequestFactory(client))
-                .additionalInterceptors(new IntegrationRequestInterceptor());
-
-        MappingJackson2HttpMessageConverter c = converter.getIfAvailable();
-        if (c != null) {
-            builder = builder.additionalMessageConverters(c);
-        }
-        return builder.build();
     }
 }
