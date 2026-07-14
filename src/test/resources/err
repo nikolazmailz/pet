@@ -1,35 +1,36 @@
-RequisitionCandidateInfoEvent event = new RequisitionCandidateInfoEvent();
+   private ObjectMapper mapper;
 
-RequisitionCandidateInfoEmployee approver = new RequisitionCandidateInfoEmployee();
-approver.setId("12345");
-event.setPlanApprover(approver);
+    @Value("${spring.kafka.topic.name.to-easup}")
+    String kafkaTopicNameToEasup;
 
-RequisitionCandidateInfoEmployee creator = new RequisitionCandidateInfoEmployee();
-creator.setId("12345");   // подставьте то, что ожидает логика сравнения
-event.setEventCreator(creator);
-
-dto.getCandidate().setEvents(List.of(event));
+    @PostConstruct
+    public void initializeMapper() {
+        mapper = jacksonConfig.objectMapper();
+    }
 
 
-// Given
-RequisitionCandidateInfo candidate = new RequisitionCandidateInfo();
-candidate.setResumeId("resume-1");
+@Configuration
+public class JacksonConfig {
 
-RequisitionCandidateInfoEvent event = new RequisitionCandidateInfoEvent();
+    @Value("${jackson.max-string-value}")
+    Integer jacksonMaxStringValue;
 
-RequisitionCandidateInfoEmployee approver = new RequisitionCandidateInfoEmployee();
-approver.setId("12345");
-event.setPlanApprover(approver);
+    @Bean
+    @Primary
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper(
+                new JsonFactoryBuilder()
+                        .streamReadConstraints(
+                                StreamReadConstraints.builder()
+                                        .maxStringLength(jacksonMaxStringValue)
+                                        .build()
+                        ).build()
+        );
+    }
 
-RequisitionCandidateInfoEmployee creator = new RequisitionCandidateInfoEmployee();
-creator.setId("12345");
-event.setEventCreator(creator);
-
-candidate.setEvents(List.of(event));
-
-RequisitionCandidateInfoDto dto = new RequisitionCandidateInfoDto();
-dto.setCandidate(candidate);
-
-RequisitionGeneralCandidateDto dtoOut = new RequisitionGeneralCandidateDto();
-when(candidateService.getCandidateInfo(any(), anyString(), anyString())).thenReturn(dto);
-when(mapperService.mapToGeneralCandidateInfoDto(dto)).thenReturn(dtoOut);
+    public MappingJackson2HttpMessageConverter createCustomConverter(ObjectMapper objectMapper) {
+        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+        converter.setObjectMapper(objectMapper);
+        return converter;
+    }
+}
