@@ -1,36 +1,66 @@
-   private ObjectMapper mapper;
+package ru.ntdev.srhr.ms.requisition.filter;
 
-    @Value("${spring.kafka.topic.name.to-easup}")
-    String kafkaTopicNameToEasup;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRequest;
+import org.springframework.http.client.ClientHttpRequestExecution;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.ClientHttpResponse;
+import ru.ntdev.srhr.common.util.LogUtil;
 
-    @PostConstruct
-    public void initializeMapper() {
-        mapper = jacksonConfig.objectMapper();
+import java.io.IOException;
+
+public class IntegrationRequestInterceptor implements ClientHttpRequestInterceptor {
+
+    @Override
+    public ClientHttpResponse intercept(
+            HttpRequest request,
+            byte[] body,
+            ClientHttpRequestExecution execution
+            ) throws IOException {
+
+        HttpHeaders headers = request.getHeaders();
+        LogUtil.logRequest(headers.get("pernr").toString(),headers.get("sessionId").toString(), request.getMethod().name(), request.getURI().toString(),false,
+        null, headers.get("logId").toString());
+        ClientHttpResponse response = execution.execute(request, body);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            LogUtil.logResponse(headers.get("pernr").toString(), headers.get("sessionId").toString(), request.getMethod().name(), request.getURI().toString(), String.valueOf(response.getStatusCode().value()), null, false, null, headers.get("logId").toString());
+        } else {
+            LogUtil.logResponse(headers.get("pernr").toString(), headers.get("sessionId").toString(), request.getMethod().name(), request.getURI().toString(), String.valueOf(response.getStatusCode().value()), null, false, null, headers.get("logId").toString());
+        }
+        return response;
     }
+}
 
 
-@Configuration
-public class JacksonConfig {
 
-    @Value("${jackson.max-string-value}")
-    Integer jacksonMaxStringValue;
+package ru.ntdev.srhr.common.integration;
 
-    @Bean
-    @Primary
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper(
-                new JsonFactoryBuilder()
-                        .streamReadConstraints(
-                                StreamReadConstraints.builder()
-                                        .maxStringLength(jacksonMaxStringValue)
-                                        .build()
-                        ).build()
-        );
-    }
+import java.io.IOException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRequest;
+import org.springframework.http.client.ClientHttpRequestExecution;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.ClientHttpResponse;
+import ru.ntdev.srhr.common.util.LogUtil;
 
-    public MappingJackson2HttpMessageConverter createCustomConverter(ObjectMapper objectMapper) {
-        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-        converter.setObjectMapper(objectMapper);
-        return converter;
+public class IntegrationRequestInterceptor implements ClientHttpRequestInterceptor {
+
+    @Override
+    public ClientHttpResponse intercept(HttpRequest request, byte[] body,
+                                        ClientHttpRequestExecution execution) throws IOException {
+        HttpHeaders headers = request.getHeaders();
+        String pernr = headers.getFirst("pernr");
+        String sessionId = headers.getFirst("sessionId");
+        String logId = headers.getFirst("logId");
+        String method = request.getMethod().name();
+        String uri = request.getURI().toString();
+
+        LogUtil.logRequest(pernr, sessionId, method, uri, false, null, logId);
+
+        ClientHttpResponse response = execution.execute(request, body);
+
+        LogUtil.logResponse(pernr, sessionId, method, uri,
+                String.valueOf(response.getStatusCode().value()), null, false, null, logId);
+        return response;
     }
 }
