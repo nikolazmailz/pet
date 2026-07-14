@@ -1,0 +1,257 @@
+package ru.ntdev.srhr.common.util;
+
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
+
+import static ru.ntdev.srhr.common.dto.api.error.ErrorResponse.TIMESHEET_ROLE_NOT_FOUND;
+
+@Slf4j
+@Component
+public class LogUtil {
+
+    @Value("${log.requestHeadersToShow}") private String requestHeadersToShow;
+    @Value("${log.responseHeadersToHide}") private String responseHeadersToHide;
+
+    private static String STATIC_HEADERS_TO_SHOW;
+    private static String STATIC_HEADERS_TO_HIDE;
+    @Value("${log.requestHeadersToShow}")
+    public void setStaticHeadersToShow(String headers) {
+        STATIC_HEADERS_TO_SHOW = headers;
+    }
+    @Value("${log.responseHeadersToHide}")
+    public void setStaticHeadersToHide(String headers) {
+        STATIC_HEADERS_TO_HIDE = headers;
+    }
+
+    public static String getHeadersToShow() {
+        return STATIC_HEADERS_TO_SHOW;
+    }
+    public static String getHeadersToHide() {
+        return STATIC_HEADERS_TO_HIDE;
+    }
+
+    private static String cleanExtraChars (String stringToClean){
+        if (stringToClean!=null) {
+        stringToClean = stringToClean.replace("[","");
+        stringToClean = stringToClean.replace("]","");
+        return stringToClean;
+        } else {
+            return null;
+        }
+    }
+
+    public static void logRequest(String tabnumOrLogin, String sessionId, String httpMethod, String url, boolean isSapRequest, HttpHeaders headers, String traceId){
+        tabnumOrLogin = cleanExtraChars(tabnumOrLogin);
+        sessionId = cleanExtraChars(sessionId);
+        traceId = cleanExtraChars(traceId);
+        String adLoginWithoutDomain = tabnumOrLogin.split("@")[0];
+        MDC.put("userId", adLoginWithoutDomain);
+        MDC.put("sessionId", sessionId);
+        MDC.put("traceId", traceId);
+        httpMethod = bracketifyParams(httpMethod);
+        url = bracketifyParams(url);
+        String logMessage = ">> "+httpMethod+" request sent to "+url;
+        if (isSapRequest) {
+            String headersToShowValue = LogUtil.getHeadersToShow();
+            List<String> headersToShow = new ArrayList<>();
+            StringTokenizer tokenizer = new StringTokenizer(headersToShowValue, ",");
+            while (tokenizer.hasMoreTokens()) {
+                String token = tokenizer.nextToken();
+                headersToShow.add(token);
+            }
+            HttpHeaders headersCleaned = new HttpHeaders();
+            headersCleaned.addAll(headers);
+            Set<String> headerKeys = headers.keySet();
+            for (String key : headerKeys){
+                if (headersToShow.stream().noneMatch(str -> str.equals(key))) {
+                    headersCleaned.remove(key);
+                }
+            }
+            String headersString = headersCleaned.entrySet().toString();
+            headersString = headersString.substring( 1, headersString.length() - 1 );
+            headersString = headersString.replace("], ","],\n");
+            logMessage = logMessage.concat("\n"+"Headers: "+"\n"+headersString);
+        }
+        log.info(logMessage);
+    }
+
+    public static void logResponse(String tabnumOrLogin, String sessionId, String httpMethod, String url, String statusCode, String errorText, boolean isSapRequest, HttpHeaders headers, String traceId){
+        tabnumOrLogin = cleanExtraChars(tabnumOrLogin);
+        sessionId = cleanExtraChars(sessionId);
+        traceId = cleanExtraChars(traceId);
+        String adLoginWithoutDomain = tabnumOrLogin.split("@")[0];
+        MDC.put("userId", adLoginWithoutDomain);
+        MDC.put("sessionId", sessionId);
+        MDC.put("traceId", traceId);
+        if (statusCode.startsWith("2")){
+            statusCode = bracketifyParams(statusCode);
+            String logMessage = "<< Status: "+statusCode;
+            httpMethod = bracketifyParams(httpMethod);
+            url = bracketifyParams(url);
+            logMessage = logMessage.concat("\n"+"<< "+httpMethod+" request received from "+url);
+            if (isSapRequest) {
+                String headersToShowValue = LogUtil.getHeadersToHide();
+                List<String> headersToShow = new ArrayList<>();
+                StringTokenizer tokenizer = new StringTokenizer(headersToShowValue, ",");
+                while (tokenizer.hasMoreTokens()) {
+                    String token = tokenizer.nextToken();
+                    headersToShow.add(token);
+                }
+                HttpHeaders headersCleaned = new HttpHeaders();
+                headersCleaned.addAll(headers);
+                Set<String> headerKeys = headers.keySet();
+                for (String key : headerKeys){
+                    if (headersToShow.stream().anyMatch(str -> str.equals(key))) {
+                        headersCleaned.remove(key);
+                    }
+                }
+                String headersString = headersCleaned.entrySet().toString();
+                headersString = headersString.substring( 1, headersString.length() - 1 );
+                headersString = headersString.replace("], ","],\n");
+                logMessage = logMessage.concat("\n"+"Headers: "+"\n"+headersString);
+            }
+            log.info(logMessage);
+        } else {
+            String rawStatusCode = statusCode;
+            statusCode = bracketifyParams(statusCode);
+            String logMessage = "<< Status: "+statusCode;
+            httpMethod = bracketifyParams(httpMethod);
+            url = bracketifyParams(url);
+            logMessage = logMessage.concat("\t"+"<< "+httpMethod+" request received from "+url);
+            if (errorText!=null) {
+                logMessage = logMessage.concat("\n" + "Error text: " + errorText);
+            }
+            if (isSapRequest) {
+                String headersToShowValue = LogUtil.getHeadersToHide();
+                List<String> headersToShow = new ArrayList<>();
+                StringTokenizer tokenizer = new StringTokenizer(headersToShowValue, ",");
+                while (tokenizer.hasMoreTokens()) {
+                    String token = tokenizer.nextToken();
+                    headersToShow.add(token);
+                }
+                HttpHeaders headersCleaned = new HttpHeaders();
+                headersCleaned.addAll(headers);
+                Set<String> headerKeys = headers.keySet();
+                for (String key : headerKeys){
+                    if (headersToShow.stream().anyMatch(str -> str.equals(key))) {
+                        headersCleaned.remove(key);
+                    }
+                }
+                String headersString = headersCleaned.entrySet().toString();
+                headersString = headersString.substring( 1, headersString.length() - 1 );
+                headersString = headersString.replace("], ","],\n");
+                logMessage = logMessage.concat("\n"+"Headers: "+"\n"+headersString);
+            }
+            if (rawStatusCode.equals("510")||rawStatusCode.equals("510 NOT_EXTENDED")){
+                log.warn(logMessage);
+            } else if (errorText!=null&&errorText.contains(TIMESHEET_ROLE_NOT_FOUND)) {
+                log.warn(logMessage);
+            } else {
+                log.error(logMessage);
+            }
+        }
+    }
+
+    public static void logResponseWarn(String tabnumOrLogin, String sessionId, String httpMethod, String url, String statusCode, String errorText, boolean isSapRequest, HttpHeaders headers, String traceId){
+        tabnumOrLogin = cleanExtraChars(tabnumOrLogin);
+        sessionId = cleanExtraChars(sessionId);
+        traceId = cleanExtraChars(traceId);
+        String adLoginWithoutDomain = tabnumOrLogin.split("@")[0];
+        MDC.put("userId", adLoginWithoutDomain);
+        MDC.put("sessionId", sessionId);
+        MDC.put("traceId", traceId);
+        statusCode = bracketifyParams(statusCode);
+        String logMessage = "<< Status: "+statusCode;
+        httpMethod = bracketifyParams(httpMethod);
+        url = bracketifyParams(url);
+        logMessage = logMessage.concat("\t"+"<< "+httpMethod+" request received from "+url);
+        if (errorText!=null) {
+            logMessage = logMessage.concat("\n" + "Error text: " + errorText);
+        }
+        if (isSapRequest) {
+            String headersToShowValue = LogUtil.getHeadersToHide();
+            List<String> headersToShow = new ArrayList<>();
+            StringTokenizer tokenizer = new StringTokenizer(headersToShowValue, ",");
+            while (tokenizer.hasMoreTokens()) {
+                String token = tokenizer.nextToken();
+                headersToShow.add(token);
+            }
+            HttpHeaders headersCleaned = new HttpHeaders();
+            headersCleaned.addAll(headers);
+            Set<String> headerKeys = headers.keySet();
+            for (String key : headerKeys){
+                if (headersToShow.stream().anyMatch(str -> str.equals(key))) {
+                    headersCleaned.remove(key);
+                }
+            }
+            String headersString = headersCleaned.entrySet().toString();
+            headersString = headersString.substring( 1, headersString.length() - 1 );
+            headersString = headersString.replace("], ","],\n");
+            logMessage = logMessage.concat("\n"+"Headers: "+"\n"+headersString);
+        }
+        log.warn(logMessage);
+    }
+
+    public static void logSapErrorResponse(String tabnumOrLogin, String sessionId, String errorText, String traceId, Integer statusCode) {
+        tabnumOrLogin = cleanExtraChars(tabnumOrLogin);
+        sessionId = cleanExtraChars(sessionId);
+        traceId = cleanExtraChars(traceId);
+        String adLoginWithoutDomain = tabnumOrLogin.split("@")[0];
+        MDC.put("userId", adLoginWithoutDomain);
+        MDC.put("sessionId", sessionId);
+        MDC.put("traceId", traceId);
+        String logMessage = "Full SAP error response: "+errorText;
+        if (statusCode!=null&&statusCode==510){
+            log.warn(logMessage);
+        } else {
+            log.error(logMessage);
+        }
+    }
+
+    public static void logKafkaMessageSent(String tabnumOrLogin, String sessionId, String requestType, String topic, String traceId){
+        tabnumOrLogin = cleanExtraChars(tabnumOrLogin);
+        sessionId = cleanExtraChars(sessionId);
+        traceId = cleanExtraChars(traceId);
+        String adLoginWithoutDomain = null;
+        if (tabnumOrLogin!=null) {
+            adLoginWithoutDomain = tabnumOrLogin.split("@")[0];
+        }
+        MDC.put("userId", adLoginWithoutDomain);
+        MDC.put("sessionId", sessionId);
+        MDC.put("traceId", traceId);
+        requestType = bracketifyParams(requestType);
+        topic = bracketifyParams(topic);
+        String logMessage = ">> Sending kafka message, request of type "+requestType+" sent to topic "+topic;
+        log.info(logMessage);
+    }
+
+    public static void logKafkaMessageGot(String tabnumOrLogin, String sessionId, String requestType, String topic, String traceId){
+        tabnumOrLogin = cleanExtraChars(tabnumOrLogin);
+        sessionId = cleanExtraChars(sessionId);
+        traceId = cleanExtraChars(traceId);
+        String adLoginWithoutDomain = null;
+        if (tabnumOrLogin!=null) {
+            adLoginWithoutDomain = tabnumOrLogin.split("@")[0];
+        }
+        MDC.put("userId", adLoginWithoutDomain);
+        MDC.put("sessionId", sessionId);
+        MDC.put("traceId", traceId);
+        requestType = bracketifyParams(requestType);
+        topic = bracketifyParams(topic);
+        String logMessage = "<< Accepting kafka message, request of type "+requestType+" recieved from topic "+topic;
+        log.info(logMessage);
+    }
+
+    // Переменные данные окружаются [], чтобы их мог корректно обрабатывать СС РО
+    public static String bracketifyParams(String param) {
+        return "["+param+"]";
+    }
+}
