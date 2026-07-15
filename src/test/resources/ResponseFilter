@@ -1,19 +1,19 @@
-@WebFilter("/*")
-@Component
-public class UserinfoResponseFilter implements Filter {
-    @Override
-    public void init(FilterConfig filterConfig) {
-
+@Configuration(proxyBeanMethods = false)
+public class CorsFilterConfiguration {
+    @Bean
+    public FilterRegistrationBean<CorsAllowOriginFilter> corsAllowOriginFilter() {
+        var reg = new FilterRegistrationBean<>(new CorsAllowOriginFilter());
+        reg.addUrlPatterns("/*");
+        reg.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return reg;
     }
-    @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
-        httpServletResponse.setHeader("Access-Control-Allow-Origin", "*");
-        filterChain.doFilter(servletRequest, servletResponse);
-    }
+}
 
+public class CorsAllowOriginFilter implements Filter {
     @Override
-    public void destroy() {
-
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
+            throws IOException, ServletException {
+        ((HttpServletResponse) res).setHeader("Access-Control-Allow-Origin", "*");
+        chain.doFilter(req, res);
     }
 }
