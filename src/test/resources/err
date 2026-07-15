@@ -86,3 +86,18 @@ public class JacksonConfig {
 (через JacksonConfig с maxStringLength), autoconfig его подхватит через
 ObjectProvider и добавит в шаблон;
 если такого бина нет — шаблон работает на дефолтном Jackson.
+
+@Configuration
+public class JacksonConfig {
+
+    @Bean
+    Jackson2ObjectMapperBuilderCustomizer streamReadConstraintsCustomizer(
+            @Value("${jackson.max-string-value}") int maxStringLength) {
+        return builder -> builder.factory(
+                JsonFactory.builder()
+                        .streamReadConstraints(StreamReadConstraints.builder()
+                                .maxStringLength(maxStringLength)
+                                .build())
+                        .build());
+    }
+}
