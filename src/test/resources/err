@@ -80,3 +80,9 @@ public class JacksonConfig {
         return mapper;
     }
 }
+
+Кастомный Jackson-конвертер
+если в сервисе локально есть @Bean MappingJackson2HttpMessageConverter
+(через JacksonConfig с maxStringLength), autoconfig его подхватит через
+ObjectProvider и добавит в шаблон;
+если такого бина нет — шаблон работает на дефолтном Jackson.
