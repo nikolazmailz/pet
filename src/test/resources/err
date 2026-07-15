@@ -111,36 +111,18 @@ Jackson2ObjectMapperBuilderCustomizer jacksonCustomizer() {
         .mixIn(SomeThirdPartyDto.class, SomeMixin.class);
 }
 
-
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class JacksonConfig {
 
-    // предпочитаемый вариант
     @Bean
-    Jackson2ObjectMapperBuilderCustomizer streamReadConstraintsCustomizer(
+    Jackson2ObjectMapperBuilderCustomizer jacksonCustomizer(
             @Value("${jackson.max-string-value}") int maxStringLength) {
-        return builder -> builder.factory(
-                JsonFactory.builder()
+        return builder -> builder
+                .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+                .factory(JsonFactory.builder()
                         .streamReadConstraints(StreamReadConstraints.builder()
                                 .maxStringLength(maxStringLength)
                                 .build())
                         .build());
-    }
-
-    @Bean
-    public ObjectMapper objectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        return mapper;
-    }
-    
-    //todo или если нужен JavaTimeModule()
-
-    @Bean
-    public ObjectMapper objectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        return mapper;
     }
 }
