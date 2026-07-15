@@ -101,3 +101,12 @@ public class JacksonConfig {
                         .build());
     }
 }
+
+@Bean
+Jackson2ObjectMapperBuilderCustomizer jacksonCustomizer() {
+    return builder -> builder
+        .featuresToDisable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+        .serializationInclusion(JsonInclude.Include.NON_NULL)
+        .modulesToInstall(new JavaTimeModule())
+        .mixIn(SomeThirdPartyDto.class, SomeMixin.class);
+}
