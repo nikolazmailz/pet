@@ -1,4 +1,4 @@
-package ru.ntdev.srhr.common.filter;
+package ru.ntdev.srhr.common.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -14,8 +14,7 @@ import ru.ntdev.srhr.common.dto.api.error.ErrorResponse;
 import ru.ntdev.srhr.common.dto.api.error.ServiceError;
 import ru.ntdev.srhr.common.dto.api.error.ServiceErrorDto;
 import ru.ntdev.srhr.common.enums.AllowedChannels;
-import ru.ntdev.srhr.common.service.epa.EpaSdkService;
-import ru.ntdev.srhr.common.service.impl.CustomAuditLibTracingServiceImpl;
+import ru.ntdev.srhr.common.epa.EpaSdkService;
 import ru.ntdev.srhr.common.util.JWTUtil;
 import ru.vtb.epa.service.EpaValidationResult;
 import ru.vtb.epa.sso.aal.validation.jwt.ValidationResult;
@@ -128,11 +127,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     }
 
     private void applyPrincipal(HttpServletRequest request,
-                               String adLoginWithDomain,
-                               String sessionId,
-                               String channel,
-                               String adLoginWithoutDomain,
-                               String realm) {
+                                String adLoginWithDomain,
+                                String sessionId,
+                                String channel,
+                                String adLoginWithoutDomain,
+                                String realm) {
         request.setAttribute(ATTR_AD_LOGIN, adLoginWithDomain);
         request.setAttribute(ATTR_SESSION_ID, sessionId);
         request.setAttribute(ATTR_CHANNEL, channel);
@@ -195,7 +194,44 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     }
 }
 
-package ru.ntdev.srhr.common.filter;
+
+package ru.ntdev.srhr.common.jwt;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import ru.ntdev.srhr.common.audit.service.AuditEventSenderCustom;
+import ru.ntdev.srhr.common.epa.EpaSdkService;
+
+@Configuration
+@EnableConfigurationProperties(JwtFilterProperties.class)
+public class JwtSecurityConfiguration {
+
+    @Bean
+    @ConditionalOnMissingBean
+    public JwtTokenFilter jwtTokenFilter(JwtFilterProperties props,
+                                         EpaSdkService epaSdkService,
+                                         AuditEventSenderCustom auditEventSender,
+                                         CustomAuditLibTracingServiceImpl auditLibTracingService,
+                                         ObjectMapper objectMapper) {
+        return new JwtTokenFilter(props, epaSdkService, auditEventSender, auditLibTracingService, objectMapper);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = "jwtTokenFilterRegistration")
+    public FilterRegistrationBean<JwtTokenFilter> jwtTokenFilterRegistration(JwtTokenFilter filter) {
+        FilterRegistrationBean<JwtTokenFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 10);
+        return registration;
+    }
+}
+
+package ru.ntdev.srhr.common.jwt;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -229,54 +265,30 @@ public class JwtFilterProperties {
 }
 
 
-package ru.ntdev.srhr.common.filter;
+package ru.ntdev.srhr.common.jwt;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.Ordered;
-import ru.ntdev.srhr.common.audit.service.AuditEventSenderCustom;
-import ru.ntdev.srhr.common.service.epa.EpaSdkService;
-import ru.ntdev.srhr.common.service.impl.CustomAuditLibTracingServiceImpl;
+import com.dynatrace.oneagent.sdk.OneAgentSDKFactory;
+import com.dynatrace.oneagent.sdk.api.OneAgentSDK;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Service;
+import ru.vtb.omni.audit.core.tracing.AuditLibTracingService;
 
-@Configuration
-@EnableConfigurationProperties(JwtFilterProperties.class)
-@ConditionalOnProperty(prefix = "srhr.security.jwt", name = "enabled", havingValue = "true", matchIfMissing = true)
-public class JwtSecurityConfiguration {
+@Service
+@Primary
+@Slf4j
+public class CustomAuditLibTracingServiceImpl implements AuditLibTracingService {
 
-    @Bean
-    @ConditionalOnMissingBean
-    public JwtTokenFilter jwtTokenFilter(JwtFilterProperties props,
-                                         EpaSdkService epaSdkService,
-                                         AuditEventSenderCustom auditEventSender,
-                                         CustomAuditLibTracingServiceImpl auditLibTracingService,
-                                         ObjectMapper objectMapper) {
-        return new JwtTokenFilter(props, epaSdkService, auditEventSender, auditLibTracingService, objectMapper);
+    private static final OneAgentSDK sdk = OneAgentSDKFactory.createInstance();
+
+    @Override
+    public String getActiveSpanTraceId() {
+        return sdk.getTraceContextInfo().getTraceId();
     }
 
-    @Bean
-    @ConditionalOnMissingBean(name = "jwtTokenFilterRegistration")
-    public FilterRegistrationBean<JwtTokenFilter> jwtTokenFilterRegistration(JwtTokenFilter filter) {
-        FilterRegistrationBean<JwtTokenFilter> registration = new FilterRegistrationBean<>(filter);
-        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 10);
-        return registration;
+    @Override
+    public String getActiveSpanId() {
+        return sdk.getTraceContextInfo().getSpanId();
     }
-}
 
-
-package ru.ntdev.srhr.common.filter;
-
-import org.springframework.context.annotation.Import;
-
-import java.lang.annotation.*;
-
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Import(JwtSecurityConfiguration.class)
-public @interface EnableSrhrJwtSecurity {
 }
