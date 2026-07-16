@@ -7,3 +7,16 @@ public class NonSecurityConfig {
         return http.build();
     }
 }
+
+
+@Configuration
+public class NonSecurityConfig {
+
+    @Bean
+    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+        return http.build();
+    }
+}
