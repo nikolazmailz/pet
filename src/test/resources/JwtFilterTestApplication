@@ -1,0 +1,264 @@
+package ru.ntdev.srhr.common.jwt;
+
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.Import;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@SpringBootConfiguration
+@EnableAutoConfiguration
+@Import(JwtSecurityConfiguration.class)
+public class JwtFilterTestApplication {
+
+    static final List<String> ATTRS = List.of(
+            "adLogin", "sessionId", "channel", "adLoginWithoutDomain", "realm", "traceId", "sessionCreatedAt");
+
+    @RestController
+    static class EchoController {
+
+        @GetMapping("/echo")
+        Map<String, Object> echo(HttpServletRequest request) {
+            Map<String, Object> result = new HashMap<>();
+            for (String attr : ATTRS) {
+                result.put(attr, String.valueOf(request.getAttribute(attr)));
+            }
+            return result;
+        }
+
+        // отдельный эндпоинт под проверку shouldNotFilter
+        @GetMapping("/v3/api-docs")
+        Map<String, Object> apiDocs(HttpServletRequest request) {
+            return Map.of("adLogin", String.valueOf(request.getAttribute("adLogin")));
+        }
+    }
+}
+
+package ru.ntdev.srhr.common.jwt;
+
+import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.test.web.servlet.MockMvc;
+import ru.ntdev.srhr.common.audit.service.AuditEventSenderCustom;
+import ru.ntdev.srhr.common.enums.AllowedChannels;
+import ru.ntdev.srhr.common.epa.EpaSdkService;
+import ru.ntdev.srhr.common.util.JWTUtil;
+import ru.vtb.epa.service.EpaValidationResult;
+import ru.vtb.epa.sso.aal.validation.jwt.ValidationResult;
+
+import java.util.List;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest(
+        classes = JwtFilterTestApplication.class,
+        properties = {
+                "srhr.security.jwt.disable=false",
+                "srhr.security.jwt.default-sub=anonymous"
+        })
+@AutoConfigureMockMvc
+class JwtTokenFilterIntegrationTest {
+
+    private static final String TOKEN = "token";
+    private static final String BEARER_TOKEN = "Bearer " + TOKEN;
+
+    @Autowired
+    MockMvc mockMvc;
+
+    @MockBean
+    EpaSdkService epaSdkService;
+    @MockBean
+    AuditEventSenderCustom auditEventSender;
+    @MockBean
+    CustomAuditLibTracingServiceImpl tracing;
+
+    private void stubValidToken(MockedStatic<JWTUtil> jwt, String channel, String realm) {
+        jwt.when(() -> JWTUtil.getSubWithDomain(TOKEN)).thenReturn("DOMAIN\\ivanov");
+        jwt.when(() -> JWTUtil.getSub(TOKEN)).thenReturn("ivanov");
+        jwt.when(() -> JWTUtil.getSessionId(TOKEN)).thenReturn("sess-1");
+        jwt.when(() -> JWTUtil.getChannel(TOKEN)).thenReturn(channel);
+        jwt.when(() -> JWTUtil.getRealm(TOKEN)).thenReturn(realm);
+        jwt.when(() -> JWTUtil.getFullSub(TOKEN)).thenReturn("ivanov@full");
+    }
+
+    private void stubEpaSuccess(boolean success) {
+        EpaValidationResult epaResult = mock(EpaValidationResult.class);
+        ValidationResult validation = mock(ValidationResult.class);
+        when(validation.isSuccess()).thenReturn(success);
+        when(epaResult.getValidationResult()).thenReturn(validation);
+        when(epaSdkService.checkJWT(anyString())).thenReturn(epaResult);
+    }
+
+    @Test
+    void validToken_setsAllAttributes() throws Exception {
+        stubEpaSuccess(true);
+        when(tracing.getActiveSpanTraceId()).thenReturn("trace-123");
+
+        try (MockedStatic<JWTUtil> jwt = mockStatic(JWTUtil.class);
+             MockedStatic<AllowedChannels> ch = mockStatic(AllowedChannels.class)) {
+            stubValidToken(jwt, "WEB", "realm-1");
+            ch.when(AllowedChannels::channelNames).thenReturn(List.of("WEB"));
+
+            mockMvc.perform(get("/echo").header("Authorization", BEARER_TOKEN))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.adLogin").value("DOMAIN\\ivanov"))
+                    .andExpect(jsonPath("$.adLoginWithoutDomain").value("ivanov"))
+                    .andExpect(jsonPath("$.sessionId").value("sess-1"))
+                    .andExpect(jsonPath("$.channel").value("WEB"))
+                    .andExpect(jsonPath("$.realm").value("realm-1"))
+                    .andExpect(jsonPath("$.traceId").value("trace-123"));
+        }
+    }
+
+    @Test
+    void epaValidationFails_returns401_andDoesNotReachController() throws Exception {
+        stubEpaSuccess(false);
+
+        try (MockedStatic<JWTUtil> jwt = mockStatic(JWTUtil.class)) {
+            stubValidToken(jwt, "WEB", "realm-1");
+
+            mockMvc.perform(get("/echo").header("Authorization", BEARER_TOKEN))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(content().string(""));   // тело не пишется, только setStatus
+        }
+        verify(auditEventSender).sendJwtValidateEvent(eq("sess-1"), eq(false), anyString());
+    }
+
+    @Test
+    void disallowedChannel_returns401_withErrorBody_andForbiddenEvent() throws Exception {
+        stubEpaSuccess(true);
+
+        try (MockedStatic<JWTUtil> jwt = mockStatic(JWTUtil.class);
+             MockedStatic<AllowedChannels> ch = mockStatic(AllowedChannels.class)) {
+            stubValidToken(jwt, "HACKER", "realm-1");
+            ch.when(AllowedChannels::channelNames).thenReturn(List.of("WEB"));
+
+            mockMvc.perform(get("/echo").header("Authorization", BEARER_TOKEN))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(content().contentTypeCompatibleWith("application/json"));
+        }
+        verify(auditEventSender).sendJwtForbiddenEvent("sess-1");
+    }
+
+    @Test
+    void missingRequiredClaim_returns401_andForbiddenEvent() throws Exception {
+        stubEpaSuccess(true);
+
+        try (MockedStatic<JWTUtil> jwt = mockStatic(JWTUtil.class);
+             MockedStatic<AllowedChannels> ch = mockStatic(AllowedChannels.class)) {
+            stubValidToken(jwt, "WEB", null);       // realm == null -> провал гарда
+            ch.when(AllowedChannels::channelNames).thenReturn(List.of("WEB"));
+
+            mockMvc.perform(get("/echo").header("Authorization", BEARER_TOKEN))
+                    .andExpect(status().isUnauthorized());
+        }
+        verify(auditEventSender).sendJwtForbiddenEvent("sess-1");
+    }
+
+    @Test
+    void noAuthorizationHeader_appliesDefaultSub() throws Exception {
+        mockMvc.perform(get("/echo"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.adLogin").value("anonymous"));
+    }
+
+    @Test
+    void nonBearerHeader_appliesDefaultSub() throws Exception {
+        mockMvc.perform(get("/echo").header("Authorization", "Basic Zm9vOmJhcg=="))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.adLogin").value("anonymous"));
+    }
+
+    @Test
+    void swaggerPath_isNotFiltered() throws Exception {
+        // фильтр не отработал -> adLogin не выставлен
+        mockMvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.adLogin").value("null"));
+    }
+
+    /**
+     * ФИКСИРУЕТ ТЕКУЩЕЕ (багованное) поведение: при исключении в обработке
+     * catch НЕ делает return, запрос проваливается в chain.doFilter без adLogin.
+     * После фикса (401 + return) этот тест нужно будет обновить.
+     */
+    @Test
+    void unexpectedError_currentlyPassesThroughWithoutPrincipal() throws Exception {
+        when(epaSdkService.checkJWT(anyString())).thenThrow(new RuntimeException("boom"));
+
+        try (MockedStatic<JWTUtil> jwt = mockStatic(JWTUtil.class)) {
+            stubValidToken(jwt, "WEB", "realm-1");
+
+            mockMvc.perform(get("/echo").header("Authorization", BEARER_TOKEN))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.adLogin").value("null"));
+        }
+        verify(auditEventSender).sendJwtUnexpectedErrorEvent("sess-1");
+    }
+}
+
+
+package ru.ntdev.srhr.common.jwt;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.test.web.servlet.MockMvc;
+import ru.ntdev.srhr.common.audit.service.AuditEventSenderCustom;
+import ru.ntdev.srhr.common.epa.EpaSdkService;
+
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@SpringBootTest(
+        classes = JwtFilterTestApplication.class,
+        properties = {
+                "srhr.security.jwt.disable=true",
+                "srhr.security.jwt.local.sub=local-sub",
+                "srhr.security.jwt.local.session-id=local-session",
+                "srhr.security.jwt.local.channel=LOCAL_CHANNEL",
+                "srhr.security.jwt.local.sub-with-domain=DOMAIN\\\\local-sub",
+                "srhr.security.jwt.local.realm=local-realm"
+        })
+@AutoConfigureMockMvc
+class JwtTokenFilterLocalModeIntegrationTest {
+
+    @Autowired
+    MockMvc mockMvc;
+
+    @MockBean
+    EpaSdkService epaSdkService;
+    @MockBean
+    AuditEventSenderCustom auditEventSender;
+    @MockBean
+    CustomAuditLibTracingServiceImpl tracing;
+
+    @Test
+    void localMode_appliesLocalPrincipal_withoutTouchingEpa() throws Exception {
+        // даже с Bearer в локальном режиме токен не парсится
+        mockMvc.perform(get("/echo").header("Authorization", "Bearer whatever"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.adLogin").value("DOMAIN\\local-sub"))
+                .andExpect(jsonPath("$.adLoginWithoutDomain").value("local-sub"))
+                .andExpect(jsonPath("$.sessionId").value("local-session"))
+                .andExpect(jsonPath("$.channel").value("LOCAL_CHANNEL"))
+                .andExpect(jsonPath("$.realm").value("local-realm"));
+
+        verifyNoInteractions(epaSdkService);
+    }
+}
