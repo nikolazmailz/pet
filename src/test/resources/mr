@@ -1,24 +1,5 @@
 SRHR-2027
-|https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-mod-commons/pulls/2459200
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-mod-commons/pulls/2459200
 
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-task-blocker/pulls/2472374
-
-
-
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Schema(description = "Массив данных с функциональной организационной структурой", name = "RequisitionOrganizationFunctionalListItem", nullable = false)
-public class RequisitionOrganizationFunctionalListItem {
-    @Schema(description = "Идентификатор подразделения", maxLength = 8, required = true, nullable =  false)
-    private String object;
-    @Schema(description = "Тип подразделения", maxLength = 5, required = true, nullable =  false)
-    private String objectType;
-    @Schema(description = "Наименование подразделения", maxLength = 200, required = true, nullable =  false)
-    private String objectName;
-    @Schema(description = "Идентификатор родительского подразделения", maxLength = 8, required = true, nullable =  false)
-    private String parentObject;
-
-    public RequisitionOrganizationFunctionalListItem(String otherFunc) {
-    }
-}
+SRHR-2028
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition/pulls/2474501
