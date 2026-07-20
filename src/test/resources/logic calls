@@ -1,0 +1,52 @@
+Есть сервис some-service-rest
+В нем есть Controller и в нем есть вызов сервиса в котором есть ожидание ответа таким образом
+
+public ResponseEntity<Object> getRequisitionDict(
+            HttpServletRequest request
+    ){
+...
+ service.getRequisitionDict(systemParams);
+...
+    }
+
+
+public RequisitionDictDto getRequisitionDict(SapSystemParamsDto sapSystemParams) throws Exception {
+  ...
+ String message = getResponse(dto, json);
+...
+}
+
+public String getResponse(RequisitionRequestDto dto, String json) throws InterruptedException, JsonProcessingException {
+        //Проверяем размер сообщения, не превышает ли лимиты кафки
+        String checkedJson = checkMessageSize(dto, json);
+
+        redisAdapter.putToQueue(RequisitionRequestQueue,checkedJson);
+        final int giveUp = timeoutLimit;   int noRecordsCount = 0;
+        RedisResponse redisResponse;
+        String message = null;
+        while (noRecordsCount != giveUp) {
+            try {
+                redisResponse = redisAdapter.getObjectFromDb(dto.getUuid(), RedisResponse.class);
+                if (redisResponse != null) {
+                    message = redisResponse.getBody();
+                    break;
+                } else {
+                    noRecordsCount++;
+                    Thread.sleep(50);
+                }
+            }
+            catch (Exception e) {
+                noRecordsCount++;
+                Thread.sleep(50);
+            }
+        }
+        return message;
+    }
+
+
+Заетм все в том же some-service-rest есть ProducerTask котрый переоидчески опрашивает redisAdapter.getFromQueue(RequisitionRequestQueue)
+и перекладывает сообщение в кафка.
+
+Так же есть some-service, который получает это сообщение через кафка, проводит некий бизнес кейс, и затем вовзвращает сообщение так же через кафка
+
+Далее some-service-rest вычитывает сообщение из кафка, перекладывает его в redis, и уже метод getResponse выходит из цикла вычитав сообщение из redis
