@@ -1,0 +1,37 @@
+public ResponseEntity<Object> postRequisitionAddComment(
+            @Parameter(schema = @Schema(implementation = RequisitionAddCommentRequest.class))
+            @AuditParam(value = "requestBody", sendParam = false)
+            @RequestBody() RequisitionAddCommentRequest requestDto,
+            HttpServletRequest request
+    ) throws Exception {
+        request.setAttribute("requestType", "requisition_post_add_comment");
+        SapSystemParamsDto systemParams = setSystemParams(request);
+        RequisitionGeneralCandidateDto requisitionResponse = requisitionService.getRequisitionPostAddComment(systemParams, requestDto);
+        if (requisitionResponse != null) {
+            LogUtil.logResponse(
+                    systemParams.getAdLogin(), systemParams.getSessionId(), "POST", kafkaTopicNameFromEasup, requisitionResponse.getResponseCode(),
+                    requisitionResponse.getErrorMessage(), false, null, requisitionResponse.getTraceId());
+            if (requisitionResponse.getResponseCode().startsWith("2")) {
+                RequisitionGeneralCandidateDtoOut responseOut = new RequisitionGeneralCandidateDtoOut();
+                BeanUtils.copyProperties(requisitionResponse, responseOut);
+                responseOut = requisitionDtoMapper.cleanNulls(responseOut);
+                log.info("Успешное выполнение эндпоинта [SRHR_REQUISITION_POST_ADD_COMMENT]");
+                return new ResponseEntity<>(responseOut, HttpStatus.OK);
+            } else {
+                log.warn("Неуспешное выполнение эндпоинта [SRHR_REQUISITION_POST_ADD_COMMENT]: [{}]", requisitionResponse.getErrorMessage());
+                int httpStatusNumber = Integer.parseInt(requisitionResponse.getResponseCode().substring(0, 3));
+                throw new HttpResponseException(httpStatusNumber, requisitionResponse.getErrorMessage());
+            }
+        }
+        log.warn("Неуспешное выполнение эндпоинта [SRHR_REQUISITION_POST_ADD_COMMENT]: вернулось нулевое значение");
+        throw new HttpResponseException(404, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
+    }
+
+private SapSystemParamsDto setSystemParams(HttpServletRequest request) {
+        SapSystemParamsDto systemParams = new SapSystemParamsDto();
+        systemParams.setChannel(request.getAttribute("channel").toString());
+        systemParams.setAdLogin(request.getAttribute("adLogin").toString());
+        systemParams.setSessionId(request.getAttribute("sessionId").toString());
+        systemParams.setRealm(request.getAttribute("realm").toString());
+        return systemParams;
+    }
