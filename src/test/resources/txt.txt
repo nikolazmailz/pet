@@ -1,4 +1,6 @@
 https://boards.yandex.ru/whiteboard/?hash=7e3804baab099ae92588cf6407ea3a07
+https://sfera.inno.local/sourcecode/projects/TSAU_PUB/repos/tsau-audit-lib/code/browse/branch/release%2F8.0/HELP.md
+
 
 git checkout master
 git reset --hard origin/release/7.4.0
