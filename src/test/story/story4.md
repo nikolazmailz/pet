@@ -1,579 +1,345 @@
-## Задача 3. Внедрить иерархию доменных исключений и централизованную обработку ошибок
+## Задача 4. Перенести обработку результатов и выбрасывание доменных исключений в Use Case
 
 ### Название
 
-**Реализовать иерархию `DomainException` и глобальный `@RestControllerAdvice`**
+**Перенести логику проверки результата операции и формирования доменных исключений из контроллеров в соответствующие Use Case**
 
 ### Цель
 
-Унифицировать обработку ожидаемых ошибок приложения:
+Убрать из REST-контроллеров логику интерпретации результатов выполнения операций и формирования исключений.
 
-* убрать формирование ошибочных HTTP-ответов из контроллеров;
-* отказаться от универсального `HttpResponseException`;
-* ввести базовое доменное исключение;
-* обеспечить единый формат ответа об ошибке;
-* централизовать логирование ожидаемых и непредвиденных исключений.
+Каждый Use Case должен:
+
+* выполнять соответствующий прикладной сценарий;
+* анализировать результат вызова внешней системы или репозитория;
+* определять успешность выполнения операции;
+* преобразовывать ошибочные результаты в исключения из иерархии `DomainException`;
+* возвращать контроллеру только успешный результат.
+
+Контроллер должен отвечать только за HTTP-взаимодействие:
+
+* принять запрос;
+* получить системные параметры;
+* вызвать Use Case;
+* вернуть успешный DTO.
+
+---
 
 ### Текущее состояние
 
-В контроллерах самостоятельно определяется HTTP-статус и выбрасывается общее исключение:
+Контроллер самостоятельно анализирует результат вызова сервиса:
 
 ```java
-int httpStatusNumber = Integer.parseInt(
-        requisitionResponse.getResponseCode().substring(0, 3)
-);
+RequisitionGeneralCandidateDto requisitionResponse =
+        requisitionService.getRequisitionPostAddComment(
+                systemParams,
+                requestDto
+        );
+
+if (requisitionResponse != null) {
+    if (requisitionResponse.getResponseCode().startsWith("2")) {
+        RequisitionGeneralCandidateDtoOut responseOut =
+                new RequisitionGeneralCandidateDtoOut();
+
+        BeanUtils.copyProperties(
+                requisitionResponse,
+                responseOut
+        );
+
+        return ResponseEntity.ok(responseOut);
+    }
+
+    int httpStatusNumber = Integer.parseInt(
+            requisitionResponse
+                    .getResponseCode()
+                    .substring(0, 3)
+    );
+
+    throw new HttpResponseException(
+            httpStatusNumber,
+            requisitionResponse.getErrorMessage()
+    );
+}
 
 throw new HttpResponseException(
-        httpStatusNumber,
-        requisitionResponse.getErrorMessage()
+        404,
+        ErrorResponse.REQUISITION_INFO_NOT_FOUND
 );
 ```
 
-Недостатки текущего подхода:
+В результате контроллер:
 
-* контроллер знает особенности ответа внешней системы;
-* используется общее исключение без выраженной семантики;
-* одинаковые ошибки могут обрабатываться по-разному;
-* логирование распределено по контроллерам;
-* сложно определить тип ошибки по классу исключения;
-* отсутствует единая модель ошибок приложения.
-
----
-
-### Требуемое решение
-
-Создать базовое исключение `DomainException`, от которого наследуются ожидаемые исключения приложения.
-
-Базовое исключение должно содержать:
-
-* HTTP-статус;
-* сообщение для клиента;
-* `traceId`;
-* при необходимости код ошибки.
-
-```java
-@Getter
-public abstract class DomainException extends RuntimeException {
-
-    private final HttpStatus status;
-    private final String traceId;
-
-    protected DomainException(
-            HttpStatus status,
-            String message,
-            String traceId
-    ) {
-        super(message);
-        this.status = status;
-        this.traceId = traceId;
-    }
-
-    protected DomainException(
-            HttpStatus status,
-            String message,
-            String traceId,
-            Throwable cause
-    ) {
-        super(message, cause);
-        this.status = status;
-        this.traceId = traceId;
-    }
-}
-```
-
-`DomainException` должно использоваться только для ожидаемых ошибок, которые приложение умеет преобразовать в определённый HTTP-ответ.
+* знает структуру ответа внешней системы;
+* интерпретирует строковый `responseCode`;
+* определяет тип ошибки;
+* выбирает HTTP-статус;
+* выбрасывает исключения;
+* выполняет преобразование интеграционного DTO в API DTO;
+* содержит несколько веток выполнения.
 
 ---
 
-### Иерархия исключений
+### Целевое состояние
 
-Рекомендуемая структура:
+Для каждого вызова контроллера должен существовать соответствующий Use Case.
 
-```text
-DomainException
-├── BusinessException
-│   ├── RequisitionNotFoundException
-│   ├── InvalidRequisitionStateException
-│   └── OperationNotAllowedException
-│
-├── RequestContextException
-│   └── RequiredSystemParameterMissingException
-│
-└── ExternalSystemException
-    ├── ExternalSystemResponseException
-    ├── ExternalSystemUnavailableException
-    ├── ExternalSystemTimeoutException
-    └── InvalidExternalSystemResponseException
-```
-
-Необязательно создавать все классы сразу. На первом этапе необходимо реализовать только исключения, которые используются в рефакторируемом сценарии.
-
----
-
-### Бизнес-исключения
-
-Бизнес-исключения описывают ожидаемые нарушения правил приложения.
+Для операции добавления комментария:
 
 ```java
-public abstract class BusinessException extends DomainException {
+public interface AddRequisitionCommentUseCase {
 
-    protected BusinessException(
-            HttpStatus status,
-            String message,
-            String traceId
-    ) {
-        super(status, message, traceId);
-    }
+    RequisitionGeneralCandidateDtoOut execute(
+            SapSystemParamsDto systemParams,
+            RequisitionAddCommentRequest request
+    );
 }
 ```
 
-Пример исключения отсутствия заявки:
+Реализация Use Case должна содержать всю прикладную логику сценария:
 
 ```java
-public class RequisitionNotFoundException extends BusinessException {
+@Service
+@RequiredArgsConstructor
+public class AddRequisitionCommentUseCaseImpl
+        implements AddRequisitionCommentUseCase {
 
-    public RequisitionNotFoundException(String traceId) {
-        super(
-                HttpStatus.NOT_FOUND,
-                ErrorResponse.REQUISITION_INFO_NOT_FOUND,
-                traceId
-        );
-    }
-}
-```
+    private final RequisitionGateway requisitionGateway;
+    private final RequisitionDtoMapper requisitionDtoMapper;
 
-Пример нарушения состояния:
-
-```java
-public class InvalidRequisitionStateException extends BusinessException {
-
-    public InvalidRequisitionStateException(
-            String message,
-            String traceId
+    @Override
+    public RequisitionGeneralCandidateDtoOut execute(
+            SapSystemParamsDto systemParams,
+            RequisitionAddCommentRequest request
     ) {
-        super(
-                HttpStatus.CONFLICT,
-                message,
-                traceId
-        );
-    }
-}
-```
+        RequisitionGeneralCandidateDto response =
+                requisitionGateway.addComment(
+                        systemParams,
+                        request
+                );
 
----
+        validateResponse(response);
 
-### Исключения контекста запроса
-
-Ошибки получения обязательных системных параметров должны также входить в общую иерархию.
-
-```java
-public class RequiredSystemParameterMissingException
-        extends DomainException {
-
-    public RequiredSystemParameterMissingException(
-            String parameterName,
-            String traceId
-    ) {
-        super(
-                HttpStatus.BAD_REQUEST,
-                "Отсутствует обязательный системный параметр: "
-                        + parameterName,
-                traceId
-        );
-    }
-}
-```
-
-Это исключение должно выбрасываться из `HandlerMethodArgumentResolver`, если обязательный атрибут отсутствует или имеет пустое значение.
-
----
-
-### Интеграционные исключения
-
-Ошибки взаимодействия с ЕАСУП или другой внешней системой должны быть выражены отдельными типами исключений.
-
-```java
-public abstract class ExternalSystemException
-        extends DomainException {
-
-    protected ExternalSystemException(
-            HttpStatus status,
-            String message,
-            String traceId
-    ) {
-        super(status, message, traceId);
+        return requisitionDtoMapper.toOut(response);
     }
 
-    protected ExternalSystemException(
-            HttpStatus status,
-            String message,
-            String traceId,
-            Throwable cause
+    private void validateResponse(
+            RequisitionGeneralCandidateDto response
     ) {
-        super(status, message, traceId, cause);
-    }
-}
-```
-
-Отсутствие ответа:
-
-```java
-public class ExternalSystemUnavailableException
-        extends ExternalSystemException {
-
-    public ExternalSystemUnavailableException(
-            String message,
-            String traceId
-    ) {
-        super(
-                HttpStatus.BAD_GATEWAY,
-                message,
-                traceId
-        );
-    }
-}
-```
-
-Таймаут:
-
-```java
-public class ExternalSystemTimeoutException
-        extends ExternalSystemException {
-
-    public ExternalSystemTimeoutException(
-            String message,
-            String traceId
-    ) {
-        super(
-                HttpStatus.GATEWAY_TIMEOUT,
-                message,
-                traceId
-        );
-    }
-}
-```
-
-Некорректный ответ:
-
-```java
-public class InvalidExternalSystemResponseException
-        extends ExternalSystemException {
-
-    public InvalidExternalSystemResponseException(
-            String message,
-            String traceId
-    ) {
-        super(
-                HttpStatus.BAD_GATEWAY,
-                message,
-                traceId
-        );
-    }
-}
-```
-
-Ошибка, возвращённая внешней системой:
-
-```java
-public class ExternalSystemResponseException
-        extends ExternalSystemException {
-
-    public ExternalSystemResponseException(
-            HttpStatus status,
-            String message,
-            String traceId
-    ) {
-        super(status, message, traceId);
-    }
-}
-```
-
-Решение о проксировании статуса внешней системы должно соответствовать контракту API.
-
-Не следует автоматически возвращать клиенту любой статус внешней системы без проверки. Например, технические ошибки внешнего сервиса могут преобразовываться в `502 Bad Gateway`.
-
----
-
-### Модель ошибки API
-
-Все ожидаемые ошибки должны возвращаться в едином формате:
-
-```java
-public record ApiError(
-        String message,
-        String traceId
-) {
-
-    public static ApiError of(
-            String message,
-            String traceId
-    ) {
-        return new ApiError(message, traceId);
-    }
-}
-```
-
-При необходимости модель может быть расширена:
-
-```java
-public record ApiError(
-        String code,
-        String message,
-        String traceId,
-        LocalDateTime timestamp
-) {
-}
-```
-
-Но изменение существующего контракта ответа необходимо выполнять отдельно, если оно влияет на клиентов API.
-
----
-
-### Глобальный обработчик исключений
-
-Создать единый обработчик:
-
-```java
-@Slf4j
-@RestControllerAdvice
-public class DomainExceptionHandler
-        extends ResponseEntityExceptionHandler {
-
-    @ExceptionHandler(DomainException.class)
-    public ResponseEntity<ApiError> handleDomainException(
-            DomainException ex
-    ) {
-        HttpStatus status = ex.getStatus();
-
-        if (status.is5xxServerError()) {
-            log.error(
-                    "Ошибка обработки запроса [{}]: {}",
-                    ex.getTraceId(),
-                    ex.getMessage(),
-                    ex
-            );
-        } else {
-            log.warn(
-                    "Неуспешное выполнение запроса [{}]: {}",
-                    ex.getTraceId(),
-                    ex.getMessage()
+        if (response == null) {
+            throw new ExternalSystemUnavailableException(
+                    "Внешняя система не вернула ответ",
+                    null
             );
         }
 
-        return ResponseEntity
-                .status(status)
-                .body(
-                        ApiError.of(
-                                ex.getMessage(),
-                                ex.getTraceId()
-                        )
-                );
+        HttpStatus status = parseStatus(
+                response.getResponseCode(),
+                response.getTraceId()
+        );
+
+        if (!status.is2xxSuccessful()) {
+            throw new ExternalSystemResponseException(
+                    status,
+                    response.getErrorMessage(),
+                    response.getTraceId()
+            );
+        }
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleUnexpected(
-            Exception ex
+    private HttpStatus parseStatus(
+            String responseCode,
+            String traceId
     ) {
-        log.error("Непредвиденная ошибка", ex);
+        if (responseCode == null
+                || !responseCode.matches("\\d{3}.*")) {
 
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(
-                        ApiError.of(
-                                ErrorResponse.INTERNAL_ERROR,
-                                null
-                        )
-                );
+            throw new InvalidExternalSystemResponseException(
+                    "Внешняя система вернула некорректный код ответа",
+                    traceId
+            );
+        }
+
+        int statusCode;
+
+        try {
+            statusCode = Integer.parseInt(
+                    responseCode.substring(0, 3)
+            );
+        } catch (NumberFormatException ex) {
+            throw new InvalidExternalSystemResponseException(
+                    "Не удалось определить статус ответа внешней системы",
+                    traceId,
+                    ex
+            );
+        }
+
+        try {
+            return HttpStatus.valueOf(statusCode);
+        } catch (IllegalArgumentException ex) {
+            throw new InvalidExternalSystemResponseException(
+                    "Внешняя система вернула неизвестный HTTP-статус: "
+                            + statusCode,
+                    traceId,
+                    ex
+            );
+        }
     }
 }
 ```
 
-Название метода рекомендуется изменить с:
-
-```java
-handleSrhr(...)
-```
-
-на:
-
-```java
-handleDomainException(...)
-```
-
-Поскольку обработчик работает со всей иерархией `DomainException`, а не с одним конкретным типом ошибки.
-
 ---
 
-### Получение `traceId`
+### Ответственность Use Case
 
-Желательно использовать единый источник `traceId`.
-
-Если `traceId` уже содержится в ответе внешней системы, он должен передаваться в соответствующее исключение:
-
-```java
-throw new ExternalSystemResponseException(
-        status,
-        requisitionResponse.getErrorMessage(),
-        requisitionResponse.getTraceId()
-);
-```
-
-Если исключение возникло внутри приложения, `traceId` можно получать из MDC:
-
-```java
-String traceId = MDC.get("traceId");
-```
-
-Чтобы не передавать получение `traceId` в каждый вызов конструктора, можно добавить вспомогательный метод:
-
-```java
-public final class TraceIdProvider {
-
-    private TraceIdProvider() {
-    }
-
-    public static String currentTraceId() {
-        return MDC.get("traceId");
-    }
-}
-```
-
-Использование:
-
-```java
-throw new RequisitionNotFoundException(
-        TraceIdProvider.currentTraceId()
-);
-```
-
-Либо получение текущего `traceId` можно реализовать непосредственно в базовом исключении, если это соответствует принятым в проекте соглашениям.
-
----
-
-### Обработка ошибок валидации
-
-Так как `DomainExceptionHandler` наследуется от `ResponseEntityExceptionHandler`, ошибки Spring MVC рекомендуется обрабатывать через переопределение соответствующих методов.
+Use Case должен принимать решение, что означает полученный результат для текущего прикладного сценария.
 
 Например:
 
-```java
-@Override
-protected ResponseEntity<Object> handleMethodArgumentNotValid(
-        MethodArgumentNotValidException ex,
-        HttpHeaders headers,
-        HttpStatusCode status,
-        WebRequest request
-) {
-    String message = ex.getBindingResult()
-            .getFieldErrors()
-            .stream()
-            .map(error ->
-                    error.getField()
-                            + ": "
-                            + error.getDefaultMessage()
-            )
-            .collect(Collectors.joining("; "));
+```text
+null
+    → ExternalSystemUnavailableException
 
-    ApiError apiError = ApiError.of(
-            message,
-            MDC.get("traceId")
-    );
+некорректный responseCode
+    → InvalidExternalSystemResponseException
 
-    return ResponseEntity
-            .badRequest()
-            .body(apiError);
-}
+таймаут внешней системы
+    → ExternalSystemTimeoutException
+
+заявка не найдена
+    → RequisitionNotFoundException
+
+операция запрещена текущим статусом заявки
+    → InvalidRequisitionStateException
+
+внешняя система вернула техническую ошибку
+    → ExternalSystemResponseException
 ```
 
-Ошибки валидации не обязательно включать в иерархию `DomainException`, поскольку они создаются Spring до вызова бизнес-логики.
+Use Case должен выбрасывать исключение с понятной семантикой, а не универсальное исключение с произвольным статусом.
 
 ---
 
-### Изменения в сервисном слое
+### Разделение ответственности между слоями
 
-Контроллер не должен самостоятельно анализировать ответ внешней системы.
+#### Контроллер
 
-Текущая логика:
+Контроллер:
+
+* принимает HTTP-запрос;
+* выполняет первичную валидацию через `@Valid`;
+* получает `SapSystemParamsDto` через `HandlerMethodArgumentResolver`;
+* вызывает Use Case;
+* возвращает успешный результат.
+
+Контроллер не должен:
+
+* проверять результат на `null`;
+* анализировать `responseCode`;
+* преобразовывать строковый код в HTTP-статус;
+* выбрасывать доменные исключения на основании ответа внешней системы;
+* выполнять интеграционное логирование;
+* маппить интеграционные DTO в DTO контроллера.
+
+#### Use Case
+
+Use Case:
+
+* управляет прикладным сценарием;
+* вызывает необходимые порты и адаптеры;
+* анализирует результат выполнения;
+* применяет бизнес-правила;
+* преобразовывает ожидаемые ошибочные результаты в `DomainException`;
+* формирует успешный результат сценария.
+
+#### Интеграционный адаптер
+
+Интеграционный адаптер:
+
+* выполняет технический вызов внешней системы;
+* сериализует и десериализует сообщения;
+* работает с Redis, Kafka, HTTP или другим транспортом;
+* может выбрасывать низкоуровневые технические исключения.
+
+Use Case должен при необходимости преобразовать низкоуровневое исключение адаптера в исключение из доменной иерархии:
 
 ```java
-if (requisitionResponse == null) {
-    throw new HttpResponseException(...);
-}
-
-if (!requisitionResponse.getResponseCode().startsWith("2")) {
-    throw new HttpResponseException(...);
+try {
+    return requisitionGateway.addComment(
+            systemParams,
+            request
+    );
+} catch (RedisRequestTimeoutException ex) {
+    throw new ExternalSystemTimeoutException(
+            "Истекло время ожидания ответа ЕАСУП",
+            TraceIdProvider.currentTraceId(),
+            ex
+    );
 }
 ```
 
-Должна быть перенесена в сервис или интеграционный адаптер.
+Низкоуровневые исключения Redis, HTTP-клиента или Kafka не должны напрямую попадать в контроллер и клиентский ответ.
 
-Пример:
+#### `DomainExceptionHandler`
 
-```java
-private RequisitionGeneralCandidateDto validateResponse(
-        RequisitionGeneralCandidateDto response
-) {
-    if (response == null) {
-        throw new ExternalSystemUnavailableException(
-                "Внешняя система не вернула ответ",
-                TraceIdProvider.currentTraceId()
-        );
-    }
+`DomainExceptionHandler`:
 
-    HttpStatus status = parseStatus(
-            response.getResponseCode(),
-            response.getTraceId()
-    );
+* перехватывает `DomainException`;
+* определяет уровень логирования;
+* формирует `ApiError`;
+* возвращает HTTP-статус, содержащийся в исключении.
 
-    if (!status.is2xxSuccessful()) {
-        throw new ExternalSystemResponseException(
-                status,
-                response.getErrorMessage(),
-                response.getTraceId()
-        );
-    }
+Advice не должен:
 
-    return response;
-}
+* определять бизнес-смысл ошибки;
+* анализировать ответы внешних систем;
+* заменять один тип доменного исключения другим;
+* содержать логику конкретного Use Case.
+
+---
+
+### Целевой поток выполнения
+
+```text
+HTTP request
+    ↓
+Controller
+    ↓
+AddRequisitionCommentUseCase
+    ↓
+RequisitionGateway
+    ↓
+External system
 ```
 
-Некорректный `responseCode` должен приводить к доменному интеграционному исключению:
+Успешный сценарий:
 
-```java
-private HttpStatus parseStatus(
-        String responseCode,
-        String traceId
-) {
-    if (responseCode == null
-            || !responseCode.matches("\\d{3}.*")) {
+```text
+External system response
+    ↓
+Use Case проверяет ответ
+    ↓
+Use Case преобразует ответ в выходной DTO
+    ↓
+Controller возвращает ResponseEntity<ConcreteDto>
+```
 
-        throw new InvalidExternalSystemResponseException(
-                "Внешняя система вернула некорректный код ответа",
-                traceId
-        );
-    }
+Ошибочный сценарий:
 
-    int statusCode = Integer.parseInt(
-            responseCode.substring(0, 3)
-    );
-
-    try {
-        return HttpStatus.valueOf(statusCode);
-    } catch (IllegalArgumentException ex) {
-        throw new InvalidExternalSystemResponseException(
-                "Внешняя система вернула неизвестный HTTP-статус: "
-                        + statusCode,
-                traceId
-        );
-    }
-}
+```text
+External system response / technical exception
+    ↓
+Use Case определяет смысл ошибки
+    ↓
+Use Case выбрасывает DomainException
+    ↓
+DomainExceptionHandler формирует ApiError
 ```
 
 ---
 
 ### Целевой контроллер
 
-После выполнения задачи контроллер не должен содержать обработку ошибок:
+После выполнения задачи контроллер должен выглядеть следующим образом:
 
 ```java
 @PostMapping("/requisitions/comments")
@@ -584,7 +350,7 @@ postRequisitionAddComment(
         @SapSystemParams SapSystemParamsDto systemParams
 ) {
     RequisitionGeneralCandidateDtoOut response =
-            requisitionService.addComment(
+            addRequisitionCommentUseCase.execute(
                     systemParams,
                     requestDto
             );
@@ -593,67 +359,139 @@ postRequisitionAddComment(
 }
 ```
 
-Контроллер:
+В контроллере отсутствуют:
 
-* не анализирует `responseCode`;
-* не создаёт ошибочный ответ;
-* не определяет HTTP-статус ошибки;
-* не логирует исключение;
-* не работает с `HttpResponseException`.
+* `if` по результатам интеграционного вызова;
+* проверка ответа на `null`;
+* разбор `responseCode`;
+* создание исключений;
+* ручное копирование DTO;
+* интеграционные детали.
 
 ---
 
-### Что вынести в `commons`
+### Требуемые изменения
 
-В общий модуль рекомендуется вынести:
+1. Создать отдельный Use Case для рефакторируемого вызова контроллера:
 
-* `DomainException`;
-* базовые инфраструктурные исключения;
-* `ApiError`;
-* `DomainExceptionHandler`;
-* механизм получения `traceId`;
-* общую обработку ошибок валидации.
-
-Доменные исключения конкретного сервиса следует оставить в самом сервисе.
-
-Например:
-
-```text
-commons
-├── DomainException
-├── ExternalSystemException
-├── RequiredSystemParameterMissingException
-├── ApiError
-└── DomainExceptionHandler
+```java
+AddRequisitionCommentUseCase
 ```
 
-```text
-requisition-service
-├── RequisitionNotFoundException
-├── InvalidRequisitionStateException
-└── OperationNotAllowedException
+2. Перенести в Use Case:
+
+* вызов соответствующего gateway или сервиса;
+* проверку результата на `null`;
+* проверку кода ответа;
+* определение успешного и ошибочного сценария;
+* выбрасывание наследников `DomainException`;
+* преобразование результата в выходной DTO.
+
+3. Перенести обработку низкоуровневых технических исключений в Use Case или специальный интеграционный сервис.
+
+4. Исключить прямое использование в контроллере:
+
+```java
+HttpResponseException
 ```
 
-Так `commons` не будет зависеть от предметной области конкретного сервиса.
+5. Контроллер должен вызывать только соответствующий Use Case.
+
+6. Не передавать `ResponseEntity` в Use Case.
+
+7. Не использовать в Use Case классы Servlet API:
+
+```java
+HttpServletRequest
+HttpServletResponse
+ResponseEntity
+```
+
+8. HTTP-статус ошибки должен определяться через соответствующий `DomainException`.
+
+9. Успешный результат Use Case должен быть типизированным DTO.
+
+---
+
+### Размещение классов
+
+Вариант структуры:
+
+```text
+requisition
+├── api
+│   ├── RequisitionController
+│   ├── RequisitionAddCommentRequest
+│   └── RequisitionGeneralCandidateDtoOut
+│
+├── application
+│   ├── usecase
+│   │   ├── AddRequisitionCommentUseCase
+│   │   └── AddRequisitionCommentUseCaseImpl
+│   │
+│   └── exception
+│       ├── RequisitionNotFoundException
+│       └── InvalidRequisitionStateException
+│
+├── domain
+│   └── ...
+│
+└── infrastructure
+    ├── RequisitionGateway
+    └── EasupRequisitionAdapter
+```
+
+Если в проекте нет отдельного application-слоя, Use Case может размещаться в существующем сервисном слое, но ответственность должна оставаться такой же.
+
+---
+
+### Тестирование
+
+Добавить unit-тесты Use Case для следующих сценариев:
+
+1. Внешняя система вернула успешный ответ.
+2. Внешняя система вернула `null`.
+3. Внешняя система вернула ошибочный статус `4xx`.
+4. Внешняя система вернула ошибочный статус `5xx`.
+5. Внешняя система вернула пустой `responseCode`.
+6. Внешняя система вернула некорректный `responseCode`.
+7. Интеграционный адаптер завершился по таймауту.
+8. Интеграционный адаптер выбросил неизвестное техническое исключение.
+9. Успешный ответ корректно преобразован в выходной DTO.
+
+Пример теста:
+
+```java
+@Test
+void shouldThrowExternalSystemUnavailableExceptionWhenResponseIsNull() {
+    when(requisitionGateway.addComment(
+            systemParams,
+            request
+    )).thenReturn(null);
+
+    assertThrows(
+            ExternalSystemUnavailableException.class,
+            () -> useCase.execute(systemParams, request)
+    );
+}
+```
 
 ---
 
 ### Критерии приёмки
 
-* Создан базовый класс `DomainException`.
-* Ожидаемые исключения приложения наследуются от `DomainException`.
-* Созданы отдельные исключения для бизнес- и интеграционных ошибок.
-* `HttpResponseException` больше не используется в рефакторируемом сценарии.
-* Создан единый `DomainExceptionHandler`.
-* Все наследники `DomainException` обрабатываются одним методом.
-* Для ошибок `4xx` используется уровень логирования `WARN`.
-* Для ошибок `5xx` используется уровень логирования `ERROR`.
-* Для непредвиденных исключений клиент получает `500 Internal Server Error`.
-* Технические детали и stack trace не возвращаются клиенту.
-* Все ошибки возвращаются в формате `ApiError`.
-* Контроллер не содержит логики обработки ошибок.
-* Разбор ответа внешней системы перенесён в сервис или интеграционный адаптер.
-* Добавлены unit-тесты иерархии исключений.
-* Добавлены тесты `DomainExceptionHandler`.
-* Добавлены тесты обработки ошибок `4xx`, `5xx` и непредвиденного исключения.
-* Добавлен тест обработки ошибки валидации входного DTO.
+* Для вызова контроллера создан отдельный Use Case.
+* Контроллер вызывает Use Case, а не содержит прикладную логику сценария.
+* Проверка ответа внешней системы перенесена из контроллера в Use Case.
+* Логика определения и выбрасывания `DomainException` находится в Use Case.
+* Контроллер не проверяет результат на `null`.
+* Контроллер не анализирует `responseCode`.
+* Контроллер не создаёт `HttpResponseException`.
+* Низкоуровневые технические исключения не передаются напрямую в контроллер.
+* Use Case преобразовывает ожидаемые ошибки в соответствующие наследники `DomainException`.
+* `DomainExceptionHandler` отвечает только за преобразование исключения в HTTP-ответ.
+* Use Case не зависит от Servlet API и `ResponseEntity`.
+* Успешный результат Use Case представлен конкретным DTO.
+* Добавлены unit-тесты успешных и ошибочных сценариев Use Case.
+* Существующий HTTP-контракт успешного ответа не изменён.
+* Ошибочные ответы формируются в едином формате `ApiError`.
