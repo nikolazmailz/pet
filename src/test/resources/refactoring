@@ -1,66 +1,126 @@
+package ru.ntdev.srhr.common.integration;
 
-@SpringBootTest(
-        classes = JwtFilterTestApplication.class,
-        properties = {
-                "srhr.security.jwt.disable=true",
-                "srhr.security.jwt.local.sub=local-sub",
-                "srhr.security.jwt.local.session-id=local-session",
-                "srhr.security.jwt.local.channel=LOCAL_CHANNEL",
-                "srhr.security.jwt.local.sub-with-domain=DOMAIN\\\\local-sub",
-                "srhr.security.jwt.local.realm=local-realm"
-        })
-@AutoConfigureMockMvc
-public class JwtTokenFilterLocalModeIntegrationTest {
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.client.RestTemplate;
 
+@Configuration
+public class IntegrationRestTemplateConfiguration {
 
-    @Autowired
-    MockMvc mockMvc;
+    private static final int MAX_CONN_TOTAL = 100;
+    private static final int MAX_CONN_PER_ROUTE = 20;
 
-    @MockBean
-    EpaSdkService epaSdkService;
-    @MockBean
-    AuditEventSenderCustom auditEventSender;
-    @MockBean
-    CustomAuditLibTracingServiceImpl tracing;
+    @Bean(destroyMethod = "close")
+    @ConditionalOnMissingBean(name = "integrationHttpClient")
+    public CloseableHttpClient integrationHttpClient() {
+        PoolingHttpClientConnectionManager cm = PoolingHttpClientConnectionManagerBuilder.create()
+                .setMaxConnTotal(MAX_CONN_TOTAL)
+                .setMaxConnPerRoute(MAX_CONN_PER_ROUTE)
+                .build();
 
-    @Test
-    void localMode_appliesLocalPrincipal_withoutTouchingEpa() throws Exception {
-        // даже с Bearer в локальном режиме токен не парсится
-        mockMvc.perform(get("/echo").header("Authorization", "Bearer eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI4Y2U5YzAyMS1hNjk4LTQxYmQtODlmZi0xMGY4YjM0OTgzYjcifQ.eyJleHAiOjE3ODQ4MTc1MjEsImlhdCI6MTc4NDgxMDMyMSwianRpIjoiZTk5ODFjZTgtOWYwNS00ZGVjLWJiOTQtYTQ2MWQ2NmI0NjVhIiwiaXNzIjoiaHR0cHM6Ly9zZmVyYS1rZXljbG9"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.adLogin").value("DOMAIN\\local-sub"))
-                .andExpect(jsonPath("$.adLoginWithoutDomain").value("local-sub"))
-                .andExpect(jsonPath("$.sessionId").value("local-session"))
-                .andExpect(jsonPath("$.channel").value("LOCAL_CHANNEL"))
-                .andExpect(jsonPath("$.realm").value("local-realm"));
+        return HttpClients.custom()
+                .setConnectionManager(cm)
+                .build();
+    }
 
-        verifyNoInteractions(epaSdkService);
+    /** Без логирования. */
+    @Bean
+    @ConditionalOnMissingBean(name = "integrationRestTemplate")
+    public RestTemplate integrationRestTemplate(
+            RestTemplateBuilder builder,
+            CloseableHttpClient integrationHttpClient) {
+
+        return builder
+                .requestFactory(() -> new HttpComponentsClientHttpRequestFactory(integrationHttpClient))
+                .build();
+    }
+
+    /** С логированием запросов/ответов. */
+    @Bean
+    @ConditionalOnMissingBean(name = "loggingIntegrationRestTemplate")
+    public RestTemplate loggingIntegrationRestTemplate(
+            RestTemplateBuilder builder,
+            CloseableHttpClient integrationHttpClient) {
+
+        return builder
+                .requestFactory(() -> new HttpComponentsClientHttpRequestFactory(integrationHttpClient))
+                .additionalInterceptors(new IntegrationRequestInterceptor())
+                .build();
     }
 }
 
 
-[ERROR] ru.ntdev.srhr.common.jwt.JwtTokenFilterLocalModeIntegrationTest.localMode_appliesLocalPrincipal_withoutTouchingEpa -- Time elapsed: 0.027 s <<< ERROR!
-com.auth0.jwt.exceptions.JWTDecodeException: The token was expected to have 3 parts, but got 2.
-	at com.auth0.jwt.TokenUtils.splitToken(TokenUtils.java:21)
-	at com.auth0.jwt.JWTDecoder.<init>(JWTDecoder.java:36)
-	at com.auth0.jwt.JWTDecoder.<init>(JWTDecoder.java:32)
-	at com.auth0.jwt.JWT.decode(JWT.java:45)
-	at ru.ntdev.srhr.common.jwt.JWTUtil.getSessionId(JWTUtil.java:51)
-	at ru.ntdev.srhr.common.jwt.filter.JwtTokenFilter.doFilterInternal(JwtTokenFilter.java:124)
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
-	at org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:151)
-	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:132)
-	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:109)
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
-	at org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:151)
-	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:132)
-	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
-	at org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:151)
-	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:132)
-	at org.springframework.test.web.servlet.MockMvc.perform(MockMvc.java:201)
-	at ru.ntdev.srhr.common.jwt.JwtTokenFilterLocalModeIntegrationTest.localMode_appliesLocalPrincipal_withoutTouchingEpa(JwtTokenFilterLocalModeIntegrationTest.java:47)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+package ru.ntdev.srhr.common.integration;
+
+import java.io.IOException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRequest;
+import org.springframework.http.client.ClientHttpRequestExecution;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.ClientHttpResponse;
+import ru.ntdev.srhr.common.util.LogUtil;
+
+public class IntegrationRequestInterceptor implements ClientHttpRequestInterceptor {
+
+    @Override
+    public ClientHttpResponse intercept(HttpRequest request, byte[] body,
+                                        ClientHttpRequestExecution execution) throws IOException {
+        HttpHeaders headers = request.getHeaders();
+        String pernr = headers.getFirst("pernr");
+        String sessionId = headers.getFirst("sessionId");
+        String logId = headers.getFirst("logId");
+        String method = request.getMethod().name();
+        String uri = request.getURI().toString();
+
+        LogUtil.logRequest(pernr, sessionId, method, uri, false, null, logId);
+
+        ClientHttpResponse response = execution.execute(request, body);
+
+        LogUtil.logResponse(pernr, sessionId, method, uri,
+                String.valueOf(response.getStatusCode().value()), null, false, null, logId);
+        return response;
+    }
+}
+
+
+
+package ru.ntdev.srhr.common.integration;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import ru.ntdev.srhr.common.dto.SapSystemParamsDto;
+
+public final class IntegrationHeaders {
+
+    public static HttpHeaders sap(SapSystemParamsDto p) {
+        HttpHeaders h = new HttpHeaders();
+        h.setContentType(MediaType.APPLICATION_JSON);
+        h.set("pernr", p.getTabNumber());
+        h.set("sessionId", p.getSessionId());
+        h.set("role", p.getRole());
+        h.set("X-user-login", p.getAdLogin());
+        h.set("Roles", p.getRolesHeader());
+        h.set("logId", p.getTraceId());
+        h.set("realm", p.getRealm());
+        return h;
+    }
+
+    public static HttpHeaders minimal(String pernr, String sessionId, String traceId) {
+        HttpHeaders h = new HttpHeaders();
+        h.setContentType(MediaType.APPLICATION_JSON);
+        h.set("pernr", pernr);
+        h.set("sessionId", sessionId);
+        h.set("logId", traceId);
+        return h;
+    }
+}
 
