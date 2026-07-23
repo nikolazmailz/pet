@@ -1,37 +1,66 @@
-public ResponseEntity<Object> postRequisitionAddComment(
-            @Parameter(schema = @Schema(implementation = RequisitionAddCommentRequest.class))
-            @AuditParam(value = "requestBody", sendParam = false)
-            @RequestBody() RequisitionAddCommentRequest requestDto,
-            HttpServletRequest request
-    ) throws Exception {
-        request.setAttribute("requestType", "requisition_post_add_comment");
-        SapSystemParamsDto systemParams = setSystemParams(request);
-        RequisitionGeneralCandidateDto requisitionResponse = requisitionService.getRequisitionPostAddComment(systemParams, requestDto);
-        if (requisitionResponse != null) {
-            LogUtil.logResponse(
-                    systemParams.getAdLogin(), systemParams.getSessionId(), "POST", kafkaTopicNameFromEasup, requisitionResponse.getResponseCode(),
-                    requisitionResponse.getErrorMessage(), false, null, requisitionResponse.getTraceId());
-            if (requisitionResponse.getResponseCode().startsWith("2")) {
-                RequisitionGeneralCandidateDtoOut responseOut = new RequisitionGeneralCandidateDtoOut();
-                BeanUtils.copyProperties(requisitionResponse, responseOut);
-                responseOut = requisitionDtoMapper.cleanNulls(responseOut);
-                log.info("Успешное выполнение эндпоинта [SRHR_REQUISITION_POST_ADD_COMMENT]");
-                return new ResponseEntity<>(responseOut, HttpStatus.OK);
-            } else {
-                log.warn("Неуспешное выполнение эндпоинта [SRHR_REQUISITION_POST_ADD_COMMENT]: [{}]", requisitionResponse.getErrorMessage());
-                int httpStatusNumber = Integer.parseInt(requisitionResponse.getResponseCode().substring(0, 3));
-                throw new HttpResponseException(httpStatusNumber, requisitionResponse.getErrorMessage());
-            }
-        }
-        log.warn("Неуспешное выполнение эндпоинта [SRHR_REQUISITION_POST_ADD_COMMENT]: вернулось нулевое значение");
-        throw new HttpResponseException(404, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
-    }
 
-private SapSystemParamsDto setSystemParams(HttpServletRequest request) {
-        SapSystemParamsDto systemParams = new SapSystemParamsDto();
-        systemParams.setChannel(request.getAttribute("channel").toString());
-        systemParams.setAdLogin(request.getAttribute("adLogin").toString());
-        systemParams.setSessionId(request.getAttribute("sessionId").toString());
-        systemParams.setRealm(request.getAttribute("realm").toString());
-        return systemParams;
+@SpringBootTest(
+        classes = JwtFilterTestApplication.class,
+        properties = {
+                "srhr.security.jwt.disable=true",
+                "srhr.security.jwt.local.sub=local-sub",
+                "srhr.security.jwt.local.session-id=local-session",
+                "srhr.security.jwt.local.channel=LOCAL_CHANNEL",
+                "srhr.security.jwt.local.sub-with-domain=DOMAIN\\\\local-sub",
+                "srhr.security.jwt.local.realm=local-realm"
+        })
+@AutoConfigureMockMvc
+public class JwtTokenFilterLocalModeIntegrationTest {
+
+
+    @Autowired
+    MockMvc mockMvc;
+
+    @MockBean
+    EpaSdkService epaSdkService;
+    @MockBean
+    AuditEventSenderCustom auditEventSender;
+    @MockBean
+    CustomAuditLibTracingServiceImpl tracing;
+
+    @Test
+    void localMode_appliesLocalPrincipal_withoutTouchingEpa() throws Exception {
+        // даже с Bearer в локальном режиме токен не парсится
+        mockMvc.perform(get("/echo").header("Authorization", "Bearer eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI4Y2U5YzAyMS1hNjk4LTQxYmQtODlmZi0xMGY4YjM0OTgzYjcifQ.eyJleHAiOjE3ODQ4MTc1MjEsImlhdCI6MTc4NDgxMDMyMSwianRpIjoiZTk5ODFjZTgtOWYwNS00ZGVjLWJiOTQtYTQ2MWQ2NmI0NjVhIiwiaXNzIjoiaHR0cHM6Ly9zZmVyYS1rZXljbG9"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.adLogin").value("DOMAIN\\local-sub"))
+                .andExpect(jsonPath("$.adLoginWithoutDomain").value("local-sub"))
+                .andExpect(jsonPath("$.sessionId").value("local-session"))
+                .andExpect(jsonPath("$.channel").value("LOCAL_CHANNEL"))
+                .andExpect(jsonPath("$.realm").value("local-realm"));
+
+        verifyNoInteractions(epaSdkService);
     }
+}
+
+
+[ERROR] ru.ntdev.srhr.common.jwt.JwtTokenFilterLocalModeIntegrationTest.localMode_appliesLocalPrincipal_withoutTouchingEpa -- Time elapsed: 0.027 s <<< ERROR!
+com.auth0.jwt.exceptions.JWTDecodeException: The token was expected to have 3 parts, but got 2.
+	at com.auth0.jwt.TokenUtils.splitToken(TokenUtils.java:21)
+	at com.auth0.jwt.JWTDecoder.<init>(JWTDecoder.java:36)
+	at com.auth0.jwt.JWTDecoder.<init>(JWTDecoder.java:32)
+	at com.auth0.jwt.JWT.decode(JWT.java:45)
+	at ru.ntdev.srhr.common.jwt.JWTUtil.getSessionId(JWTUtil.java:51)
+	at ru.ntdev.srhr.common.jwt.filter.JwtTokenFilter.doFilterInternal(JwtTokenFilter.java:124)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:151)
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:132)
+	at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:109)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:151)
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:132)
+	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+	at org.springframework.test.web.servlet.setup.MockMvcFilterDecorator.doFilter(MockMvcFilterDecorator.java:151)
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:132)
+	at org.springframework.test.web.servlet.MockMvc.perform(MockMvc.java:201)
+	at ru.ntdev.srhr.common.jwt.JwtTokenFilterLocalModeIntegrationTest.localMode_appliesLocalPrincipal_withoutTouchingEpa(JwtTokenFilterLocalModeIntegrationTest.java:47)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+
