@@ -1,0 +1,29 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/PendingCandidates"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "data": {
+        "candidates": [
+          {
+            "candidateId": "1234567890123456789",
+            "vacancyId": "1234567890123456789",
+            "fullName": "Иванов Иван Иванович",
+            "events": [
+              {
+                "eventCode": "rr_resume_review",
+                "statusDate": 1701565600000,
+                "days": 3,
+                "expirationZone": 2
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

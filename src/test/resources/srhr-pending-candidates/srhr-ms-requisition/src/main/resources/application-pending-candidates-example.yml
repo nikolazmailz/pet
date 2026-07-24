@@ -1,0 +1,6 @@
+# Фрагмент конфигурации srhr-ms-requisition для фичи pending-candidates
+srhr:
+  pending-candidates:
+    master-data-integration-base-url: http://srhr-ms-master-data-integration:8080
+    request-topic: srhr.requisition.to.easup
+    reply-topic: srhr.requisition.from.easup

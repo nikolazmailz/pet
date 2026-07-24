@@ -1,0 +1,33 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/requisition}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: ru.ntdev.srhr.pending.contracts
+        spring.json.use.type.headers: true
+
+integration:
+  master-data:
+    base-url: ${MASTER_DATA_URL:http://localhost:8082}
+    connect-timeout: 2s
+    read-timeout: 15s
+
+pending-candidates:
+  kafka:
+    request-topic: srhr.requisition.to.easup
+    response-topic: srhr.requisition.from.easup
+    request-group: srhr-ms-requisition-pending-candidates

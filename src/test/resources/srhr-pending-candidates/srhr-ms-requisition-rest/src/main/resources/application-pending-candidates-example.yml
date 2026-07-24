@@ -1,0 +1,5 @@
+# Фрагмент конфигурации srhr-ms-requisition-rest
+srhr:
+  pending-candidates:
+    request-topic: srhr.requisition.to.easup
+    reply-timeout: 30s

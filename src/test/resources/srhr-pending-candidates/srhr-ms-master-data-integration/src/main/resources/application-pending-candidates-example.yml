@@ -1,0 +1,3 @@
+# Фрагмент конфигурации srhr-ms-master-data-integration
+estaff:
+  base-url: http://sappo.internal/estaff

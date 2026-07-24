@@ -1,0 +1,8 @@
+server:
+  port: 8082
+
+integration:
+  sappo:
+    base-url: ${SAPPO_BASE_URL:http://localhost:9090}
+    connect-timeout: 2s
+    read-timeout: 10s

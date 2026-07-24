@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="2026-07-pending-candidates-01-table" author="srhr">
+        <comment>Кандидаты, ожидающие решения (снимок из Е-стафф на время обработки запроса)</comment>
+        <createTable tableName="pending_candidates">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_pending_candidates"/>
+            </column>
+            <!-- Внешний идентификатор вакансии из Е-стафф (19 знаков), НЕ FK на внутреннюю vacancy -->
+            <column name="vacancy_id" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="candidate_id" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="full_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="approver_pernr" type="VARCHAR(16)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="pending_candidates" indexName="ix_pending_candidates_approver_pernr">
+            <column name="approver_pernr"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="2026-07-pending-candidates-02-events" author="srhr">
+        <comment>Этапы кандидатов, ожидающих решения</comment>
+        <createTable tableName="pending_candidates_events">
+            <column name="id" type="BIGSERIAL" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_pending_candidates_events"/>
+            </column>
+            <column name="pending_candidate_id" type="BIGINT">
+                <constraints nullable="false"
+                             foreignKeyName="fk_pce_pending_candidate"
+                             references="pending_candidates(id)"
+                             deleteCascade="true"/>
+            </column>
+            <column name="event_code" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status_date" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="days" type="INTEGER"/>
+            <column name="expiration_zone" type="INTEGER"/>
+        </createTable>
+        <createIndex tableName="pending_candidates_events" indexName="ix_pce_pending_candidate_id">
+            <column name="pending_candidate_id"/>
+        </createIndex>
+        <createIndex tableName="pending_candidates_events" indexName="ix_pce_event_code">
+            <column name="event_code"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>
