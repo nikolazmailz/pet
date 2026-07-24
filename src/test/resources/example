@@ -1,0 +1,90 @@
+package ru.ntdev.srhr.common.dto.api.request.requisition;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import ru.ntdev.srhr.common.dto.api.request.SapRequestDto;
+import ru.ntdev.srhr.common.dto.api.request.masterDataIntegrations.objects.InterviewerActionItem;
+import ru.ntdev.srhr.common.dto.api.request.requisition.objects.RequisitionFiltersReq;
+import ru.ntdev.srhr.common.dto.api.request.requisition.objects.RequisitionVacancyCandidatesFiltersReq;
+
+import java.util.List;
+
+@Data
+@Schema(description = "Общий запрос", name = "RequisitionRequestDto", nullable = true)
+public class RequisitionRequestDto extends SapRequestDto {
+    
+    @JsonProperty("@odata.context")
+    private String ODataContext;
+    
+    @Schema(description = "OData тег", example = "W/\"11111111111111\"")
+    @JsonProperty("@odata.metadataEtag")
+    private String ODataTag;
+    
+    @Schema(description = "Код вкладки", minLength = 1, maxLength = 50, required = false, nullable = true)
+    private String tab;
+    
+    @Schema(description = "'Табельный номер выбранного делегатора'", minLength = 0, maxLength = 8, required = false, nullable = true)
+    private String delegatorTn;
+    
+    @Schema(description = "Идентификатор вакансии", minLength = 0, maxLength = 20, required = false, nullable = true)
+    private String vacancyId;
+    
+    @Schema(description = "Корневой объект фильтров", required = false, nullable =  true)
+    private RequisitionFiltersReq filters;
+    
+    @Schema(description = "Номер страницы", maximum = "1000000", minimum = "1", required = true, nullable =  false)
+    private Integer page ;
+    
+    @Schema(description = "Размер страницы ", maximum = "500", minimum = "1", required = true, nullable =  false)
+    private Integer size ;
+    @Schema(description = "Размер страницы ", maximum = "500", minimum = "1", required = true, nullable =  false)
+    private Integer pageSize ;
+    
+    private String employee;
+    
+    private String unit;
+
+    @Schema(description = "Код вкладки", maxLength = 20, required = true, nullable = false)
+    private String candidateTabsCode = "";
+
+    @Schema(description = "Корневой объект фильтров", required = false, nullable =  true)
+    private RequisitionVacancyCandidatesFiltersReq candidateFilters;
+
+    @Schema(description = "Признак скип кэша при действиях с кандидатами", required = false, nullable =  true)
+    private boolean skipCache;
+
+    @Schema(description = "Атрибут сортировки", maxLength = 11, required = true, nullable = false)
+    private String sortAttribute = "";
+
+    @Schema(description = "Направление сортировки", maxLength = 5, required = true, nullable = false)
+    private String sortDirection = "";
+
+    @ArraySchema(
+            schema = @Schema(
+                    description = "Участники интервью"
+            ),
+            maxItems = 5
+    )
+    private List<InterviewerActionItem> interviewers;
+
+    @Schema(description = "Идентификатор кандидата", maxLength = 20)
+    private String candidateId;
+
+    @Schema(description = "Идентификатор этапа", maxLength = 20, required = false, nullable = true)
+    private String eventId;
+
+    @Schema(description = "Код этапа", example = "overview", maxLength = 20, required = false, nullable = true)
+    private String eventCode;
+
+    @Schema(description = "Код статуса", example = "overview", maxLength = 20, required = false, nullable = true)
+    private String statusCode;
+
+    @Schema(description = "Текст комментария", example = "overview", maxLength = 255, required = false, nullable = true)
+    private String comment;
+
+    @Schema(description = "Строка поиска", example = "", maxLength = 255, required = false, nullable = true)
+    private String searchString;
+
+}
