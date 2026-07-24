@@ -1,0 +1,11 @@
+package ru.ntdev.srhr.pending.contracts;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Обёртка ответа списка кандидатов, ожидающих действия")
+public record PendingCandidatesApiResponse(
+
+        @Schema(description = "Данные страницы",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        PendingCandidatesPage data
+) {}

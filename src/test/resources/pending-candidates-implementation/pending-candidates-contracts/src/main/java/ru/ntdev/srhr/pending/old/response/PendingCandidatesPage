@@ -1,0 +1,39 @@
+package ru.ntdev.srhr.pending.contracts;
+
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.List;
+
+@Schema(description = "Страница кандидатов, ожидающих действия")
+public record PendingCandidatesPage(
+
+        @Schema(description = "Номер страницы", minimum = "1", example = "1",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        int page,
+
+        @Schema(description = "Размер страницы", minimum = "1", maximum = "200", example = "50",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        int pageSize,
+
+        @Schema(description = "Общее количество кандидатов", minimum = "0", example = "137",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        long count,
+
+        @ArraySchema(
+                schema = @Schema(implementation = EventCodeView.class),
+                arraySchema = @Schema(description = "Доступные коды этапов",
+                        requiredMode = Schema.RequiredMode.REQUIRED))
+        List<EventCodeView> eventCode,
+
+        @ArraySchema(
+                schema = @Schema(implementation = PendingCandidateView.class),
+                arraySchema = @Schema(description = "Кандидаты на странице",
+                        requiredMode = Schema.RequiredMode.REQUIRED))
+        List<PendingCandidateView> candidates
+) {
+    public PendingCandidatesPage {
+        eventCode = eventCode == null ? List.of() : List.copyOf(eventCode);
+        candidates = candidates == null ? List.of() : List.copyOf(candidates);
+    }
+}

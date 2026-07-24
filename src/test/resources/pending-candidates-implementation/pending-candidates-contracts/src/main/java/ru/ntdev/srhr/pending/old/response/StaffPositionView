@@ -1,0 +1,15 @@
+package ru.ntdev.srhr.pending.contracts;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Штатная позиция")
+public record StaffPositionView(
+
+        @Schema(description = "Идентификатор позиции",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        String id,
+
+        @Schema(description = "Название позиции",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        String name
+) {}

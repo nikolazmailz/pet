@@ -1,0 +1,11 @@
+package ru.ntdev.srhr.pending.contracts;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Код этапа")
+public record EventCodeView(
+
+        @Schema(description = "Значение кода", example = "interview",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        String codeValue
+) {}

@@ -1,0 +1,36 @@
+package ru.ntdev.srhr.pending.contracts;
+
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.List;
+
+@Schema(description = "Кандидат, ожидающий действия")
+public record PendingCandidateView(
+
+        @Schema(description = "Идентификатор кандидата", example = "10000123",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        String candidateId,
+
+        @Schema(description = "Идентификатор вакансии", example = "50001234",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        String vacancyId,
+
+        @Schema(description = "ФИО кандидата", example = "Иванов Иван Иванович",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        String fullName,
+
+        @Schema(description = "Реквизиция",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        RequisitionView requisition,
+
+        @ArraySchema(
+                schema = @Schema(implementation = PendingCandidateEventView.class),
+                arraySchema = @Schema(description = "Этапы кандидата",
+                        requiredMode = Schema.RequiredMode.REQUIRED))
+        List<PendingCandidateEventView> events
+) {
+    public PendingCandidateView {
+        events = events == null ? List.of() : List.copyOf(events);
+    }
+}

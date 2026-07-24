@@ -1,0 +1,44 @@
+package ru.ntdev.srhr.pending.contracts;
+
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import java.util.List;
+
+@Schema(description = "Реквизиция")
+public record RequisitionView(
+
+        @Schema(description = "GUID реквизиции", example = "a1b2c3d4-...",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        String guid,
+
+        @Schema(description = "Номер реквизиции", example = "REQ-2026-000123",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        String number,
+
+        @Schema(description = "Тип позиции", example = "STAFF", nullable = true,
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        String positionType,
+
+        @Schema(description = "Штатная позиция", nullable = true,
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        StaffPositionView staffPosition,
+
+        @Schema(description = "Название структурного подразделения", nullable = true,
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        String structUnitName,
+
+        @Schema(description = "Идентификатор структурного подразделения", nullable = true,
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        String structUnitId,
+
+        @ArraySchema(
+                schema = @Schema(implementation = StructUnitPathView.class),
+                arraySchema = @Schema(description = "Путь по структуре подразделений",
+                        requiredMode = Schema.RequiredMode.REQUIRED))
+        List<StructUnitPathView> structUnitPathList
+) {
+    public RequisitionView {
+        structUnitPathList = structUnitPathList == null ? List.of() : List.copyOf(structUnitPathList);
+    }
+}

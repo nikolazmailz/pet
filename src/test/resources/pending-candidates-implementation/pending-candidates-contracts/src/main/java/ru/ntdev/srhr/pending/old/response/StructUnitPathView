@@ -1,0 +1,19 @@
+package ru.ntdev.srhr.pending.contracts;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Узел пути структуры подразделений")
+public record StructUnitPathView(
+
+        @Schema(description = "Идентификатор узла",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        String id,
+
+        @Schema(description = "Описание типа узла", example = "Департамент", nullable = true,
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        String typeDesc,
+
+        @Schema(description = "Название узла",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        String name
+) {}
