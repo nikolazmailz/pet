@@ -1,147 +1,48 @@
-@Entity
-@Table(
-    name = "pending_candidates",
-    uniqueConstraints = @UniqueConstraint(
-        name = "uk_pending_candidates_approver_vacancy_candidate",
-        columnNames = {"approver_pernr", "vacancy_id", "candidate_id"}
-    )
-)
-@Getter
-@Setter
-public class PendingCandidateEntity {
+{
+  "data": 
+  {
+	  "page": 1,
+	  "pageSize": 2,
+	  "count": 2,
+	  "eventCode": [
+	  {
+		  "codeValue": "rr_resume_review"
+	  }
+	 ],
+	 "candidates": [
+	 {
+		 "candidateId": "1234567890123456789",
+		 "vacancyId": "1234567890123456789",
+		 "fullName": "Иванов Иван Иванович",
+		 "requisition" :
+		 {
+			 "guid": "12345678901235436457",
+			 "number": "12345",
+			 "positionType": "Новая",
+			 "staffPosition":  (staff_position_name)
+			 {
+				 "id": "1234567",
+				 "name": "Аналитик"
+			 }
+			 "structUnitName": "Департамент технологий",
+			 "structUnitId": "123456",
+			 "structUnitPathList": [ 
+			 {
+				 "id": "12314", (path_id)
+				 "typeDesc": "Управление",
+				 "name": "Дапартамент технологий", (path_name)
+			 }
+			]
+		 }
+		 "events": [
+			 {				
+				"code": "rr_resume_review",
+				"days": 2,
+				"expirationZone": 1
+			}
+		]
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
-
-    @Column(name = "approver_pernr", nullable = false, length = 16)
-    private String approverPernr;
-
-    @Column(name = "vacancy_id", nullable = false)
-    private Long vacancyId;
-
-    @Column(name = "candidate_id", nullable = false)
-    private Long candidateId;
-
-    @Column(name = "full_name", nullable = false, length = 255)
-    private String fullName;
-
-    @OneToMany(mappedBy = "pendingCandidate", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PendingCandidateEventEntity> events = new ArrayList<>();
-
-    public void addEvent(PendingCandidateEventEntity event) {
-        events.add(event);
-        event.setPendingCandidate(this);
-    }
-}
-
-@Entity
-@Table(name = "pending_candidate_events")
-@Getter
-@Setter
-public class PendingCandidateEventEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "pending_candidate_id", nullable = false)
-    private PendingCandidateEntity pendingCandidate;
-
-    @Column(name = "event_code", nullable = false, length = 64)
-    private String eventCode;
-
-    @Column(name = "status_date", nullable = false)
-    private Instant statusDate;
-
-    @Column(name = "days")
-    private Integer days;
-
-    @Column(name = "expiration_zone")
-    private Integer expirationZone;
-}
-
-
-public interface PendingCandidateRepository extends JpaRepository<PendingCandidateEntity, Long> {
-
-    @EntityGraph(attributePaths = "events")
-    List<PendingCandidateEntity> findByApproverPernr(String approverPernr);
-
-    @Modifying
-    @Query("delete from PendingCandidateEntity c where c.approverPernr = :approverPernr")
-    int deleteAllByApproverPernr(@Param("approverPernr") String approverPernr);
-}
-
-@Modifying
-@Query("""
-    delete from PendingCandidateEventEntity e
-    where e.pendingCandidate.id in (
-        select c.id from PendingCandidateEntity c where c.approverPernr = :approverPernr
-    )
-    """)
-int deleteEventsByApproverPernr(@Param("approverPernr") String approverPernr);
-
-
-public final class PendingCandidateMapper {
-
-    private PendingCandidateMapper() {
-    }
-
-    public static List<PendingCandidateEntity> toEntities(String approverPernr,
-                                                          PendingCandidatesResponse response) {
-        if (response == null || response.getData() == null || response.getData().getCandidates() == null) {
-            return List.of();
-        }
-        return response.getData().getCandidates().stream()
-            .map(candidate -> toEntity(approverPernr, candidate))
-            .toList();
-    }
-
-    private static PendingCandidateEntity toEntity(String approverPernr,
-                                                    PendingCandidatesResponse.Candidate candidate) {
-        PendingCandidateEntity entity = new PendingCandidateEntity();
-        entity.setApproverPernr(approverPernr);
-        entity.setVacancyId(candidate.getVacancyId());
-        entity.setCandidateId(candidate.getCandidateId());
-        entity.setFullName(candidate.getFullName());
-
-        if (candidate.getEvents() != null) {
-            candidate.getEvents().stream()
-                .map(PendingCandidateMapper::toEvent)
-                .forEach(entity::addEvent);
-        }
-        return entity;
-    }
-
-    private static PendingCandidateEventEntity toEvent(PendingCandidatesResponse.Event event) {
-        PendingCandidateEventEntity entity = new PendingCandidateEventEntity();
-        entity.setEventCode(event.getEventCode());
-        entity.setStatusDate(Instant.ofEpochMilli(event.getStatusDate()));
-        entity.setDays(event.getDays());
-        entity.setExpirationZone(event.getExpirationZone());
-        return entity;
-    }
-}
-
-
-@Service
-@RequiredArgsConstructor
-public class PendingCandidateStorage {
-
-    private final PendingCandidateRepository repository;
-
-    @Transactional
-    public void replaceForApprover(String approverPernr, PendingCandidatesResponse response) {
-        repository.deleteAllByApproverPernr(approverPernr);
-        repository.flush();
-        repository.saveAll(PendingCandidateMapper.toEntities(approverPernr, response));
-    }
-
-    @Transactional(readOnly = true)
-    public List<PendingCandidateEntity> findByApprover(String approverPernr) {
-        return repository.findByApproverPernr(approverPernr);
-    }
+	 }
+	]
+  }
 }
