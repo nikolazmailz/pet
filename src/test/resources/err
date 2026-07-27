@@ -1,134 +1,67 @@
-2026-07-27T12:28:27.157+03:00  WARN 22276 --- [           main] o.s.w.s.h.HandlerMappingIntrospector     : Cache miss for REQUEST dispatch to '/echo' (previous null). Performing CorsConfiguration lookup. This is logged once only at WARN level, and every time at TRACE.
+package ru.ntdev.srhr.common.contracts.easup.pendingcandidates;
 
-MockHttpServletRequest:
-      HTTP Method = GET
-      Request URI = /echo
-       Parameters = {}
-          Headers = []
-             Body = null
-    Session Attrs = {}
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-Handler:
-             Type = ru.ntdev.srhr.common.jwt.JwtFilterTestApplication$EchoController
-           Method = ru.ntdev.srhr.common.jwt.JwtFilterTestApplication$EchoController#echo(HttpServletRequest)
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Schema(description = "Ответ с кандидатами в ожидании")
+public class PendingCandidatesResponse {
 
-Async:
-    Async started = false
-     Async result = null
+    @Schema(description = "Данные кандидатов", required = true, nullable = false)
+    private CandidateInfoData data;
 
-Resolved Exception:
-             Type = null
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Schema(description = "Данные кандидатов")
+    public static class CandidateInfoData {
 
-ModelAndView:
-        View name = null
-             View = null
-            Model = null
-
-FlashMap:
-       Attributes = null
-
-MockHttpServletResponse:
-           Status = 200
-    Error message = null
-          Headers = [Vary:"Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers", Content-Type:"application/json", X-Content-Type-Options:"nosniff", X-XSS-Protection:"0", Cache-Control:"no-cache, no-store, max-age=0, must-revalidate", Pragma:"no-cache", Expires:"0", X-Frame-Options:"DENY"]
-     Content type = application/json
-             Body = {"traceId":"null","adLogin":"null","sessionCreatedAt":"2026-07-27T12:28:27.014459400","channel":"null","adLoginWithoutDomain":"null","realm":"null","sessionId":"null"}
-    Forwarded URL = null
-   Redirected URL = null
-          Cookies = []
-
-java.lang.AssertionError: JSON path "$.adLogin" expected:<anonymous> but was:<null>
-Expected :anonymous
-Actual   :null
-<Click to see difference>
-
-
-	at org.springframework.test.util.AssertionErrors.fail(AssertionErrors.java:59)
-	at org.springframework.test.util.AssertionErrors.assertEquals(AssertionErrors.java:122)
-	at org.springframework.test.util.JsonPathExpectationsHelper.assertValue(JsonPathExpectationsHelper.java:123)
-	at org.springframework.test.web.servlet.result.JsonPathResultMatchers.lambda$value$2(JsonPathResultMatchers.java:111)
-	at org.springframework.test.web.servlet.MockMvc$1.andExpect(MockMvc.java:214)
-	at ru.ntdev.srhr.common.jwt.JwtTokenFilterIntegrationTest.noAuthorizationHeader(JwtTokenFilterIntegrationTest.java:132)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-
-
-
-    @Test
-    void noAuthorizationHeader() throws Exception {
-        mockMvc.perform(get("/echo"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.adLogin").value("anonymous"));
+        @Schema(description = "Список кандидатов", required = true, nullable = false)
+        private List<Candidate> candidates;
     }
 
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Schema(description = "Кандидат")
+    public static class Candidate {
 
+        @Schema(description = "Идентификатор кандидата", required = true, nullable = false)
+        private Long candidateId;
 
-@SpringBootConfiguration
-@EnableAutoConfiguration
-@Import({JwtSecurityConfiguration.class, NonSecurityConfig.class})
-public class JwtFilterTestApplication {
+        @Schema(description = "Идентификатор вакансии", required = true, nullable = false)
+        private Long vacancyId;
 
-    static final List<String> ATTRS = List.of(
-            "adLogin", "sessionId", "channel", "adLoginWithoutDomain", "realm", "traceId", "sessionCreatedAt");
+        @Schema(description = "ФИО кандидата", required = true, nullable = false)
+        private String fullName;
 
-    @RestController
-    static class EchoController {
+        @Schema(description = "Список событий", required = true, nullable = false)
+        private List<Event> events;
 
-        @GetMapping("/echo")
-        Map<String, Object> echo(HttpServletRequest request) {
-            Map<String, Object> result = new HashMap<>();
-            for (String attr : ATTRS) {
-                result.put(attr, String.valueOf(request.getAttribute(attr)));
-            }
-            return result;
-        }
-
-        // отдельный эндпоинт под проверку shouldNotFilter
-        @GetMapping("/v3/api-docs")
-        Map<String, Object> apiDocs(HttpServletRequest request) {
-            return Map.of("adLogin", String.valueOf(request.getAttribute("adLogin")));
-        }
-    }
-}
-
-@Configuration
-public class NonSecurityConfig {
-
-    @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-        return http.build();
-    }
-}
-
-
-@Configuration
-@EnableConfigurationProperties(JwtFilterProperties.class)
-public class JwtSecurityConfiguration {
-
-    @Bean
-    @ConditionalOnMissingBean
-    public CustomAuditLibTracingServiceImpl customAuditLibTracingService() {
-        return new CustomAuditLibTracingServiceImpl();
     }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public JwtTokenFilter jwtTokenFilter(JwtFilterProperties props,
-                                         EpaSdkService epaSdkService,
-                                         AuditEventSenderCustom auditEventSender,
-                                         CustomAuditLibTracingServiceImpl auditLibTracingService,
-                                         ObjectMapper objectMapper) {
-        return new JwtTokenFilter(props, epaSdkService, auditEventSender, auditLibTracingService, objectMapper);
-    }
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Schema(description = "Событие кандидата")
+    public static class Event {
 
-    @Bean
-    @ConditionalOnMissingBean(name = "jwtTokenFilterRegistration")
-    public FilterRegistrationBean<JwtTokenFilter> jwtTokenFilterRegistration(JwtTokenFilter filter) {
-        FilterRegistrationBean<JwtTokenFilter> registration = new FilterRegistrationBean<>(filter);
-        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 10);
-        return registration;
+        @Schema(description = "Код события", required = true, nullable = false)
+        private String eventCode;
+
+        @Schema(description = "Дата события в формате Unix timestamp (мс)", required = true, nullable = false)
+        private Long statusDate;
+
+        @Schema(description = "Количество дней", required = true, nullable = false)
+        private Integer days;
+
+        @Schema(description = "Зона истечения срока", required = true, nullable = false)
+        private Integer expirationZone;
+
     }
 }
