@@ -1,126 +1,24 @@
-package ru.ntdev.srhr.common.integration;
+@Data
+@Schema(description = "Общий запрос", name = "RequisitionRequestDto", nullable = true)
+public class RequisitionRequestDto extends SapRequestDto {
+    
+    @JsonProperty("@odata.context")
+    private String ODataContext;
+    
+    @Schema(description = "OData тег", example = "W/\"11111111111111\"")
+    @JsonProperty("@odata.metadataEtag")
+    private String ODataTag;
 
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
-import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
-@Configuration
-public class IntegrationRestTemplateConfiguration {
-
-    private static final int MAX_CONN_TOTAL = 100;
-    private static final int MAX_CONN_PER_ROUTE = 20;
-
-    @Bean(destroyMethod = "close")
-    @ConditionalOnMissingBean(name = "integrationHttpClient")
-    public CloseableHttpClient integrationHttpClient() {
-        PoolingHttpClientConnectionManager cm = PoolingHttpClientConnectionManagerBuilder.create()
-                .setMaxConnTotal(MAX_CONN_TOTAL)
-                .setMaxConnPerRoute(MAX_CONN_PER_ROUTE)
-                .build();
-
-        return HttpClients.custom()
-                .setConnectionManager(cm)
-                .build();
-    }
-
-    /** Без логирования. */
-    @Bean
-    @ConditionalOnMissingBean(name = "integrationRestTemplate")
-    public RestTemplate integrationRestTemplate(
-            RestTemplateBuilder builder,
-            CloseableHttpClient integrationHttpClient) {
-
-        return builder
-                .requestFactory(() -> new HttpComponentsClientHttpRequestFactory(integrationHttpClient))
-                .build();
-    }
-
-    /** С логированием запросов/ответов. */
-    @Bean
-    @ConditionalOnMissingBean(name = "loggingIntegrationRestTemplate")
-    public RestTemplate loggingIntegrationRestTemplate(
-            RestTemplateBuilder builder,
-            CloseableHttpClient integrationHttpClient) {
-
-        return builder
-                .requestFactory(() -> new HttpComponentsClientHttpRequestFactory(integrationHttpClient))
-                .additionalInterceptors(new IntegrationRequestInterceptor())
-                .build();
-    }
+    @Schema(description = "Тело запроса, структуру можно определить полем requestType", type = "object", required = false, nullable = true)
+    private JsonNode payload;
 }
 
+ RequisitionRequestDto dto = fillBasicParams(systemParams);
+            dto.setRequestType("requisition_pending_candidates");
+            dto.setPayload(mapper.valueToTree(requestDto));
+            String message = getResponse(dto, mapper.writeValueAsString(dto));
 
-package ru.ntdev.srhr.common.integration;
+на другой стороне
 
-import java.io.IOException;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpRequest;
-import org.springframework.http.client.ClientHttpRequestExecution;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
-import org.springframework.http.client.ClientHttpResponse;
-import ru.ntdev.srhr.common.util.LogUtil;
-
-public class IntegrationRequestInterceptor implements ClientHttpRequestInterceptor {
-
-    @Override
-    public ClientHttpResponse intercept(HttpRequest request, byte[] body,
-                                        ClientHttpRequestExecution execution) throws IOException {
-        HttpHeaders headers = request.getHeaders();
-        String pernr = headers.getFirst("pernr");
-        String sessionId = headers.getFirst("sessionId");
-        String logId = headers.getFirst("logId");
-        String method = request.getMethod().name();
-        String uri = request.getURI().toString();
-
-        LogUtil.logRequest(pernr, sessionId, method, uri, false, null, logId);
-
-        ClientHttpResponse response = execution.execute(request, body);
-
-        LogUtil.logResponse(pernr, sessionId, method, uri,
-                String.valueOf(response.getStatusCode().value()), null, false, null, logId);
-        return response;
-    }
-}
-
-
-
-package ru.ntdev.srhr.common.integration;
-
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import ru.ntdev.srhr.common.dto.SapSystemParamsDto;
-
-public final class IntegrationHeaders {
-
-    public static HttpHeaders sap(SapSystemParamsDto p) {
-        HttpHeaders h = new HttpHeaders();
-        h.setContentType(MediaType.APPLICATION_JSON);
-        h.set("pernr", p.getTabNumber());
-        h.set("sessionId", p.getSessionId());
-        h.set("role", p.getRole());
-        h.set("X-user-login", p.getAdLogin());
-        h.set("Roles", p.getRolesHeader());
-        h.set("logId", p.getTraceId());
-        h.set("realm", p.getRealm());
-        return h;
-    }
-
-    public static HttpHeaders minimal(String pernr, String sessionId, String traceId) {
-        HttpHeaders h = new HttpHeaders();
-        h.setContentType(MediaType.APPLICATION_JSON);
-        h.set("pernr", pernr);
-        h.set("sessionId", sessionId);
-        h.set("logId", traceId);
-        return h;
-    }
-}
-
+ RequisitionRequestDto requestValues = mapper.readValue(messageIncoming, RequisitionRequestDto.class);
+       PendingCandidatesApiRequest req = objectMapper.treeToValue(requestValues.getPayload(), PendingCandidatesApiRequest.class);
