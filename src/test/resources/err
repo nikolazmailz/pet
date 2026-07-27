@@ -1,3 +1,59 @@
+@Entity
+@Table(name = "pending_candidates")
+@Getter
+@Setter
+public class PendingCandidateEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Integer id;
+
+    @Column(name = "vacancy_id", nullable = false)
+    private Integer vacancyId;
+
+    @Column(name = "candidate_id", nullable = false, length = 32)
+    private String candidateId;
+
+    @Column(name = "full_name", nullable = false, length = 255)
+    private String fullName;
+
+    @Column(name = "approver_pernr", nullable = false, length = 16)
+    private String approverPernr;
+
+    @OneToMany(mappedBy = "pendingCandidate", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PendingCandidateEventEntity> events = new ArrayList<>();
+}
+
+
+@Entity
+@Table(name = "pending_candidates_events")
+@Getter
+@Setter
+public class PendingCandidateEventEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Integer id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pending_candidate_id", nullable = false)
+    private PendingCandidateEntity pendingCandidate;
+
+    @Column(name = "event_code", nullable = false, length = 64)
+    private String eventCode;
+
+    @Column(name = "status_date", nullable = false)
+    private Instant statusDate;
+
+    @Column(name = "days")
+    private Integer days;
+
+    @Column(name = "expiration_zone")
+    private Integer expirationZone;
+}
+
 package ru.ntdev.srhr.common.contracts.easup.pendingcandidates;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -65,3 +121,4 @@ public class PendingCandidatesResponse {
 
     }
 }
+
