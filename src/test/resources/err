@@ -1,5 +1,11 @@
 @Entity
-@Table(name = "pending_candidates")
+@Table(
+    name = "pending_candidates",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uk_pending_candidates_approver_vacancy_candidate",
+        columnNames = {"approver_pernr", "vacancy_id", "candidate_id"}
+    )
+)
 @Getter
 @Setter
 public class PendingCandidateEntity {
@@ -7,27 +13,31 @@ public class PendingCandidateEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Integer id;
-
-    @Column(name = "vacancy_id", nullable = false)
-    private Integer vacancyId;
-
-    @Column(name = "candidate_id", nullable = false, length = 32)
-    private String candidateId;
-
-    @Column(name = "full_name", nullable = false, length = 255)
-    private String fullName;
+    private Long id;
 
     @Column(name = "approver_pernr", nullable = false, length = 16)
     private String approverPernr;
 
+    @Column(name = "vacancy_id", nullable = false)
+    private Long vacancyId;
+
+    @Column(name = "candidate_id", nullable = false)
+    private Long candidateId;
+
+    @Column(name = "full_name", nullable = false, length = 255)
+    private String fullName;
+
     @OneToMany(mappedBy = "pendingCandidate", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PendingCandidateEventEntity> events = new ArrayList<>();
+
+    public void addEvent(PendingCandidateEventEntity event) {
+        events.add(event);
+        event.setPendingCandidate(this);
+    }
 }
 
-
 @Entity
-@Table(name = "pending_candidates_events")
+@Table(name = "pending_candidate_events")
 @Getter
 @Setter
 public class PendingCandidateEventEntity {
@@ -35,9 +45,9 @@ public class PendingCandidateEventEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Integer id;
+    private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "pending_candidate_id", nullable = false)
     private PendingCandidateEntity pendingCandidate;
 
@@ -54,71 +64,84 @@ public class PendingCandidateEventEntity {
     private Integer expirationZone;
 }
 
-package ru.ntdev.srhr.common.contracts.easup.pendingcandidates;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+public interface PendingCandidateRepository extends JpaRepository<PendingCandidateEntity, Long> {
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Schema(description = "Ответ с кандидатами в ожидании")
-public class PendingCandidatesResponse {
+    @EntityGraph(attributePaths = "events")
+    List<PendingCandidateEntity> findByApproverPernr(String approverPernr);
 
-    @Schema(description = "Данные кандидатов", required = true, nullable = false)
-    private CandidateInfoData data;
+    @Modifying
+    @Query("delete from PendingCandidateEntity c where c.approverPernr = :approverPernr")
+    int deleteAllByApproverPernr(@Param("approverPernr") String approverPernr);
+}
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Schema(description = "Данные кандидатов")
-    public static class CandidateInfoData {
+@Modifying
+@Query("""
+    delete from PendingCandidateEventEntity e
+    where e.pendingCandidate.id in (
+        select c.id from PendingCandidateEntity c where c.approverPernr = :approverPernr
+    )
+    """)
+int deleteEventsByApproverPernr(@Param("approverPernr") String approverPernr);
 
-        @Schema(description = "Список кандидатов", required = true, nullable = false)
-        private List<Candidate> candidates;
+
+public final class PendingCandidateMapper {
+
+    private PendingCandidateMapper() {
     }
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Schema(description = "Кандидат")
-    public static class Candidate {
-
-        @Schema(description = "Идентификатор кандидата", required = true, nullable = false)
-        private Long candidateId;
-
-        @Schema(description = "Идентификатор вакансии", required = true, nullable = false)
-        private Long vacancyId;
-
-        @Schema(description = "ФИО кандидата", required = true, nullable = false)
-        private String fullName;
-
-        @Schema(description = "Список событий", required = true, nullable = false)
-        private List<Event> events;
-
+    public static List<PendingCandidateEntity> toEntities(String approverPernr,
+                                                          PendingCandidatesResponse response) {
+        if (response == null || response.getData() == null || response.getData().getCandidates() == null) {
+            return List.of();
+        }
+        return response.getData().getCandidates().stream()
+            .map(candidate -> toEntity(approverPernr, candidate))
+            .toList();
     }
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Schema(description = "Событие кандидата")
-    public static class Event {
+    private static PendingCandidateEntity toEntity(String approverPernr,
+                                                    PendingCandidatesResponse.Candidate candidate) {
+        PendingCandidateEntity entity = new PendingCandidateEntity();
+        entity.setApproverPernr(approverPernr);
+        entity.setVacancyId(candidate.getVacancyId());
+        entity.setCandidateId(candidate.getCandidateId());
+        entity.setFullName(candidate.getFullName());
 
-        @Schema(description = "Код события", required = true, nullable = false)
-        private String eventCode;
+        if (candidate.getEvents() != null) {
+            candidate.getEvents().stream()
+                .map(PendingCandidateMapper::toEvent)
+                .forEach(entity::addEvent);
+        }
+        return entity;
+    }
 
-        @Schema(description = "Дата события в формате Unix timestamp (мс)", required = true, nullable = false)
-        private Long statusDate;
-
-        @Schema(description = "Количество дней", required = true, nullable = false)
-        private Integer days;
-
-        @Schema(description = "Зона истечения срока", required = true, nullable = false)
-        private Integer expirationZone;
-
+    private static PendingCandidateEventEntity toEvent(PendingCandidatesResponse.Event event) {
+        PendingCandidateEventEntity entity = new PendingCandidateEventEntity();
+        entity.setEventCode(event.getEventCode());
+        entity.setStatusDate(Instant.ofEpochMilli(event.getStatusDate()));
+        entity.setDays(event.getDays());
+        entity.setExpirationZone(event.getExpirationZone());
+        return entity;
     }
 }
 
+
+@Service
+@RequiredArgsConstructor
+public class PendingCandidateStorage {
+
+    private final PendingCandidateRepository repository;
+
+    @Transactional
+    public void replaceForApprover(String approverPernr, PendingCandidatesResponse response) {
+        repository.deleteAllByApproverPernr(approverPernr);
+        repository.flush();
+        repository.saveAll(PendingCandidateMapper.toEntities(approverPernr, response));
+    }
+
+    @Transactional(readOnly = true)
+    public List<PendingCandidateEntity> findByApprover(String approverPernr) {
+        return repository.findByApproverPernr(approverPernr);
+    }
+}
