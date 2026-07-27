@@ -1,0 +1,91 @@
+public interface PendingCandidateRepository extends JpaRepository<PendingCandidateEntity, Integer> {
+
+    // Фаза 1: страница ID с фильтрами
+    @Query(value = """
+        select pc.id from pending_candidates pc
+        where pc.approver_pernr = :pernr
+          and (:search::text is null or pc.full_name ilike '%' || :search || '%')
+          and (:eventCodesEmpty = true or exists (
+              select 1 from pending_candidates_events e
+              where e.pending_candidate_id = pc.id and e.event_code in (:eventCodes)))
+        order by pc.full_name, pc.id
+        limit :limit offset :offset
+        """, nativeQuery = true)
+    List<Integer> findPageIds(String pernr, String search,
+                              List<String> eventCodes, boolean eventCodesEmpty,
+                              int limit, int offset);
+
+    @Query(value = """
+        select count(*) from pending_candidates pc
+        where pc.approver_pernr = :pernr
+          and (:search::text is null or pc.full_name ilike '%' || :search || '%')
+          and (:eventCodesEmpty = true or exists (
+              select 1 from pending_candidates_events e
+              where e.pending_candidate_id = pc.id and e.event_code in (:eventCodes)))
+        """, nativeQuery = true)
+    long countByFilter(String pernr, String search,
+                       List<String> eventCodes, boolean eventCodesEmpty);
+
+    // Фаза 2а: кандидаты страницы (порядок сохраняем сразу в SQL)
+    @Query(value = """
+        select pc.id, pc.vacancy_id, pc.candidate_id, pc.full_name, pc.approver_pernr
+        from pending_candidates pc
+        join unnest(:ids) with ordinality as t(id, ord) on t.id = pc.id
+        order by t.ord
+        """, nativeQuery = true)
+    List<PendingCandidateRow> findRowsByIds(Integer[] ids);
+
+    // Фаза 2б: события для этих кандидатов, уже отсортированные
+    @Query(value = """
+        select e.pending_candidate_id, e.event_code, e.status_date, e.days, e.expiration_zone
+        from pending_candidates_events e
+        where e.pending_candidate_id in (:ids)
+        order by e.pending_candidate_id, e.status_date
+        """, nativeQuery = true)
+    List<PendingCandidateEventRow> findEventRowsByCandidateIds(List<Integer> ids);
+
+    // п.4: уникальные коды по отфильтрованным кандидатам
+    @Query(value = """
+        select distinct e.event_code
+        from pending_candidates_events e
+        join pending_candidates pc on pc.id = e.pending_candidate_id
+        where pc.approver_pernr = :pernr
+          and (:search::text is null or pc.full_name ilike '%' || :search || '%')
+          and (:eventCodesEmpty = true or exists (
+              select 1 from pending_candidates_events e2
+              where e2.pending_candidate_id = pc.id and e2.event_code in (:eventCodes)))
+        order by e.event_code
+        """, nativeQuery = true)
+    List<String> findDistinctEventCodes(String pernr, String search,
+                                        List<String> eventCodes, boolean eventCodesEmpty);
+}
+
+
+
+public interface PendingCandidateRow {
+    Integer getId();
+    Integer getVacancyId();
+    String getCandidateId();
+    String getFullName();
+}
+
+public interface PendingCandidateEventRow {
+    Integer getPendingCandidateId();
+    String getEventCode();
+    Instant getStatusDate();
+    Integer getDays();
+    Integer getExpirationZone();
+}
+
+
+List<Integer> ids = repository.findPageIds(pernr, search, codesParam, codesEmpty,
+        request.pageSize(), (request.page() - 1) * request.pageSize());
+
+List<PendingCandidateRow> rows = repository.findRowsByIds(ids.toArray(Integer[]::new));
+Map<Integer, List<PendingCandidateEventRow>> eventsByCandidate =
+        repository.findEventRowsByCandidateIds(ids).stream()
+                .collect(Collectors.groupingBy(PendingCandidateEventRow::getPendingCandidateId));
+
+List<PendingCandidateDto> items = rows.stream()
+        .map(r -> mapper.toDto(r, eventsByCandidate.getOrDefault(r.getId(), List.of())))
+        .toList();
