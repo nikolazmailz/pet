@@ -1,100 +1,58 @@
-databaseChangeLog:
-  - changeSet:
-      id: 2026-07-27-13-45-create-pending-candidates
-      author: n-pushkaryov
-      changes:
-        - createTable:
-            tableName: pending_candidates
-            remarks: Кандидаты, ожидающие решения
-            columns:
-              - column:
-                  name: id
-                  type: integer
-                  constraints:
-                    primaryKey: true
-                    nullable: false
-              - column:
-                  name: vacancy_id
-                  type: integer
-                  constraints:
-                    nullable: false
-                    foreignKeyName: fk_pending_candidates_vacancy
-                    references: vacancy(id)
-                    onDelete: cascade
-              - column:
-                  name: candidate_id
-                  type: varchar(32)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: full_name
-                  type: varchar(255)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: approver_pernr
-                  type: varchar(16)
-                  constraints:
-                    nullable: false
-        - createIndex:
-            tableName: pending_candidates
-            indexName: idx_pending_candidates_approver_pernr
-            columns:
-              - column:
-                  name: approver_pernr
+3:00  WARN 4404 --- [srhr-ms-requisition] [c-producer-ex-1] org.apache.kafka.clients.NetworkClient   : [Consumer instanceId=mc_6d8704dd-7103-4718-8666-77c4d5d5781d, clientId=mc_6d8704dd-7103-4718-8666-77c4d5d5781d, groupId=requisition_consumer] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:23:19.697+03:00  WARN 4404 --- [srhr-ms-requisition] [  producer-ex-3] org.apache.kafka.clients.NetworkClient   : [Consumer instanceId=pt_55106743-1473-4793-be8c-e44a526665c9, clientId=pt_55106743-1473-4793-be8c-e44a526665c9, groupId=requisition_consumer] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
 
-databaseChangeLog:
-  - changeSet:
-      id: 2026-07-27-13-45-create-pending-candidates-events
-      author: n-pushkaryov
-      changes:
-        - createTable:
-            tableName: pending_candidates_events
-            remarks: События по кандидатам в ожидании
-            columns:
-              - column:
-                  name: id
-                  type: integer
-                  constraints:
-                    primaryKey: true
-                    nullable: false
-              - column:
-                  name: pending_candidate_id
-                  type: bigint
-                  constraints:
-                    nullable: false
-                    foreignKeyName: fk_pending_candidates_events_candidate
-                    references: pending_candidates(id)
-                    onDelete: cascade
-              - column:
-                  name: event_code
-                  type: varchar(64)
-                  constraints:
-                    nullable: false
-              - column:
-                  name: status_date
-                  type: timestamptz
-                  constraints:
-                    nullable: false
-              - column:
-                  name: days
-                  type: integer
-                  constraints:
-                    nullable: true
-              - column:
-                  name: expiration_zone
-                  type: integer
-                  constraints:
-                    nullable: true
-        - createIndex:
-            tableName: pending_candidates_events
-            indexName: idx_pending_candidates_events_candidate_id
-            columns:
-              - column:
-                  name: pending_candidate_id
-        - createIndex:
-            tableName: pending_candidates_events
-            indexName: idx_pending_candidates_events_event_code
-            columns:
-              - column:
-                  name: event_code
+org.springframework.dao.InvalidDataAccessResourceUsageException: No argument for named parameter ':search::text'
+
+	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:298)
+	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:241)
+	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.translateExceptionIfPossible(AbstractEntityManagerFactoryBean.java:550)
+	at org.springframework.dao.support.ChainedPersistenceExceptionTranslator.translateExceptionIfPossible(ChainedPersistenceExceptionTranslator.java:61)
+	at org.springframework.dao.support.DataAccessUtils.translateIfNecessary(DataAccessUtils.java:335)
+	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:152)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:135)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.interceptor.ExposeInvocationInterceptor.invoke(ExposeInvocationInterceptor.java:97)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:249)
+	at jdk.proxy2/jdk.proxy2.$Proxy257.findPageIds(Unknown Source)
+	at ru.ntdev.srhr.ms.requisition.application.usecase.PendingCandidatesUseCase.definePendingCandidatePage(PendingCandidatesUseCase.java:83)
+	at ru.ntdev.srhr.ms.requisition.application.usecase.PendingCandidatesUseCase.execute(PendingCandidatesUseCase.java:70)
+	at ru.ntdev.srhr.ms.requisition.application.usecase.PendingCandidatesUseCaseIntegrationTest.execute_shouldReturnCorrectResponse_whenMultipleCandidatesAndEvents(PendingCandidatesUseCaseIntegrationTest.java:145)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+Caused by: org.hibernate.QueryParameterException: No argument for named parameter ':search::text'
+	at org.hibernate.query.internal.QueryParameterBindingsImpl.lambda$validate$0(QueryParameterBindingsImpl.java:142)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.Collections$UnmodifiableCollection.forEach(Collections.java:1092)
+	at org.hibernate.query.internal.ParameterMetadataImpl.visitParameters(ParameterMetadataImpl.java:191)
+	at org.hibernate.query.spi.ParameterMetadataImplementor.visitRegistrations(ParameterMetadataImplementor.java:29)
+	at org.hibernate.query.internal.QueryParameterBindingsImpl.validate(QueryParameterBindingsImpl.java:138)
+	at org.hibernate.query.spi.AbstractSelectionQuery.beforeQuery(AbstractSelectionQuery.java:455)
+	at org.hibernate.query.spi.AbstractSelectionQuery.beforeQueryHandlingFetchProfiles(AbstractSelectionQuery.java:446)
+	at org.hibernate.query.spi.AbstractSelectionQuery.list(AbstractSelectionQuery.java:424)
+	at org.hibernate.query.Query.getResultList(Query.java:120)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.orm.jpa.SharedEntityManagerCreator$DeferredQueryInvocationHandler.invoke(SharedEntityManagerCreator.java:405)
+	at jdk.proxy2/jdk.proxy2.$Proxy283.getResultList(Unknown Source)
+	at org.springframework.data.jpa.repository.query.JpaQueryExecution$CollectionExecution.doExecute(JpaQueryExecution.java:129)
+	at org.springframework.data.jpa.repository.query.JpaQueryExecution.execute(JpaQueryExecution.java:92)
+	at org.springframework.data.jpa.repository.query.AbstractJpaQuery.doExecute(AbstractJpaQuery.java:149)
+	at org.springframework.data.jpa.repository.query.AbstractJpaQuery.execute(AbstractJpaQuery.java:137)
+	at org.springframework.data.repository.core.support.RepositoryMethodInvoker.doInvoke(RepositoryMethodInvoker.java:170)
+	at org.springframework.data.repository.core.support.RepositoryMethodInvoker.invoke(RepositoryMethodInvoker.java:158)
+	at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.doInvoke(QueryExecutorMethodInterceptor.java:164)
+	at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.invoke(QueryExecutorMethodInterceptor.java:143)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor.invoke(DefaultMethodInvokingMethodInterceptor.java:70)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:123)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:385)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:137)
+	... 13 more
