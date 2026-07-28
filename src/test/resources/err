@@ -1,239 +1,236 @@
 package ru.ntdev.srhr.ms.requisition.application.usecase;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.LinkedHashMap;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import ru.ntdev.srhr.common.contracts.easup.pendingcandidates.PendingCandidatesRequest;
 import ru.ntdev.srhr.common.contracts.easup.pendingcandidates.PendingCandidatesResponse;
+import ru.ntdev.srhr.common.contracts.requisition.pendingcandidates.request.PendingCandidatesApiRequest;
+import ru.ntdev.srhr.common.contracts.requisition.pendingcandidates.response.EventCodeView;
+import ru.ntdev.srhr.common.contracts.requisition.pendingcandidates.response.PendingCandidateEventView;
+import ru.ntdev.srhr.common.contracts.requisition.pendingcandidates.response.PendingCandidateView;
+import ru.ntdev.srhr.common.contracts.requisition.pendingcandidates.response.PendingCandidatesApiResponse;
+import ru.ntdev.srhr.common.contracts.requisition.pendingcandidates.response.PendingCandidatesPage;
+import ru.ntdev.srhr.common.contracts.requisition.pendingcandidates.response.RequisitionView;
+import ru.ntdev.srhr.common.contracts.requisition.pendingcandidates.response.StaffPositionView;
+import ru.ntdev.srhr.common.contracts.requisition.pendingcandidates.response.StructUnitPathView;
 import ru.ntdev.srhr.common.dto.SapSystemParamsDto;
 import ru.ntdev.srhr.common.dto.api.request.requisition.RequisitionRequestDto;
-import ru.ntdev.srhr.common.dto.bscs.employee.BscsEmployeeDto;
-import ru.ntdev.srhr.ms.requisition.BaseIntegrationTest;
 import ru.ntdev.srhr.ms.requisition.application.dto.FinishProcessingMessageDto;
+import ru.ntdev.srhr.ms.requisition.application.dto.StatusCode;
+import ru.ntdev.srhr.ms.requisition.entity.PendingCandidateEntity;
 import ru.ntdev.srhr.ms.requisition.entity.RequisitionRequestEntity;
+import ru.ntdev.srhr.ms.requisition.entity.projection.PendingCandidateEventRow;
+import ru.ntdev.srhr.ms.requisition.entity.projection.PendingCandidateRow;
+import ru.ntdev.srhr.ms.requisition.entity.projection.RequisitionEnrichmentRow;
+import ru.ntdev.srhr.ms.requisition.entity.projection.StructUnitPathRow;
 import ru.ntdev.srhr.ms.requisition.repository.PendingCandidateEntityRepository;
 import ru.ntdev.srhr.ms.requisition.repository.VacancyRepository;
+import ru.ntdev.srhr.ms.requisition.service.BscsIntegrationService;
+import ru.ntdev.srhr.ms.requisition.service.DatabaseService;
+import ru.ntdev.srhr.ms.requisition.service.MasterDataIntegrationService;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class PendingCandidatesUseCase {
 
-public class PendingCandidatesUseCaseIntegrationTest extends BaseIntegrationTest {
+    private final ObjectMapper objectMapper;
+    private final BscsIntegrationService bscsIntegrationService;
+    private final MasterDataIntegrationService masterDataIntegrationService;
+    private final PendingCandidateEntityRepository pendingCandidateEntityRepository;
+    private final VacancyRepository vacancyRepository;
+    private final DatabaseService databaseService;
 
-    @Autowired
-    private PendingCandidatesUseCase pendingCandidatesUseCase;
+    public FinishProcessingMessageDto execute(
+            RequisitionRequestEntity requestEntity,
+            SapSystemParamsDto systemParams,
+            RequisitionRequestDto requestValues) throws Exception {
+        long start = System.currentTimeMillis();
+        PendingCandidatesApiRequest request = objectMapper.treeToValue(requestValues.getPayload(), PendingCandidatesApiRequest.class);
 
-    @Autowired
-    private ObjectMapper objectMapper;
+        String pernr = bscsIntegrationService.getStaffByLogin(
+                requestValues.getAdLogin(),
+                requestValues.getSessionId(),
+                requestValues.getTraceId()
+        ).getId();
 
-    @Autowired
-    private PendingCandidateEntityRepository pendingCandidateEntityRepository;
+        PendingCandidatesResponse pendingCandidatesResponse = masterDataIntegrationService.getPendingCandidates(systemParams, new PendingCandidatesRequest(
+                new PendingCandidatesRequest.Request(pernr)
+        )).getBody();
 
-    @Autowired
-    private VacancyRepository vacancyRepository;
+        databaseService.replaceForApprover(pernr, pendingCandidatesResponse);
 
-    String adLogin = "testuser";
-    String sessionId = "session123";
-    String traceId = "trace123";
-    String pernr = "123456";
+        PendingCandidatesApiResponse out = definePendingCandidatePage(pernr, request);
 
-    @BeforeEach
-    void setUp() {
 
-        transactionTemplate.execute(status -> {
-            em.createNativeQuery("truncate srhr_requisition.pending_candidates restart identity cascade").executeUpdate();
-            em.createNativeQuery("truncate srhr_requisition.pending_candidates_events restart identity cascade").executeUpdate();
-            em.createNativeQuery("truncate srhr_requisition.structure_unit restart identity cascade").executeUpdate();
-            em.createNativeQuery("truncate srhr_requisition.vacancy restart identity cascade").executeUpdate();
-            em.createNativeQuery("truncate srhr_requisition.requisitions restart identity cascade").executeUpdate();
-            em.createNativeQuery("truncate srhr_requisition.data_integrations restart identity cascade").executeUpdate();
-
-            em.createNativeQuery("""
-                            INSERT INTO srhr_requisition.data_integrations (id, started_at, finished_at)
-                            VALUES (200, now(), now()), (201, now(), now())
-                            """)
-                    .executeUpdate();
-
-            // RequisitionEntity — 2 вакансии
-            em.createNativeQuery("""
-                            INSERT INTO srhr_requisition.requisitions (guid, integration_id, number, position_type, staff_position_id, staff_position_name, struct_unit_id, struct_unit_name)
-                            VALUES
-                            ('guid-200', 200,'REQ-001', 'TYPE_A', 'SP-001', 'Manager', 'SU-001', 'HR'),
-                            ('guid-201', 201,'REQ-002', 'TYPE_B', 'SP-002', 'Analyst', 'SU-002', 'Finance')
-                            """)
-                    .executeUpdate();
-
-            // StructureUnitEntity — пути для вакансий (по одному узлу на вакансию)
-            em.createNativeQuery("""
-                            INSERT INTO srhr_requisition.structure_unit (requisition_uuid, order_number, path_id, type_desc, path_name)
-                            VALUES
-                            ('guid-200', 1, 'SU-001', 'DEPARTMENT', 'HR'),
-                            ('guid-201', 1, 'SU-002', 'DEPARTMENT', 'Finance')
-                            """)
-                    .executeUpdate();
-
-            // vacancy
-            em.createNativeQuery("""
-                            INSERT INTO srhr_requisition.vacancy
-                                (id, integration_id, requisition_guid, last_status_change_date, last_update, candidates_last_update)
-                            VALUES
-                            (200, 200, 'guid-200', now(), now(), now()),
-                            (201, 201,'guid-201', now(), now(), now())
-                            """)
-                    .executeUpdate();
-
-//            // PendingCandidateEntity — 3 кандидата
-//            em.createNativeQuery("""
-//                            INSERT INTO srhr_requisition.pending_candidates (id, vacancy_id, candidate_id, full_name, approver_pernr)
-//                            VALUES
-//                            (1, 200, 'CAND-100', 'John Doe', :pernr),
-//                            (2, 201, 'CAND-101', 'Jane Smith', :pernr),
-//                            (3, 200, 'CAND-102', 'Bob Johnson', :pernr)
-//                            """)
-//                    .setParameter("pernr", pernr)
-//                    .executeUpdate();
-//
-//            // PendingCandidateEventEntity — события для кандидатов
-//            em.createNativeQuery("""
-//                            INSERT INTO srhr_requisition.pending_candidates_events (pending_candidate_id, event_code, days, expiration_zone)
-//                            VALUES
-//                            (1, 'HIRE', 30, 1),
-//                            (1, 'INTERVIEW', 15, 1),
-//                            (2, 'REJECT', 5, 0),
-//                            (3, 'HIRE', 45, 1)
-//                            """)
-//                    .executeUpdate();
-
-            return null;
-        });
+        return new FinishProcessingMessageDto(
+                start,
+                systemParams,
+                out,
+                requestEntity,
+                StatusCode.CODE_200.getCode()
+        );
     }
 
-    @Test
-    void execute_shouldReturnCorrectResponse_whenMultipleCandidatesAndEvents() throws Exception {
-        RequisitionRequestEntity requestEntity = mock(RequisitionRequestEntity.class);
-        RequisitionRequestDto requestValues = new RequisitionRequestDto();
-        requestValues.setAdLogin(adLogin);
-        requestValues.setSessionId(sessionId);
-        requestValues.setTraceId(traceId);
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode jsonNode = objectMapper.readTree("""
-                    {
-                      "page": 1,
-                      "size": 10,
-                      "filter": {
-                        "search": "Иванов",
-                        "eventCodeList": ["HIRE", "INTERVIEW"]
-                      }
-                    }
-                """);
-        requestValues.setPayload(jsonNode);
+    private PendingCandidatesApiResponse definePendingCandidatePage(String pernr, PendingCandidatesApiRequest request) {
+        List<Integer> idsCandidate = pendingCandidateEntityRepository.findPageIds(
+                pernr,
+                request.filter().search(),
+                request.filter().eventCodeList(),
+                request.filter().eventCodeList().isEmpty(),
+                request.size(),
+                (request.page() - 1) * request.size()
+        );
 
-        SapSystemParamsDto systemParams = mock(SapSystemParamsDto.class);
+        long countCandidates = pendingCandidateEntityRepository.countByFilter(
+                pernr,
+                request.filter().search(),
+                request.filter().eventCodeList(),
+                request.filter().eventCodeList().isEmpty()
+        );
 
-        BscsEmployeeDto bscsEmployeeDto = mock(BscsEmployeeDto.class);
-        when(bscsEmployeeDto.getId()).thenReturn(pernr);
-        when(bscsIntegrationService.getStaffByLogin(any(), any(), any()))
-                .thenReturn(bscsEmployeeDto);
+        List<String> eventCodes = pendingCandidateEntityRepository.findDistinctEventCodes(
+                pernr,
+                request.filter().search(),
+                request.filter().eventCodeList(),
+                request.filter().eventCodeList().isEmpty()
+        );
 
-        when(masterDataIntegrationService.getPendingCandidates(any(), any()))
-                .thenReturn(ResponseEntity.ok(definePendingCandidatesResponse()));
+        if(idsCandidate.isEmpty()){
+            return new PendingCandidatesApiResponse(
+                    new PendingCandidatesPage(
+                            request.page(),
+                            request.size(),
+                            countCandidates,
+                            eventCodes.stream().map(EventCodeView::new).toList(),
+                            List.of()
+                    )
+            );
+        }
+
+        List<PendingCandidateRow> candidates = pendingCandidateEntityRepository.findRowsByIds(
+                idsCandidate.toArray(Integer[]::new)
+        );
+
+        Map<Integer, List<PendingCandidateEventRow>> eventsByCandidateId =
+                pendingCandidateEntityRepository.findEventRowsByCandidateIds(idsCandidate).stream()
+                        .collect(Collectors.groupingBy(
+                                PendingCandidateEventRow::getPendingCandidateId,
+                                LinkedHashMap::new,
+                                Collectors.toList()));
 
 
-        FinishProcessingMessageDto out = pendingCandidatesUseCase.execute(requestEntity, systemParams, requestValues);
+        Map<Integer, RequisitionEnrichment> enrichmentByVacancyId = loadEnrichment(candidates);
 
-        System.out.println(out);
-    }
-
-    private PendingCandidatesResponse definePendingCandidatesResponse() {
-        return new PendingCandidatesResponse(
-                new PendingCandidatesResponse.CandidateInfoData(
-                        List.of(
-                                new PendingCandidatesResponse.Candidate(
-                                        1L,
-                                        200L,
-                                        "John Doe",
-                                        List.of(
-                                                new PendingCandidatesResponse.Event("HIRE", 0L, 30, 1),
-                                                new PendingCandidatesResponse.Event("INTERVIEW", 0L, 15, 1)
-                                        )
+        return new PendingCandidatesApiResponse(
+                new PendingCandidatesPage(
+                        request.page(),
+                        request.size(),
+                        countCandidates,
+                        eventCodes.stream().map(EventCodeView::new).toList(),
+                        candidates.stream().map(item -> new PendingCandidateView(
+                                item.getCandidateId(),
+                                item.getVacancyId().toString(),
+                                item.getFullName(),
+                                new RequisitionView(
+                                        enrichmentByVacancyId.get(item.getVacancyId()).guid,
+                                        enrichmentByVacancyId.get(item.getVacancyId()).number,
+                                        enrichmentByVacancyId.get(item.getVacancyId()).positionType,
+                                        new StaffPositionView(
+                                                enrichmentByVacancyId.get(item.getVacancyId()).staffPositionId,
+                                                enrichmentByVacancyId.get(item.getVacancyId()).staffPositionName
+                                        ),
+                                        enrichmentByVacancyId.get(item.getVacancyId()).structUnitName,
+                                        enrichmentByVacancyId.get(item.getVacancyId()).structUnitId,
+                                        enrichmentByVacancyId.get(item.getVacancyId()).path.stream().map(structUnitPathNode ->
+                                                new StructUnitPathView(
+                                                        structUnitPathNode.id, structUnitPathNode.typeDesc, structUnitPathNode.name)
+                                        ).toList()
                                 ),
-                                new PendingCandidatesResponse.Candidate(
-                                        2L,
-                                        201L,
-                                        "Jane Smith",
-                                        List.of(
-                                                new PendingCandidatesResponse.Event("REJECT", 0L, 5, 0)
+                                eventsByCandidateId.getOrDefault(item.getId(), List.of()).stream().map(event ->
+                                        new PendingCandidateEventView(
+                                                event.getEventCode(),
+                                                event.getDays(),
+                                                event.getExpirationZone()
                                         )
-                                ),
-                                new PendingCandidatesResponse.Candidate(
-                                        3L,
-                                        200L,
-                                        "Bob Johnson",
-                                        List.of(
-                                                new PendingCandidatesResponse.Event("HIRE", 0L, 45, 1)
-                                        )
-                                )
-                        )
+                                ).toList()
+
+                        )).toList()
                 )
         );
     }
 
+    private Map<Integer, RequisitionEnrichment> loadEnrichment(List<PendingCandidateRow> candidates) {
+        Set<Integer> vacancyIds = candidates.stream()
+                .map(PendingCandidateRow::getVacancyId)
+                .collect(Collectors.toSet());
+        if (vacancyIds.isEmpty()) {
+            return Map.of();
+        }
 
-    private PendingCandidatesResponse definePendingCandidatesResponse2() {
-        return new PendingCandidatesResponse(
-                new PendingCandidatesResponse.CandidateInfoData(
-                        List.of(
-                                new PendingCandidatesResponse.Candidate(
-                                        100L,
-                                        200L,
-                                        "John Doe",
-                                        List.of(
-                                                new PendingCandidatesResponse.Event("HIRE", System.currentTimeMillis() - 86400000, 30, 1),
-                                                new PendingCandidatesResponse.Event("INTERVIEW", System.currentTimeMillis() - 172800000, 15, 1)
-                                        )
-                                ),
-                                new PendingCandidatesResponse.Candidate(
-                                        101L,
-                                        201L,
-                                        "Jane Smith",
-                                        List.of(
-                                                new PendingCandidatesResponse.Event("REJECT", System.currentTimeMillis() - 43200000, 5, 0)
-                                        )
-                                )
-                        )
-                )
-        );
+        List<RequisitionEnrichmentRow> reqRows =
+                vacancyRepository.findEnrichmentByVacancyIds(vacancyIds);
+
+        Map<String, List<StructUnitPathNode>> pathsByGuid =
+                vacancyRepository.findPathsByRequisitionGuids(
+                                reqRows.stream().map(RequisitionEnrichmentRow::getGuid).collect(Collectors.toSet()))
+                        .stream()
+                        .collect(Collectors.groupingBy(
+                                StructUnitPathRow::getRequisitionGuid,
+                                LinkedHashMap::new,   // сохранить order_number из SQL
+                                Collectors.mapping(p -> new StructUnitPathNode(
+                                        p.getId(), p.getTypeDesc(), p.getName()), Collectors.toList())));
+
+        return reqRows.stream().collect(Collectors.toMap(
+                RequisitionEnrichmentRow::getVacancyId,
+                r -> new RequisitionEnrichment(
+                        r.getVacancyId(), r.getGuid(), r.getNumber(), r.getPositionType(),
+                        r.getStaffPositionId(), r.getStaffPositionName(),
+                        r.getStructUnitId(), r.getStructUnitName(),
+                        pathsByGuid.getOrDefault(r.getGuid(), List.of()))));
+    }
+
+    public record RequisitionEnrichment(
+            Integer vacancyId,
+            String guid,
+            String number,
+            String positionType,
+            String staffPositionId,
+            String staffPositionName,
+            String structUnitId,
+            String structUnitName,
+            List<StructUnitPathNode> path
+    ) {
+
+    }
+
+    public record StructUnitPathNode(String id, String typeDesc, String name) {
     }
 }
 
 
 
-out = {FinishProcessingMessageDto@20490} "FinishProcessingMessageDto(start=1785252483881, systemParams=Mock for SapSystemParamsDto, hashCode: 650223050, dto=PendingCandidatesApiResponse(super=SapResponseDtoExtended(uuid=null, responseCode=null, errorMessage=null, tabNumber=null, adLogin=null, sessionId=null, channel=null, rolesList=null, traceId=null, requestType=null, requestTs=null, responseTs=null, realm=null, fileUuid=null), data=PendingCandidatesPage[page=1, pageSize=10, count=0, eventCode=[], candidates=[]]), requestEntity=Mock for RequisitionRequestEntity, hashCode: 2068335142, code=200)"
- start = {Long@27418} 1785252483881
- systemParams = {SapSystemParamsDto@20488} "Mock for SapSystemParamsDto, hashCode: 650223050"
- dto = {PendingCandidatesApiResponse@27419} "PendingCandidatesApiResponse(super=SapResponseDtoExtended(uuid=null, responseCode=null, errorMessage=null, tabNumber=null, adLogin=null, sessionId=null, channel=null, rolesList=null, traceId=null, requestType=null, requestTs=null, responseTs=null, realm=null, fileUuid=null), data=PendingCandidatesPage[page=1, pageSize=10, count=0, eventCode=[], candidates=[]])"
-  data = {PendingCandidatesPage@27423} "PendingCandidatesPage[page=1, pageSize=10, count=0, eventCode=[], candidates=[]]"
-   page = 1
-   pageSize = 10
-   count = 0
-   eventCode = {ImmutableCollections$ListN@27425}  size = 0
-   candidates = {ImmutableCollections$ListN@27425}  size = 0
-  uuid = null
-  responseCode = null
-  errorMessage = null
-  tabNumber = null
-  adLogin = null
-  sessionId = null
-  channel = null
-  rolesList = null
-  traceId = null
-  requestType = null
-  requestTs = null
-  responseTs = null
-  realm = null
-  fileUuid = null
- requestEntity = {RequisitionRequestEntity@20484} "Mock for RequisitionRequestEntity, hashCode: 2068335142"
- code = "200"
+java.lang.NullPointerException: element cannot be mapped to a null key
+
+	at java.base/java.util.Objects.requireNonNull(Objects.java:235)
+	at java.base/java.util.stream.Collectors.lambda$groupingBy$53(Collectors.java:1142)
+	at java.base/java.util.stream.ReduceOps$3ReducingSink.accept(ReduceOps.java:169)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1625)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:921)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:682)
+	at ru.ntdev.srhr.ms.requisition.application.usecase.PendingCandidatesUseCase.definePendingCandidatePage(PendingCandidatesUseCase.java:124)
+	at ru.ntdev.srhr.ms.requisition.application.usecase.PendingCandidatesUseCase.execute(PendingCandidatesUseCase.java:70)
+	at ru.ntdev.srhr.ms.requisition.application.usecase.PendingCandidatesUseCaseIntegrationTest.execute_shouldReturnCorrectResponse_whenMultipleCandidatesAndEvents(PendingCandidatesUseCaseIntegrationTest.java:145)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
