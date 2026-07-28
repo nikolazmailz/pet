@@ -103,3 +103,6 @@ void printSchema() {
             """, t).forEach(row -> log.info("{}: {}", t, row));
     }
 }
+
+
+CountActiveCandidatesAndCandidatesEventsByVacancyIdWithFiltersIT
