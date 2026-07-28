@@ -1,136 +1,58 @@
-2026-07-28T18:44:09.184+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
-2026-07-28T18:44:09.185+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
-2026-07-28T18:44:09.185+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
-2026-07-28T18:44:09.185+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
-2026-07-28T18:44:09.185+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
-2026-07-28T18:44:09.185+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
-2026-07-28T18:44:09.185+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
-2026-07-28T18:44:09.185+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
-2026-07-28T18:44:09.299+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
-2026-07-28T18:44:09.299+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
-2026-07-28T18:44:09.299+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
-2026-07-28T18:44:09.300+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
-2026-07-28T18:44:09.300+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
-2026-07-28T18:44:09.300+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
-2026-07-28T18:44:09.300+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
-2026-07-28T18:44:09.301+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
-2026-07-28T18:44:09.409+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
-2026-07-28T18:44:09.409+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
-2026-07-28T18:44:09.409+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
-2026-07-28T18:44:09.409+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
-2026-07-28T18:44:09.411+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
-2026-07-28T18:44:09.412+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
-2026-07-28T18:44:09.469+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
-2026-07-28T18:44:09.469+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
-2026-07-28T18:44:09.591+03:00  INFO 13604 --- [srhr-ms-requisition] [           main] r.n.s.m.r.a.u.PendingCandidatesUseCase   : eventsByCandidateId2.stream().findFirst().get().toString()
-2026-07-28T18:44:09.594+03:00  INFO 13604 --- [srhr-ms-requisition] [           main] r.n.s.m.r.a.u.PendingCandidatesUseCase   : 1
-2026-07-28T18:44:09.595+03:00  INFO 13604 --- [srhr-ms-requisition] [           main] r.n.s.m.r.a.u.PendingCandidatesUseCase   : HIRE
-2026-07-28T18:44:09.595+03:00  INFO 13604 --- [srhr-ms-requisition] [           main] r.n.s.m.r.a.u.PendingCandidatesUseCase   : 1970-01-01T00:00:00Z
-2026-07-28T18:44:09.595+03:00  INFO 13604 --- [srhr-ms-requisition] [           main] r.n.s.m.r.a.u.PendingCandidatesUseCase   : 30
-2026-07-28T18:44:09.595+03:00  INFO 13604 --- [srhr-ms-requisition] [           main] r.n.s.m.r.a.u.PendingCandidatesUseCase   : 1
-2026-07-28T18:44:09.607+03:00  WARN 13604 --- [srhr-ms-requisition] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Error: 0, SQLState: 07006
-2026-07-28T18:44:09.607+03:00 ERROR 13604 --- [srhr-ms-requisition] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : Неизвестное значение Types.
-2026-07-28T18:44:09.638+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
-2026-07-28T18:44:09.638+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
-2026-07-28T18:44:09.639+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
-2026-07-28T18:44:09.639+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
-2026-07-28T18:44:09.639+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
-2026-07-28T18:44:09.639+03:00  WARN 13604 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:47:17.071+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:47:17.071+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:47:17.071+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:47:17.071+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:47:17.071+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:47:17.071+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:47:17.071+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:47:17.071+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:47:17.180+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:47:17.180+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:47:17.181+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:47:17.181+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:47:17.182+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:47:17.182+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:47:17.183+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:47:17.183+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:47:17.349+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:47:17.349+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:47:17.351+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:47:17.351+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:47:17.352+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:47:17.352+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:47:17.352+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:47:17.352+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:47:17.521+03:00  INFO 34604 --- [srhr-ms-requisition] [           main] r.n.s.m.r.a.u.PendingCandidatesUseCase   : eventsByCandidateId2.stream().findFirst().get().toString()
+2026-07-28T18:47:17.523+03:00  INFO 34604 --- [srhr-ms-requisition] [           main] r.n.s.m.r.a.u.PendingCandidatesUseCase   : 1
+2026-07-28T18:47:17.523+03:00  INFO 34604 --- [srhr-ms-requisition] [           main] r.n.s.m.r.a.u.PendingCandidatesUseCase   : HIRE
+2026-07-28T18:47:17.524+03:00  INFO 34604 --- [srhr-ms-requisition] [           main] r.n.s.m.r.a.u.PendingCandidatesUseCase   : 1970-01-01T00:00:00Z
+2026-07-28T18:47:17.524+03:00  INFO 34604 --- [srhr-ms-requisition] [           main] r.n.s.m.r.a.u.PendingCandidatesUseCase   : 30
+2026-07-28T18:47:17.524+03:00  INFO 34604 --- [srhr-ms-requisition] [           main] r.n.s.m.r.a.u.PendingCandidatesUseCase   : 1
+2026-07-28T18:47:17.581+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:47:17.582+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:47:17.582+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:47:17.582+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:47:17.583+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:47:17.583+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:47:17.645+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:47:17.646+03:00  WARN 34604 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
 
-org.springframework.dao.InvalidDataAccessResourceUsageException: JDBC exception executing SQL [select v.vacancy_id    as "vacancyId",
-       r.guid          as "guid",
-       r.number        as "number",
-       r.position_type as "positionType",
-       r.staff_position_id   as "staffPositionId",
-       r.staff_position_name as "staffPositionName",
-       r.struct_unit_id      as "structUnitId",
-       r.struct_unit_name    as "structUnitName"
-from srhr_requisition.vacancy v
-join srhr_requisition.requisitions r on r.guid = v.requisition_guid
-where v.id in (?)
-] [Неизвестное значение Types.] [n/a]; SQL [n/a]
+java.lang.NullPointerException: Cannot invoke "java.lang.Integer.toString()" because the return value of "ru.ntdev.srhr.ms.requisition.entity.projection.PendingCandidateRow.getVacancyId()" is null
 
-	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:277)
-	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:241)
-	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.translateExceptionIfPossible(AbstractEntityManagerFactoryBean.java:550)
-	at org.springframework.dao.support.ChainedPersistenceExceptionTranslator.translateExceptionIfPossible(ChainedPersistenceExceptionTranslator.java:61)
-	at org.springframework.dao.support.DataAccessUtils.translateIfNecessary(DataAccessUtils.java:335)
-	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:152)
-	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
-	at org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:135)
-	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
-	at org.springframework.aop.interceptor.ExposeInvocationInterceptor.invoke(ExposeInvocationInterceptor.java:97)
-	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
-	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:249)
-	at jdk.proxy2/jdk.proxy2.$Proxy243.findEnrichmentByVacancyIds(Unknown Source)
-	at ru.ntdev.srhr.ms.requisition.application.usecase.PendingCandidatesUseCase.loadEnrichment(PendingCandidatesUseCase.java:189)
-	at ru.ntdev.srhr.ms.requisition.application.usecase.PendingCandidatesUseCase.definePendingCandidatePage(PendingCandidatesUseCase.java:140)
+	at ru.ntdev.srhr.ms.requisition.application.usecase.PendingCandidatesUseCase.lambda$definePendingCandidatePage$3(PendingCandidatesUseCase.java:150)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1625)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:575)
+	at java.base/java.util.stream.AbstractPipeline.evaluateToArrayNode(AbstractPipeline.java:260)
+	at java.base/java.util.stream.ReferencePipeline.toArray(ReferencePipeline.java:616)
+	at java.base/java.util.stream.ReferencePipeline.toArray(ReferencePipeline.java:622)
+	at java.base/java.util.stream.ReferencePipeline.toList(ReferencePipeline.java:627)
+	at ru.ntdev.srhr.ms.requisition.application.usecase.PendingCandidatesUseCase.definePendingCandidatePage(PendingCandidatesUseCase.java:175)
 	at ru.ntdev.srhr.ms.requisition.application.usecase.PendingCandidatesUseCase.execute(PendingCandidatesUseCase.java:70)
 	at ru.ntdev.srhr.ms.requisition.application.usecase.PendingCandidatesUseCaseIntegrationTest.execute_shouldReturnCorrectResponse_whenMultipleCandidatesAndEvents(PendingCandidatesUseCaseIntegrationTest.java:145)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-Caused by: org.hibernate.exception.SQLGrammarException: JDBC exception executing SQL [select v.vacancy_id    as "vacancyId",
-       r.guid          as "guid",
-       r.number        as "number",
-       r.position_type as "positionType",
-       r.staff_position_id   as "staffPositionId",
-       r.staff_position_name as "staffPositionName",
-       r.struct_unit_id      as "structUnitId",
-       r.struct_unit_name    as "structUnitName"
-from srhr_requisition.vacancy v
-join srhr_requisition.requisitions r on r.guid = v.requisition_guid
-where v.id in (?)
-] [Неизвестное значение Types.] [n/a]
-	at org.hibernate.exception.internal.SQLStateConversionDelegate.convert(SQLStateConversionDelegate.java:91)
-	at org.hibernate.exception.internal.StandardSQLExceptionConverter.convert(StandardSQLExceptionConverter.java:58)
-	at org.hibernate.engine.jdbc.spi.SqlExceptionHelper.convert(SqlExceptionHelper.java:108)
-	at org.hibernate.engine.jdbc.spi.SqlExceptionHelper.convert(SqlExceptionHelper.java:94)
-	at org.hibernate.sql.results.jdbc.internal.DeferredResultSetAccess.executeQuery(DeferredResultSetAccess.java:258)
-	at org.hibernate.sql.results.jdbc.internal.DeferredResultSetAccess.getResultSet(DeferredResultSetAccess.java:164)
-	at org.hibernate.sql.results.jdbc.internal.AbstractResultSetAccess.getMetaData(AbstractResultSetAccess.java:36)
-	at org.hibernate.sql.results.jdbc.internal.AbstractResultSetAccess.getColumnCount(AbstractResultSetAccess.java:52)
-	at org.hibernate.query.results.ResultSetMappingImpl.resolve(ResultSetMappingImpl.java:193)
-	at org.hibernate.sql.exec.internal.JdbcSelectExecutorStandardImpl.resolveJdbcValuesSource(JdbcSelectExecutorStandardImpl.java:477)
-	at org.hibernate.sql.exec.internal.JdbcSelectExecutorStandardImpl.doExecuteQuery(JdbcSelectExecutorStandardImpl.java:267)
-	at org.hibernate.sql.exec.internal.JdbcSelectExecutorStandardImpl.executeQuery(JdbcSelectExecutorStandardImpl.java:168)
-	at org.hibernate.sql.exec.internal.JdbcSelectExecutorStandardImpl.list(JdbcSelectExecutorStandardImpl.java:93)
-	at org.hibernate.sql.exec.spi.JdbcSelectExecutor.list(JdbcSelectExecutor.java:31)
-	at org.hibernate.query.sql.internal.NativeSelectQueryPlanImpl.performList(NativeSelectQueryPlanImpl.java:97)
-	at org.hibernate.query.sql.internal.NativeQueryImpl.doList(NativeQueryImpl.java:623)
-	at org.hibernate.query.spi.AbstractSelectionQuery.list(AbstractSelectionQuery.java:427)
-	at org.hibernate.query.Query.getResultList(Query.java:120)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
-	at org.springframework.orm.jpa.SharedEntityManagerCreator$DeferredQueryInvocationHandler.invoke(SharedEntityManagerCreator.java:405)
-	at jdk.proxy2/jdk.proxy2.$Proxy283.getResultList(Unknown Source)
-	at org.springframework.data.jpa.repository.query.JpaQueryExecution$CollectionExecution.doExecute(JpaQueryExecution.java:129)
-	at org.springframework.data.jpa.repository.query.JpaQueryExecution.execute(JpaQueryExecution.java:92)
-	at org.springframework.data.jpa.repository.query.AbstractJpaQuery.doExecute(AbstractJpaQuery.java:149)
-	at org.springframework.data.jpa.repository.query.AbstractJpaQuery.execute(AbstractJpaQuery.java:137)
-	at org.springframework.data.repository.core.support.RepositoryMethodInvoker.doInvoke(RepositoryMethodInvoker.java:170)
-	at org.springframework.data.repository.core.support.RepositoryMethodInvoker.invoke(RepositoryMethodInvoker.java:158)
-	at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.doInvoke(QueryExecutorMethodInterceptor.java:164)
-	at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.invoke(QueryExecutorMethodInterceptor.java:143)
-	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
-	at org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor.invoke(DefaultMethodInvokingMethodInterceptor.java:70)
-	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
-	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:123)
-	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:385)
-	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
-	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
-	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:137)
-	... 14 more
-Caused by: org.postgresql.util.PSQLException: Неизвестное значение Types.
-	at org.postgresql.jdbc.PgPreparedStatement.setNull(PgPreparedStatement.java:291)
-	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.setNull(HikariProxyPreparedStatement.java)
-	at org.hibernate.type.descriptor.jdbc.BasicBinder.doBindNull(BasicBinder.java:98)
-	at org.hibernate.type.descriptor.jdbc.BasicBinder.bind(BasicBinder.java:51)
-	at org.hibernate.sql.exec.internal.AbstractJdbcParameter.bindParameterValue(AbstractJdbcParameter.java:124)
-	at org.hibernate.sql.exec.internal.AbstractJdbcParameter.bindParameterValue(AbstractJdbcParameter.java:95)
-	at org.hibernate.sql.results.jdbc.internal.DeferredResultSetAccess.bindParameters(DeferredResultSetAccess.java:200)
-	at org.hibernate.sql.results.jdbc.internal.DeferredResultSetAccess.executeQuery(DeferredResultSetAccess.java:229)
-	... 49 more
 
