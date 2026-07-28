@@ -1,31 +1,48 @@
-out = {FinishProcessingMessageDto@20660} "FinishProcessingMessageDto(start=1785254397716, systemParams=Mock for SapSystemParamsDto, hashCode: 1380300256, dto=PendingCandidatesApiResponse(super=SapResponseDtoExtended(uuid=null, responseCode=null, errorMessage=null, tabNumber=null, adLogin=null, sessionId=null, channel=null, rolesList=null, traceId=null, requestType=null, requestTs=null, responseTs=null, realm=null, fileUuid=null), data=PendingCandidatesPage[page=1, pageSize=10, count=2, eventCode=[EventCodeView[codeValue=HIRE], EventCodeView[codeValue=INTERVIEW]], candidates=[PendingCandidateView[candidateId=3, vacancyId=200, fullName=Bob Johnson, requisition=RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=StaffPositionView[id=SP-001, name=Manager], structUnitName=HR, structUnitId=SU-001, structUnitPathList=[StructUnitPathView[id=SU-001, typeDesc=DEPARTMENT, name=HR]]], events=[PendingCandidateEventView[code=HIRE, days=45, expirationZone=1]]], PendingCandidateView[candidateId=1, vacancyId=200, "
- start = {Long@27594} 1785254397716
- systemParams = {SapSystemParamsDto@20658} "Mock for SapSystemParamsDto, hashCode: 1380300256"
- dto = {PendingCandidatesApiResponse@27595} "PendingCandidatesApiResponse(super=SapResponseDtoExtended(uuid=null, responseCode=null, errorMessage=null, tabNumber=null, adLogin=null, sessionId=null, channel=null, rolesList=null, traceId=null, requestType=null, requestTs=null, responseTs=null, realm=null, fileUuid=null), data=PendingCandidatesPage[page=1, pageSize=10, count=2, eventCode=[EventCodeView[codeValue=HIRE], EventCodeView[codeValue=INTERVIEW]], candidates=[PendingCandidateView[candidateId=3, vacancyId=200, fullName=Bob Johnson, requisition=RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=StaffPositionView[id=SP-001, name=Manager], structUnitName=HR, structUnitId=SU-001, structUnitPathList=[StructUnitPathView[id=SU-001, typeDesc=DEPARTMENT, name=HR]]], events=[PendingCandidateEventView[code=HIRE, days=45, expirationZone=1]]], PendingCandidateView[candidateId=1, vacancyId=200, fullName=John Doe, requisition=RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=Sta"
-  data = {PendingCandidatesPage@27599} "PendingCandidatesPage[page=1, pageSize=10, count=2, eventCode=[EventCodeView[codeValue=HIRE], EventCodeView[codeValue=INTERVIEW]], candidates=[PendingCandidateView[candidateId=3, vacancyId=200, fullName=Bob Johnson, requisition=RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=StaffPositionView[id=SP-001, name=Manager], structUnitName=HR, structUnitId=SU-001, structUnitPathList=[StructUnitPathView[id=SU-001, typeDesc=DEPARTMENT, name=HR]]], events=[PendingCandidateEventView[code=HIRE, days=45, expirationZone=1]]], PendingCandidateView[candidateId=1, vacancyId=200, fullName=John Doe, requisition=RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=StaffPositionView[id=SP-001, name=Manager], structUnitName=HR, structUnitId=SU-001, structUnitPathList=[StructUnitPathView[id=SU-001, typeDesc=DEPARTMENT, name=HR]]], events=[PendingCandidateEventView[code=HIRE, days=30, expirationZone=1], PendingCandidateEventView[code=INTERVIEW, da"
-   page = 1
-   pageSize = 10
-   count = 2
-   eventCode = {ImmutableCollections$List12@27601}  size = 2
-    0 = {EventCodeView@27604} "EventCodeView[codeValue=HIRE]"
-     codeValue = "HIRE"
-    1 = {EventCodeView@27605} "EventCodeView[codeValue=INTERVIEW]"
-     codeValue = "INTERVIEW"
-   candidates = {ImmutableCollections$List12@27602}  size = 2
-    0 = {PendingCandidateView@27609} "PendingCandidateView[candidateId=3, vacancyId=200, fullName=Bob Johnson, requisition=RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=StaffPositionView[id=SP-001, name=Manager], structUnitName=HR, structUnitId=SU-001, structUnitPathList=[StructUnitPathView[id=SU-001, typeDesc=DEPARTMENT, name=HR]]], events=[PendingCandidateEventView[code=HIRE, days=45, expirationZone=1]]]"
-     candidateId = {Integer@27613} 3
-     vacancyId = "200"
-     fullName = "Bob Johnson"
-     requisition = {RequisitionView@27616} "RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=StaffPositionView[id=SP-001, name=Manager], structUnitName=HR, structUnitId=SU-001, structUnitPathList=[StructUnitPathView[id=SU-001, typeDesc=DEPARTMENT, name=HR]]]"
-     events = {ImmutableCollections$List12@27617}  size = 1
-    1 = {PendingCandidateView@27610} "PendingCandidateView[candidateId=1, vacancyId=200, fullName=John Doe, requisition=RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=StaffPositionView[id=SP-001, name=Manager], structUnitName=HR, structUnitId=SU-001, structUnitPathList=[StructUnitPathView[id=SU-001, typeDesc=DEPARTMENT, name=HR]]], events=[PendingCandidateEventView[code=HIRE, days=30, expirationZone=1], PendingCandidateEventView[code=INTERVIEW, days=15, expirationZone=1]]]"
-     candidateId = {Integer@27622} 1
-     vacancyId = "200"
-     fullName = "John Doe"
-     requisition = {RequisitionView@27625} "RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=StaffPositionView[id=SP-001, name=Manager], structUnitName=HR, structUnitId=SU-001, structUnitPathList=[StructUnitPathView[id=SU-001, typeDesc=DEPARTMENT, name=HR]]]"
-     events = {ImmutableCollections$List12@27626}  size = 2
+PendingCandidatesApiResponse response = (PendingCandidatesApiResponse) out.getDto();
+    PendingCandidatesPage page = response.getData();
 
+    assertThat(page.page()).isEqualTo(1);
+    assertThat(page.pageSize()).isEqualTo(10);
+    assertThat(page.count()).isEqualTo(2);
 
- FinishProcessingMessageDto out = pendingCandidatesUseCase.execute(requestEntity, systemParams, requestValues);
+    assertThat(page.eventCode())
+            .extracting(EventCodeView::codeValue)
+            .containsExactlyInAnyOrder("HIRE", "INTERVIEW");
 
-        System.out.println(out);
+    assertThat(page.candidates())
+            .extracting(PendingCandidateView::fullName)
+            .containsExactlyInAnyOrder("John Doe", "Bob Johnson");
+
+    PendingCandidateView john = page.candidates().stream()
+            .filter(c -> c.fullName().equals("John Doe"))
+            .findFirst().orElseThrow();
+
+    assertThat(john.candidateId()).isEqualTo(1);
+    assertThat(john.vacancyId()).isEqualTo("200");
+    assertThat(john.events())
+            .extracting(PendingCandidateEventView::code, PendingCandidateEventView::days, PendingCandidateEventView::expirationZone)
+            .containsExactly(tuple("HIRE", 30, 1), tuple("INTERVIEW", 15, 1));
+
+    RequisitionView req = john.requisition();
+    assertThat(req.guid()).isEqualTo("guid-200");
+    assertThat(req.number()).isEqualTo("REQ-001");
+    assertThat(req.positionType()).isEqualTo("TYPE_A");
+    assertThat(req.staffPosition().id()).isEqualTo("SP-001");
+    assertThat(req.staffPosition().name()).isEqualTo("Manager");
+    assertThat(req.structUnitId()).isEqualTo("SU-001");
+    assertThat(req.structUnitName()).isEqualTo("HR");
+    assertThat(req.structUnitPathList())
+            .extracting(StructUnitPathView::id, StructUnitPathView::typeDesc, StructUnitPathView::name)
+            .containsExactly(tuple("SU-001", "DEPARTMENT", "HR"));
+
+    PendingCandidateView bob = page.candidates().stream()
+            .filter(c -> c.fullName().equals("Bob Johnson"))
+            .findFirst().orElseThrow();
+    assertThat(bob.events())
+            .extracting(PendingCandidateEventView::code)
+            .containsExactly("HIRE");
+
+    // replaceForApprover: в БД должны лежать все 3 кандидата, независимо от фильтра выдачи
+    assertThat(pendingCandidateEntityRepository.count()).isEqualTo(3);
+
+    assertThat(out.getCode()).isEqualTo("200");
