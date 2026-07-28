@@ -242,3 +242,17 @@ private Map<Integer, RequisitionEnrichment> loadEnrichment(List<PendingCandidate
                     r.getStructUnitId(), r.getStructUnitName(),
                     pathsByGuid.getOrDefault(r.getGuid(), List.of()))));
 }
+
+public record RequisitionEnrichment(
+        Long vacancyId,
+        String guid,
+        String number,
+        String positionType,
+        String staffPositionId,
+        String staffPositionName,
+        String structUnitId,
+        String structUnitName,
+        List<StructUnitPathNode> path
+) {
+    public record StructUnitPathNode(String id, String typeDesc, String name) {}
+}
