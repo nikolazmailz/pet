@@ -1,0 +1,14 @@
+Плюс ещё два замечания по этим ченджлогам:
+
+Несовпадение типов FK: pending_candidates_events.pending_candidate_id — bigint, а ссылается на pending_candidates.id — integer. Postgres это проглотит, но в entity у тебя Integer pendingCandidateId — приведи к одному типу, integer.
+onDelete: cascade в инлайн-constraints — невалидный атрибут, Liquibase его молча игнорирует. Для inline-констрейнтов правильно deleteCascade: true:
+yaml
+constraints:
+  nullable: false
+  foreignKeyName: fk_pending_candidates_events_candidate
+  references: pending_candidates(id)
+  deleteCascade: true
+
+Сейчас каскада в БД фактически нет — это и объясняет, зачем тебе в truncate понадобился cascade вручную. Впрочем, поскольку удаление кандидатов идёт через Hibernate с orphanRemoval, каскад на уровне БД дублирующий, но пусть будет консистентно с задуманным.
+
+А вот deleteAllByApproverPernr — bulk JPQL delete — обходит cascade Hibernate'а и БД-каскад тут как раз нужен: без него bulk delete кандидатов упадёт на FK от events. С deleteCascade: true всё сойдётся.
