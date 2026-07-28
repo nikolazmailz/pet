@@ -1,58 +1,239 @@
-3:00  WARN 4404 --- [srhr-ms-requisition] [c-producer-ex-1] org.apache.kafka.clients.NetworkClient   : [Consumer instanceId=mc_6d8704dd-7103-4718-8666-77c4d5d5781d, clientId=mc_6d8704dd-7103-4718-8666-77c4d5d5781d, groupId=requisition_consumer] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
-2026-07-28T18:23:19.697+03:00  WARN 4404 --- [srhr-ms-requisition] [  producer-ex-3] org.apache.kafka.clients.NetworkClient   : [Consumer instanceId=pt_55106743-1473-4793-be8c-e44a526665c9, clientId=pt_55106743-1473-4793-be8c-e44a526665c9, groupId=requisition_consumer] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+package ru.ntdev.srhr.ms.requisition.application.usecase;
 
-org.springframework.dao.InvalidDataAccessResourceUsageException: No argument for named parameter ':search::text'
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import ru.ntdev.srhr.common.contracts.easup.pendingcandidates.PendingCandidatesResponse;
+import ru.ntdev.srhr.common.dto.SapSystemParamsDto;
+import ru.ntdev.srhr.common.dto.api.request.requisition.RequisitionRequestDto;
+import ru.ntdev.srhr.common.dto.bscs.employee.BscsEmployeeDto;
+import ru.ntdev.srhr.ms.requisition.BaseIntegrationTest;
+import ru.ntdev.srhr.ms.requisition.application.dto.FinishProcessingMessageDto;
+import ru.ntdev.srhr.ms.requisition.entity.RequisitionRequestEntity;
+import ru.ntdev.srhr.ms.requisition.repository.PendingCandidateEntityRepository;
+import ru.ntdev.srhr.ms.requisition.repository.VacancyRepository;
 
-	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:298)
-	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:241)
-	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.translateExceptionIfPossible(AbstractEntityManagerFactoryBean.java:550)
-	at org.springframework.dao.support.ChainedPersistenceExceptionTranslator.translateExceptionIfPossible(ChainedPersistenceExceptionTranslator.java:61)
-	at org.springframework.dao.support.DataAccessUtils.translateIfNecessary(DataAccessUtils.java:335)
-	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:152)
-	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
-	at org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:135)
-	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
-	at org.springframework.aop.interceptor.ExposeInvocationInterceptor.invoke(ExposeInvocationInterceptor.java:97)
-	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
-	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:249)
-	at jdk.proxy2/jdk.proxy2.$Proxy257.findPageIds(Unknown Source)
-	at ru.ntdev.srhr.ms.requisition.application.usecase.PendingCandidatesUseCase.definePendingCandidatePage(PendingCandidatesUseCase.java:83)
-	at ru.ntdev.srhr.ms.requisition.application.usecase.PendingCandidatesUseCase.execute(PendingCandidatesUseCase.java:70)
-	at ru.ntdev.srhr.ms.requisition.application.usecase.PendingCandidatesUseCaseIntegrationTest.execute_shouldReturnCorrectResponse_whenMultipleCandidatesAndEvents(PendingCandidatesUseCaseIntegrationTest.java:145)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-Caused by: org.hibernate.QueryParameterException: No argument for named parameter ':search::text'
-	at org.hibernate.query.internal.QueryParameterBindingsImpl.lambda$validate$0(QueryParameterBindingsImpl.java:142)
-	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
-	at java.base/java.util.Collections$UnmodifiableCollection.forEach(Collections.java:1092)
-	at org.hibernate.query.internal.ParameterMetadataImpl.visitParameters(ParameterMetadataImpl.java:191)
-	at org.hibernate.query.spi.ParameterMetadataImplementor.visitRegistrations(ParameterMetadataImplementor.java:29)
-	at org.hibernate.query.internal.QueryParameterBindingsImpl.validate(QueryParameterBindingsImpl.java:138)
-	at org.hibernate.query.spi.AbstractSelectionQuery.beforeQuery(AbstractSelectionQuery.java:455)
-	at org.hibernate.query.spi.AbstractSelectionQuery.beforeQueryHandlingFetchProfiles(AbstractSelectionQuery.java:446)
-	at org.hibernate.query.spi.AbstractSelectionQuery.list(AbstractSelectionQuery.java:424)
-	at org.hibernate.query.Query.getResultList(Query.java:120)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
-	at org.springframework.orm.jpa.SharedEntityManagerCreator$DeferredQueryInvocationHandler.invoke(SharedEntityManagerCreator.java:405)
-	at jdk.proxy2/jdk.proxy2.$Proxy283.getResultList(Unknown Source)
-	at org.springframework.data.jpa.repository.query.JpaQueryExecution$CollectionExecution.doExecute(JpaQueryExecution.java:129)
-	at org.springframework.data.jpa.repository.query.JpaQueryExecution.execute(JpaQueryExecution.java:92)
-	at org.springframework.data.jpa.repository.query.AbstractJpaQuery.doExecute(AbstractJpaQuery.java:149)
-	at org.springframework.data.jpa.repository.query.AbstractJpaQuery.execute(AbstractJpaQuery.java:137)
-	at org.springframework.data.repository.core.support.RepositoryMethodInvoker.doInvoke(RepositoryMethodInvoker.java:170)
-	at org.springframework.data.repository.core.support.RepositoryMethodInvoker.invoke(RepositoryMethodInvoker.java:158)
-	at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.doInvoke(QueryExecutorMethodInterceptor.java:164)
-	at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.invoke(QueryExecutorMethodInterceptor.java:143)
-	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
-	at org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor.invoke(DefaultMethodInvokingMethodInterceptor.java:70)
-	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
-	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:123)
-	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:385)
-	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
-	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
-	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:137)
-	... 13 more
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+public class PendingCandidatesUseCaseIntegrationTest extends BaseIntegrationTest {
+
+    @Autowired
+    private PendingCandidatesUseCase pendingCandidatesUseCase;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private PendingCandidateEntityRepository pendingCandidateEntityRepository;
+
+    @Autowired
+    private VacancyRepository vacancyRepository;
+
+    String adLogin = "testuser";
+    String sessionId = "session123";
+    String traceId = "trace123";
+    String pernr = "123456";
+
+    @BeforeEach
+    void setUp() {
+
+        transactionTemplate.execute(status -> {
+            em.createNativeQuery("truncate srhr_requisition.pending_candidates restart identity cascade").executeUpdate();
+            em.createNativeQuery("truncate srhr_requisition.pending_candidates_events restart identity cascade").executeUpdate();
+            em.createNativeQuery("truncate srhr_requisition.structure_unit restart identity cascade").executeUpdate();
+            em.createNativeQuery("truncate srhr_requisition.vacancy restart identity cascade").executeUpdate();
+            em.createNativeQuery("truncate srhr_requisition.requisitions restart identity cascade").executeUpdate();
+            em.createNativeQuery("truncate srhr_requisition.data_integrations restart identity cascade").executeUpdate();
+
+            em.createNativeQuery("""
+                            INSERT INTO srhr_requisition.data_integrations (id, started_at, finished_at)
+                            VALUES (200, now(), now()), (201, now(), now())
+                            """)
+                    .executeUpdate();
+
+            // RequisitionEntity — 2 вакансии
+            em.createNativeQuery("""
+                            INSERT INTO srhr_requisition.requisitions (guid, integration_id, number, position_type, staff_position_id, staff_position_name, struct_unit_id, struct_unit_name)
+                            VALUES
+                            ('guid-200', 200,'REQ-001', 'TYPE_A', 'SP-001', 'Manager', 'SU-001', 'HR'),
+                            ('guid-201', 201,'REQ-002', 'TYPE_B', 'SP-002', 'Analyst', 'SU-002', 'Finance')
+                            """)
+                    .executeUpdate();
+
+            // StructureUnitEntity — пути для вакансий (по одному узлу на вакансию)
+            em.createNativeQuery("""
+                            INSERT INTO srhr_requisition.structure_unit (requisition_uuid, order_number, path_id, type_desc, path_name)
+                            VALUES
+                            ('guid-200', 1, 'SU-001', 'DEPARTMENT', 'HR'),
+                            ('guid-201', 1, 'SU-002', 'DEPARTMENT', 'Finance')
+                            """)
+                    .executeUpdate();
+
+            // vacancy
+            em.createNativeQuery("""
+                            INSERT INTO srhr_requisition.vacancy
+                                (id, integration_id, requisition_guid, last_status_change_date, last_update, candidates_last_update)
+                            VALUES
+                            (200, 200, 'guid-200', now(), now(), now()),
+                            (201, 201,'guid-201', now(), now(), now())
+                            """)
+                    .executeUpdate();
+
+//            // PendingCandidateEntity — 3 кандидата
+//            em.createNativeQuery("""
+//                            INSERT INTO srhr_requisition.pending_candidates (id, vacancy_id, candidate_id, full_name, approver_pernr)
+//                            VALUES
+//                            (1, 200, 'CAND-100', 'John Doe', :pernr),
+//                            (2, 201, 'CAND-101', 'Jane Smith', :pernr),
+//                            (3, 200, 'CAND-102', 'Bob Johnson', :pernr)
+//                            """)
+//                    .setParameter("pernr", pernr)
+//                    .executeUpdate();
+//
+//            // PendingCandidateEventEntity — события для кандидатов
+//            em.createNativeQuery("""
+//                            INSERT INTO srhr_requisition.pending_candidates_events (pending_candidate_id, event_code, days, expiration_zone)
+//                            VALUES
+//                            (1, 'HIRE', 30, 1),
+//                            (1, 'INTERVIEW', 15, 1),
+//                            (2, 'REJECT', 5, 0),
+//                            (3, 'HIRE', 45, 1)
+//                            """)
+//                    .executeUpdate();
+
+            return null;
+        });
+    }
+
+    @Test
+    void execute_shouldReturnCorrectResponse_whenMultipleCandidatesAndEvents() throws Exception {
+        RequisitionRequestEntity requestEntity = mock(RequisitionRequestEntity.class);
+        RequisitionRequestDto requestValues = new RequisitionRequestDto();
+        requestValues.setAdLogin(adLogin);
+        requestValues.setSessionId(sessionId);
+        requestValues.setTraceId(traceId);
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree("""
+                    {
+                      "page": 1,
+                      "size": 10,
+                      "filter": {
+                        "search": "Иванов",
+                        "eventCodeList": ["HIRE", "INTERVIEW"]
+                      }
+                    }
+                """);
+        requestValues.setPayload(jsonNode);
+
+        SapSystemParamsDto systemParams = mock(SapSystemParamsDto.class);
+
+        BscsEmployeeDto bscsEmployeeDto = mock(BscsEmployeeDto.class);
+        when(bscsEmployeeDto.getId()).thenReturn(pernr);
+        when(bscsIntegrationService.getStaffByLogin(any(), any(), any()))
+                .thenReturn(bscsEmployeeDto);
+
+        when(masterDataIntegrationService.getPendingCandidates(any(), any()))
+                .thenReturn(ResponseEntity.ok(definePendingCandidatesResponse()));
+
+
+        FinishProcessingMessageDto out = pendingCandidatesUseCase.execute(requestEntity, systemParams, requestValues);
+
+        System.out.println(out);
+    }
+
+    private PendingCandidatesResponse definePendingCandidatesResponse() {
+        return new PendingCandidatesResponse(
+                new PendingCandidatesResponse.CandidateInfoData(
+                        List.of(
+                                new PendingCandidatesResponse.Candidate(
+                                        1L,
+                                        200L,
+                                        "John Doe",
+                                        List.of(
+                                                new PendingCandidatesResponse.Event("HIRE", 0L, 30, 1),
+                                                new PendingCandidatesResponse.Event("INTERVIEW", 0L, 15, 1)
+                                        )
+                                ),
+                                new PendingCandidatesResponse.Candidate(
+                                        2L,
+                                        201L,
+                                        "Jane Smith",
+                                        List.of(
+                                                new PendingCandidatesResponse.Event("REJECT", 0L, 5, 0)
+                                        )
+                                ),
+                                new PendingCandidatesResponse.Candidate(
+                                        3L,
+                                        200L,
+                                        "Bob Johnson",
+                                        List.of(
+                                                new PendingCandidatesResponse.Event("HIRE", 0L, 45, 1)
+                                        )
+                                )
+                        )
+                )
+        );
+    }
+
+
+    private PendingCandidatesResponse definePendingCandidatesResponse2() {
+        return new PendingCandidatesResponse(
+                new PendingCandidatesResponse.CandidateInfoData(
+                        List.of(
+                                new PendingCandidatesResponse.Candidate(
+                                        100L,
+                                        200L,
+                                        "John Doe",
+                                        List.of(
+                                                new PendingCandidatesResponse.Event("HIRE", System.currentTimeMillis() - 86400000, 30, 1),
+                                                new PendingCandidatesResponse.Event("INTERVIEW", System.currentTimeMillis() - 172800000, 15, 1)
+                                        )
+                                ),
+                                new PendingCandidatesResponse.Candidate(
+                                        101L,
+                                        201L,
+                                        "Jane Smith",
+                                        List.of(
+                                                new PendingCandidatesResponse.Event("REJECT", System.currentTimeMillis() - 43200000, 5, 0)
+                                        )
+                                )
+                        )
+                )
+        );
+    }
+}
+
+
+
+out = {FinishProcessingMessageDto@20490} "FinishProcessingMessageDto(start=1785252483881, systemParams=Mock for SapSystemParamsDto, hashCode: 650223050, dto=PendingCandidatesApiResponse(super=SapResponseDtoExtended(uuid=null, responseCode=null, errorMessage=null, tabNumber=null, adLogin=null, sessionId=null, channel=null, rolesList=null, traceId=null, requestType=null, requestTs=null, responseTs=null, realm=null, fileUuid=null), data=PendingCandidatesPage[page=1, pageSize=10, count=0, eventCode=[], candidates=[]]), requestEntity=Mock for RequisitionRequestEntity, hashCode: 2068335142, code=200)"
+ start = {Long@27418} 1785252483881
+ systemParams = {SapSystemParamsDto@20488} "Mock for SapSystemParamsDto, hashCode: 650223050"
+ dto = {PendingCandidatesApiResponse@27419} "PendingCandidatesApiResponse(super=SapResponseDtoExtended(uuid=null, responseCode=null, errorMessage=null, tabNumber=null, adLogin=null, sessionId=null, channel=null, rolesList=null, traceId=null, requestType=null, requestTs=null, responseTs=null, realm=null, fileUuid=null), data=PendingCandidatesPage[page=1, pageSize=10, count=0, eventCode=[], candidates=[]])"
+  data = {PendingCandidatesPage@27423} "PendingCandidatesPage[page=1, pageSize=10, count=0, eventCode=[], candidates=[]]"
+   page = 1
+   pageSize = 10
+   count = 0
+   eventCode = {ImmutableCollections$ListN@27425}  size = 0
+   candidates = {ImmutableCollections$ListN@27425}  size = 0
+  uuid = null
+  responseCode = null
+  errorMessage = null
+  tabNumber = null
+  adLogin = null
+  sessionId = null
+  channel = null
+  rolesList = null
+  traceId = null
+  requestType = null
+  requestTs = null
+  responseTs = null
+  realm = null
+  fileUuid = null
+ requestEntity = {RequisitionRequestEntity@20484} "Mock for RequisitionRequestEntity, hashCode: 2068335142"
+ code = "200"
