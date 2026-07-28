@@ -1,49 +1,31 @@
-enrichmentByVacancyId = {HashMap@27461}  size = 1
- null -> {PendingCandidatesUseCase$RequisitionEnrichment@27468} "RequisitionEnrichment[vacancyId=null, guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPositionId=SP-001, staffPositionName=Manager, structUnitId=SU-001, structUnitName=HR, path=[StructUnitPathNode[id=SU-001, typeDesc=DEPARTMENT, name=HR]]]"
-  key = null
-  value = {PendingCandidatesUseCase$RequisitionEnrichment@27468} "RequisitionEnrichment[vacancyId=null, guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPositionId=SP-001, staffPositionName=Manager, structUnitId=SU-001, structUnitName=HR, path=[StructUnitPathNode[id=SU-001, typeDesc=DEPARTMENT, name=HR]]]"
-   vacancyId = null
-   guid = "guid-200"
-   number = "REQ-001"
-   positionType = "TYPE_A"
-   staffPositionId = "SP-001"
-   staffPositionName = "Manager"
-   structUnitId = "SU-001"
-   structUnitName = "HR"
-   path = {ArrayList@27501}  size = 1
-    0 = {PendingCandidatesUseCase$StructUnitPathNode@27503} "StructUnitPathNode[id=SU-001, typeDesc=DEPARTMENT, name=HR]"
-     id = "SU-001"
-     typeDesc = "DEPARTMENT"
-     name = "HR"
+out = {FinishProcessingMessageDto@20660} "FinishProcessingMessageDto(start=1785254397716, systemParams=Mock for SapSystemParamsDto, hashCode: 1380300256, dto=PendingCandidatesApiResponse(super=SapResponseDtoExtended(uuid=null, responseCode=null, errorMessage=null, tabNumber=null, adLogin=null, sessionId=null, channel=null, rolesList=null, traceId=null, requestType=null, requestTs=null, responseTs=null, realm=null, fileUuid=null), data=PendingCandidatesPage[page=1, pageSize=10, count=2, eventCode=[EventCodeView[codeValue=HIRE], EventCodeView[codeValue=INTERVIEW]], candidates=[PendingCandidateView[candidateId=3, vacancyId=200, fullName=Bob Johnson, requisition=RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=StaffPositionView[id=SP-001, name=Manager], structUnitName=HR, structUnitId=SU-001, structUnitPathList=[StructUnitPathView[id=SU-001, typeDesc=DEPARTMENT, name=HR]]], events=[PendingCandidateEventView[code=HIRE, days=45, expirationZone=1]]], PendingCandidateView[candidateId=1, vacancyId=200, "
+ start = {Long@27594} 1785254397716
+ systemParams = {SapSystemParamsDto@20658} "Mock for SapSystemParamsDto, hashCode: 1380300256"
+ dto = {PendingCandidatesApiResponse@27595} "PendingCandidatesApiResponse(super=SapResponseDtoExtended(uuid=null, responseCode=null, errorMessage=null, tabNumber=null, adLogin=null, sessionId=null, channel=null, rolesList=null, traceId=null, requestType=null, requestTs=null, responseTs=null, realm=null, fileUuid=null), data=PendingCandidatesPage[page=1, pageSize=10, count=2, eventCode=[EventCodeView[codeValue=HIRE], EventCodeView[codeValue=INTERVIEW]], candidates=[PendingCandidateView[candidateId=3, vacancyId=200, fullName=Bob Johnson, requisition=RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=StaffPositionView[id=SP-001, name=Manager], structUnitName=HR, structUnitId=SU-001, structUnitPathList=[StructUnitPathView[id=SU-001, typeDesc=DEPARTMENT, name=HR]]], events=[PendingCandidateEventView[code=HIRE, days=45, expirationZone=1]]], PendingCandidateView[candidateId=1, vacancyId=200, fullName=John Doe, requisition=RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=Sta"
+  data = {PendingCandidatesPage@27599} "PendingCandidatesPage[page=1, pageSize=10, count=2, eventCode=[EventCodeView[codeValue=HIRE], EventCodeView[codeValue=INTERVIEW]], candidates=[PendingCandidateView[candidateId=3, vacancyId=200, fullName=Bob Johnson, requisition=RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=StaffPositionView[id=SP-001, name=Manager], structUnitName=HR, structUnitId=SU-001, structUnitPathList=[StructUnitPathView[id=SU-001, typeDesc=DEPARTMENT, name=HR]]], events=[PendingCandidateEventView[code=HIRE, days=45, expirationZone=1]]], PendingCandidateView[candidateId=1, vacancyId=200, fullName=John Doe, requisition=RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=StaffPositionView[id=SP-001, name=Manager], structUnitName=HR, structUnitId=SU-001, structUnitPathList=[StructUnitPathView[id=SU-001, typeDesc=DEPARTMENT, name=HR]]], events=[PendingCandidateEventView[code=HIRE, days=30, expirationZone=1], PendingCandidateEventView[code=INTERVIEW, da"
+   page = 1
+   pageSize = 10
+   count = 2
+   eventCode = {ImmutableCollections$List12@27601}  size = 2
+    0 = {EventCodeView@27604} "EventCodeView[codeValue=HIRE]"
+     codeValue = "HIRE"
+    1 = {EventCodeView@27605} "EventCodeView[codeValue=INTERVIEW]"
+     codeValue = "INTERVIEW"
+   candidates = {ImmutableCollections$List12@27602}  size = 2
+    0 = {PendingCandidateView@27609} "PendingCandidateView[candidateId=3, vacancyId=200, fullName=Bob Johnson, requisition=RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=StaffPositionView[id=SP-001, name=Manager], structUnitName=HR, structUnitId=SU-001, structUnitPathList=[StructUnitPathView[id=SU-001, typeDesc=DEPARTMENT, name=HR]]], events=[PendingCandidateEventView[code=HIRE, days=45, expirationZone=1]]]"
+     candidateId = {Integer@27613} 3
+     vacancyId = "200"
+     fullName = "Bob Johnson"
+     requisition = {RequisitionView@27616} "RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=StaffPositionView[id=SP-001, name=Manager], structUnitName=HR, structUnitId=SU-001, structUnitPathList=[StructUnitPathView[id=SU-001, typeDesc=DEPARTMENT, name=HR]]]"
+     events = {ImmutableCollections$List12@27617}  size = 1
+    1 = {PendingCandidateView@27610} "PendingCandidateView[candidateId=1, vacancyId=200, fullName=John Doe, requisition=RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=StaffPositionView[id=SP-001, name=Manager], structUnitName=HR, structUnitId=SU-001, structUnitPathList=[StructUnitPathView[id=SU-001, typeDesc=DEPARTMENT, name=HR]]], events=[PendingCandidateEventView[code=HIRE, days=30, expirationZone=1], PendingCandidateEventView[code=INTERVIEW, days=15, expirationZone=1]]]"
+     candidateId = {Integer@27622} 1
+     vacancyId = "200"
+     fullName = "John Doe"
+     requisition = {RequisitionView@27625} "RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=StaffPositionView[id=SP-001, name=Manager], structUnitName=HR, structUnitId=SU-001, structUnitPathList=[StructUnitPathView[id=SU-001, typeDesc=DEPARTMENT, name=HR]]]"
+     events = {ImmutableCollections$List12@27626}  size = 2
 
 
+ FinishProcessingMessageDto out = pendingCandidatesUseCase.execute(requestEntity, systemParams, requestValues);
 
-private Map<Integer, RequisitionEnrichment> loadEnrichment(List<PendingCandidateRow> candidates) {
-        Set<Integer> vacancyIds = candidates.stream()
-                .map(PendingCandidateRow::getVacancyId)
-                .collect(Collectors.toSet());
-        if (vacancyIds.isEmpty()) {
-            return Map.of();
-        }
-
-        List<RequisitionEnrichmentRow> reqRows =
-                vacancyRepository.findEnrichmentByVacancyIds(vacancyIds.toArray(Integer[]::new));
-
-        Map<String, List<StructUnitPathNode>> pathsByGuid =
-                vacancyRepository.findPathsByRequisitionGuids(
-                                reqRows.stream().map(RequisitionEnrichmentRow::getGuid).collect(Collectors.toSet()))
-                        .stream()
-                        .collect(Collectors.groupingBy(
-                                StructUnitPathRow::getRequisitionGuid,
-                                LinkedHashMap::new,   // сохранить order_number из SQL
-                                Collectors.mapping(p -> new StructUnitPathNode(
-                                        p.getId(), p.getTypeDesc(), p.getName()), Collectors.toList())));
-
-        return reqRows.stream().collect(Collectors.toMap(
-                RequisitionEnrichmentRow::getVacancyId,
-                r -> new RequisitionEnrichment(
-                        r.getVacancyId(), r.getGuid(), r.getNumber(), r.getPositionType(),
-                        r.getStaffPositionId(), r.getStaffPositionName(),
-                        r.getStructUnitId(), r.getStructUnitName(),
-                        pathsByGuid.getOrDefault(r.getGuid(), List.of()))));
-    }
+        System.out.println(out);
