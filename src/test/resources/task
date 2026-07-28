@@ -89,3 +89,17 @@ Map<Integer, List<PendingCandidateEventRow>> eventsByCandidate =
 List<PendingCandidateDto> items = rows.stream()
         .map(r -> mapper.toDto(r, eventsByCandidate.getOrDefault(r.getId(), List.of())))
         .toList();
+
+
+@Autowired JdbcTemplate jdbc;
+
+@Test
+void printSchema() {
+    for (String t : List.of("vacancy", "requisitions", "structure_unit")) {
+        jdbc.queryForList("""
+            select column_name, data_type, is_nullable
+            from information_schema.columns
+            where table_name = ? order by ordinal_position
+            """, t).forEach(row -> log.info("{}: {}", t, row));
+    }
+}
