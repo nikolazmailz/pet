@@ -1,8 +1,570 @@
-em.createNativeQuery("""
-        INSERT INTO srhr_requisition.vacancy
-            (id, requisition_guid, last_status_change_date, last_update, candidates_last_update)
-        VALUES
-        (200, 'guid-200', now(), now(), now()),
-        (201, 'guid-201', now(), now(), now())
-        """)
-        .executeUpdate();
+package ru.ntdev.srhr.ms.requisition.application.usecase;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import ru.ntdev.srhr.common.contracts.easup.pendingcandidates.PendingCandidatesResponse;
+import ru.ntdev.srhr.common.dto.SapSystemParamsDto;
+import ru.ntdev.srhr.common.dto.api.request.requisition.RequisitionRequestDto;
+import ru.ntdev.srhr.common.dto.bscs.employee.BscsEmployeeDto;
+import ru.ntdev.srhr.ms.requisition.BaseIntegrationTest;
+import ru.ntdev.srhr.ms.requisition.application.dto.FinishProcessingMessageDto;
+import ru.ntdev.srhr.ms.requisition.entity.RequisitionRequestEntity;
+import ru.ntdev.srhr.ms.requisition.repository.PendingCandidateEntityRepository;
+import ru.ntdev.srhr.ms.requisition.repository.VacancyRepository;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+public class PendingCandidatesUseCaseIntegrationTest extends BaseIntegrationTest {
+
+    @Autowired
+    private PendingCandidatesUseCase pendingCandidatesUseCase;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Autowired
+    private PendingCandidateEntityRepository pendingCandidateEntityRepository;
+
+    @Autowired
+    private VacancyRepository vacancyRepository;
+
+    String adLogin = "testuser";
+    String sessionId = "session123";
+    String traceId = "trace123";
+    String pernr = "123456";
+
+    @BeforeEach
+    void setUp() {
+
+        transactionTemplate.execute(status -> {
+            em.createNativeQuery("truncate srhr_requisition.pending_candidates restart identity cascade").executeUpdate();
+            em.createNativeQuery("truncate srhr_requisition.pending_candidates_events restart identity cascade").executeUpdate();
+            em.createNativeQuery("truncate srhr_requisition.structure_unit restart identity cascade").executeUpdate();
+            em.createNativeQuery("truncate srhr_requisition.vacancy restart identity cascade").executeUpdate();
+            em.createNativeQuery("truncate srhr_requisition.requisitions restart identity cascade").executeUpdate();
+            em.createNativeQuery("truncate srhr_requisition.data_integrations restart identity cascade").executeUpdate();
+
+            em.createNativeQuery("""
+                            INSERT INTO srhr_requisition.data_integrations (id, started_at, finished_at)
+                            VALUES (200, now(), now()), (201, now(), now())
+                            """)
+                    .executeUpdate();
+
+            // RequisitionEntity — 2 вакансии
+            em.createNativeQuery("""
+                            INSERT INTO srhr_requisition.requisitions (guid, integration_id, number, position_type, staff_position_id, staff_position_name, struct_unit_id, struct_unit_name)
+                            VALUES
+                            ('guid-200', 200,'REQ-001', 'TYPE_A', 'SP-001', 'Manager', 'SU-001', 'HR'),
+                            ('guid-201', 201,'REQ-002', 'TYPE_B', 'SP-002', 'Analyst', 'SU-002', 'Finance')
+                            """)
+                    .executeUpdate();
+
+            // StructureUnitEntity — пути для вакансий (по одному узлу на вакансию)
+            em.createNativeQuery("""
+                            INSERT INTO srhr_requisition.structure_unit (requisition_uuid, order_number, path_id, type_desc, path_name)
+                            VALUES
+                            ('guid-200', 1, 'SU-001', 'DEPARTMENT', 'HR'),
+                            ('guid-201', 1, 'SU-002', 'DEPARTMENT', 'Finance')
+                            """)
+                    .executeUpdate();
+
+            // vacancy
+            em.createNativeQuery("""
+                            INSERT INTO srhr_requisition.vacancy
+                                (id, integration_id, requisition_guid, last_status_change_date, last_update, candidates_last_update)
+                            VALUES
+                            (200, 200, 'guid-200', now(), now(), now()),
+                            (201, 201,'guid-201', now(), now(), now())
+                            """)
+                    .executeUpdate();
+
+//            // PendingCandidateEntity — 3 кандидата
+//            em.createNativeQuery("""
+//                            INSERT INTO srhr_requisition.pending_candidates (id, vacancy_id, candidate_id, full_name, approver_pernr)
+//                            VALUES
+//                            (1, 200, 'CAND-100', 'John Doe', :pernr),
+//                            (2, 201, 'CAND-101', 'Jane Smith', :pernr),
+//                            (3, 200, 'CAND-102', 'Bob Johnson', :pernr)
+//                            """)
+//                    .setParameter("pernr", pernr)
+//                    .executeUpdate();
+//
+//            // PendingCandidateEventEntity — события для кандидатов
+//            em.createNativeQuery("""
+//                            INSERT INTO srhr_requisition.pending_candidates_events (pending_candidate_id, event_code, days, expiration_zone)
+//                            VALUES
+//                            (1, 'HIRE', 30, 1),
+//                            (1, 'INTERVIEW', 15, 1),
+//                            (2, 'REJECT', 5, 0),
+//                            (3, 'HIRE', 45, 1)
+//                            """)
+//                    .executeUpdate();
+
+            return null;
+        });
+    }
+
+    @Test
+    void execute_shouldReturnCorrectResponse_whenMultipleCandidatesAndEvents() throws Exception {
+        RequisitionRequestEntity requestEntity = mock(RequisitionRequestEntity.class);
+        RequisitionRequestDto requestValues = new RequisitionRequestDto();
+        requestValues.setAdLogin(adLogin);
+        requestValues.setSessionId(sessionId);
+        requestValues.setTraceId(traceId);
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode jsonNode = objectMapper.readTree("""
+                    {
+                      "page": 1,
+                      "size": 10,
+                      "filter": {
+                        "search": "Иванов",
+                        "eventCodeList": ["HIRE", "INTERVIEW"]
+                      }
+                    }
+                """);
+        requestValues.setPayload(jsonNode);
+
+        SapSystemParamsDto systemParams = mock(SapSystemParamsDto.class);
+
+        BscsEmployeeDto bscsEmployeeDto = mock(BscsEmployeeDto.class);
+        when(bscsEmployeeDto.getId()).thenReturn(pernr);
+        when(bscsIntegrationService.getStaffByLogin(any(), any(), any()))
+                .thenReturn(bscsEmployeeDto);
+
+        when(masterDataIntegrationService.getPendingCandidates(any(), any()))
+                .thenReturn(ResponseEntity.ok(definePendingCandidatesResponse()));
+
+
+        FinishProcessingMessageDto out = pendingCandidatesUseCase.execute(requestEntity, systemParams, requestValues);
+
+        System.out.println(out);
+    }
+
+    private PendingCandidatesResponse definePendingCandidatesResponse() {
+        return new PendingCandidatesResponse(
+                new PendingCandidatesResponse.CandidateInfoData(
+                        List.of(
+                                new PendingCandidatesResponse.Candidate(
+                                        1L,
+                                        200L,
+                                        "John Doe",
+                                        List.of(
+                                                new PendingCandidatesResponse.Event("HIRE", 0L, 30, 1),
+                                                new PendingCandidatesResponse.Event("INTERVIEW", 0L, 15, 1)
+                                        )
+                                ),
+                                new PendingCandidatesResponse.Candidate(
+                                        2L,
+                                        201L,
+                                        "Jane Smith",
+                                        List.of(
+                                                new PendingCandidatesResponse.Event("REJECT", 0L, 5, 0)
+                                        )
+                                ),
+                                new PendingCandidatesResponse.Candidate(
+                                        3L,
+                                        200L,
+                                        "Bob Johnson",
+                                        List.of(
+                                                new PendingCandidatesResponse.Event("HIRE", 0L, 45, 1)
+                                        )
+                                )
+                        )
+                )
+        );
+    }
+
+
+    private PendingCandidatesResponse definePendingCandidatesResponse2() {
+        return new PendingCandidatesResponse(
+                new PendingCandidatesResponse.CandidateInfoData(
+                        List.of(
+                                new PendingCandidatesResponse.Candidate(
+                                        100L,
+                                        200L,
+                                        "John Doe",
+                                        List.of(
+                                                new PendingCandidatesResponse.Event("HIRE", System.currentTimeMillis() - 86400000, 30, 1),
+                                                new PendingCandidatesResponse.Event("INTERVIEW", System.currentTimeMillis() - 172800000, 15, 1)
+                                        )
+                                ),
+                                new PendingCandidatesResponse.Candidate(
+                                        101L,
+                                        201L,
+                                        "Jane Smith",
+                                        List.of(
+                                                new PendingCandidatesResponse.Event("REJECT", System.currentTimeMillis() - 43200000, 5, 0)
+                                        )
+                                )
+                        )
+                )
+        );
+    }
+}
+
+
+package ru.ntdev.srhr.ms.requisition.application.usecase;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import ru.ntdev.srhr.common.contracts.easup.pendingcandidates.PendingCandidatesRequest;
+import ru.ntdev.srhr.common.contracts.easup.pendingcandidates.PendingCandidatesResponse;
+import ru.ntdev.srhr.common.contracts.requisition.pendingcandidates.request.PendingCandidatesApiRequest;
+import ru.ntdev.srhr.common.contracts.requisition.pendingcandidates.response.EventCodeView;
+import ru.ntdev.srhr.common.contracts.requisition.pendingcandidates.response.PendingCandidateEventView;
+import ru.ntdev.srhr.common.contracts.requisition.pendingcandidates.response.PendingCandidateView;
+import ru.ntdev.srhr.common.contracts.requisition.pendingcandidates.response.PendingCandidatesApiResponse;
+import ru.ntdev.srhr.common.contracts.requisition.pendingcandidates.response.PendingCandidatesPage;
+import ru.ntdev.srhr.common.contracts.requisition.pendingcandidates.response.RequisitionView;
+import ru.ntdev.srhr.common.contracts.requisition.pendingcandidates.response.StaffPositionView;
+import ru.ntdev.srhr.common.contracts.requisition.pendingcandidates.response.StructUnitPathView;
+import ru.ntdev.srhr.common.dto.SapSystemParamsDto;
+import ru.ntdev.srhr.common.dto.api.request.requisition.RequisitionRequestDto;
+import ru.ntdev.srhr.ms.requisition.application.dto.FinishProcessingMessageDto;
+import ru.ntdev.srhr.ms.requisition.application.dto.StatusCode;
+import ru.ntdev.srhr.ms.requisition.entity.PendingCandidateEntity;
+import ru.ntdev.srhr.ms.requisition.entity.RequisitionRequestEntity;
+import ru.ntdev.srhr.ms.requisition.entity.projection.PendingCandidateEventRow;
+import ru.ntdev.srhr.ms.requisition.entity.projection.PendingCandidateRow;
+import ru.ntdev.srhr.ms.requisition.entity.projection.RequisitionEnrichmentRow;
+import ru.ntdev.srhr.ms.requisition.entity.projection.StructUnitPathRow;
+import ru.ntdev.srhr.ms.requisition.repository.PendingCandidateEntityRepository;
+import ru.ntdev.srhr.ms.requisition.repository.VacancyRepository;
+import ru.ntdev.srhr.ms.requisition.service.BscsIntegrationService;
+import ru.ntdev.srhr.ms.requisition.service.DatabaseService;
+import ru.ntdev.srhr.ms.requisition.service.MasterDataIntegrationService;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class PendingCandidatesUseCase {
+
+    private final ObjectMapper objectMapper;
+    private final BscsIntegrationService bscsIntegrationService;
+    private final MasterDataIntegrationService masterDataIntegrationService;
+    private final PendingCandidateEntityRepository pendingCandidateEntityRepository;
+    private final VacancyRepository vacancyRepository;
+    private final DatabaseService databaseService;
+
+    public FinishProcessingMessageDto execute(
+            RequisitionRequestEntity requestEntity,
+            SapSystemParamsDto systemParams,
+            RequisitionRequestDto requestValues) throws Exception {
+        long start = System.currentTimeMillis();
+        PendingCandidatesApiRequest request = objectMapper.treeToValue(requestValues.getPayload(), PendingCandidatesApiRequest.class);
+
+        String pernr = bscsIntegrationService.getStaffByLogin(
+                requestValues.getAdLogin(),
+                requestValues.getSessionId(),
+                requestValues.getTraceId()
+        ).getId();
+
+        PendingCandidatesResponse pendingCandidatesResponse = masterDataIntegrationService.getPendingCandidates(systemParams, new PendingCandidatesRequest(
+                new PendingCandidatesRequest.Request(pernr)
+        )).getBody();
+
+        databaseService.replaceForApprover(pernr, pendingCandidatesResponse);
+
+        PendingCandidatesApiResponse out = definePendingCandidatePage(pernr, request);
+
+
+        return new FinishProcessingMessageDto(
+                start,
+                systemParams,
+                out,
+                requestEntity,
+                StatusCode.CODE_200.getCode()
+        );
+    }
+
+    private PendingCandidatesApiResponse definePendingCandidatePage(String pernr, PendingCandidatesApiRequest request) {
+        List<Integer> idsCandidate = pendingCandidateEntityRepository.findPageIds(
+                pernr,
+                request.filter().search(),
+                request.filter().eventCodeList(),
+                request.filter().eventCodeList().isEmpty(),
+                request.size(),
+                (request.page() - 1) * request.size()
+        );
+
+        long countCandidates = pendingCandidateEntityRepository.countByFilter(
+                pernr,
+                request.filter().search(),
+                request.filter().eventCodeList(),
+                request.filter().eventCodeList().isEmpty()
+        );
+
+        List<String> eventCodes = pendingCandidateEntityRepository.findDistinctEventCodes(
+                pernr,
+                request.filter().search(),
+                request.filter().eventCodeList(),
+                request.filter().eventCodeList().isEmpty()
+        );
+
+        if(idsCandidate.isEmpty()){
+            return new PendingCandidatesApiResponse(
+                    new PendingCandidatesPage(
+                            request.page(),
+                            request.size(),
+                            countCandidates,
+                            eventCodes.stream().map(EventCodeView::new).toList(),
+                            List.of()
+                    )
+            );
+        }
+
+        List<PendingCandidateRow> candidates = pendingCandidateEntityRepository.findRowsByIds(
+                idsCandidate.toArray(Integer[]::new)
+        );
+
+        Map<Integer, List<PendingCandidateEventRow>> eventsByCandidateId =
+                pendingCandidateEntityRepository.findEventRowsByCandidateIds(idsCandidate).stream()
+                        .collect(Collectors.groupingBy(
+                                PendingCandidateEventRow::getPendingCandidateId,
+                                LinkedHashMap::new,
+                                Collectors.toList()));
+
+
+        Map<Integer, RequisitionEnrichment> enrichmentByVacancyId = loadEnrichment(candidates);
+
+        return new PendingCandidatesApiResponse(
+                new PendingCandidatesPage(
+                        request.page(),
+                        request.size(),
+                        countCandidates,
+                        eventCodes.stream().map(EventCodeView::new).toList(),
+                        candidates.stream().map(item -> new PendingCandidateView(
+                                item.getCandidateId(),
+                                item.getVacancyId().toString(),
+                                item.getFullName(),
+                                new RequisitionView(
+                                        enrichmentByVacancyId.get(item.getVacancyId()).guid,
+                                        enrichmentByVacancyId.get(item.getVacancyId()).number,
+                                        enrichmentByVacancyId.get(item.getVacancyId()).positionType,
+                                        new StaffPositionView(
+                                                enrichmentByVacancyId.get(item.getVacancyId()).staffPositionId,
+                                                enrichmentByVacancyId.get(item.getVacancyId()).staffPositionName
+                                        ),
+                                        enrichmentByVacancyId.get(item.getVacancyId()).structUnitName,
+                                        enrichmentByVacancyId.get(item.getVacancyId()).structUnitId,
+                                        enrichmentByVacancyId.get(item.getVacancyId()).path.stream().map(structUnitPathNode ->
+                                                new StructUnitPathView(
+                                                        structUnitPathNode.id, structUnitPathNode.typeDesc, structUnitPathNode.name)
+                                        ).toList()
+                                ),
+                                eventsByCandidateId.getOrDefault(item.getId(), List.of()).stream().map(event ->
+                                        new PendingCandidateEventView(
+                                                event.getEventCode(),
+                                                event.getDays(),
+                                                event.getExpirationZone()
+                                        )
+                                ).toList()
+
+                        )).toList()
+                )
+        );
+    }
+
+    private Map<Integer, RequisitionEnrichment> loadEnrichment(List<PendingCandidateRow> candidates) {
+        Set<Integer> vacancyIds = candidates.stream()
+                .map(PendingCandidateRow::getVacancyId)
+                .collect(Collectors.toSet());
+        if (vacancyIds.isEmpty()) {
+            return Map.of();
+        }
+
+        List<RequisitionEnrichmentRow> reqRows =
+                vacancyRepository.findEnrichmentByVacancyIds(vacancyIds);
+
+        Map<String, List<StructUnitPathNode>> pathsByGuid =
+                vacancyRepository.findPathsByRequisitionGuids(
+                                reqRows.stream().map(RequisitionEnrichmentRow::getGuid).collect(Collectors.toSet()))
+                        .stream()
+                        .collect(Collectors.groupingBy(
+                                StructUnitPathRow::getRequisitionGuid,
+                                LinkedHashMap::new,   // сохранить order_number из SQL
+                                Collectors.mapping(p -> new StructUnitPathNode(
+                                        p.getId(), p.getTypeDesc(), p.getName()), Collectors.toList())));
+
+        return reqRows.stream().collect(Collectors.toMap(
+                RequisitionEnrichmentRow::getVacancyId,
+                r -> new RequisitionEnrichment(
+                        r.getVacancyId(), r.getGuid(), r.getNumber(), r.getPositionType(),
+                        r.getStaffPositionId(), r.getStaffPositionName(),
+                        r.getStructUnitId(), r.getStructUnitName(),
+                        pathsByGuid.getOrDefault(r.getGuid(), List.of()))));
+    }
+
+    public record RequisitionEnrichment(
+            Integer vacancyId,
+            String guid,
+            String number,
+            String positionType,
+            String staffPositionId,
+            String staffPositionName,
+            String structUnitId,
+            String structUnitName,
+            List<StructUnitPathNode> path
+    ) {
+
+    }
+
+    public record StructUnitPathNode(String id, String typeDesc, String name) {
+    }
+}
+
+
+
+    @Override
+    @Transactional
+    public void replaceForApprover(String approverPernr, PendingCandidatesResponse response) {
+        pendingCandidateEntityRepository.deleteAllByApproverPernr(approverPernr);
+        pendingCandidateEntityRepository.flush();
+        pendingCandidateEntityRepository.saveAll(PendingCandidateEntity.toEntities(approverPernr, response));
+    }
+
+
+2026-07-28T18:17:29.898+03:00  WARN 29780 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:17:29.898+03:00  WARN 29780 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:17:29.899+03:00  WARN 29780 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:17:29.899+03:00  WARN 29780 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:17:29.898+03:00  WARN 29780 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:17:29.898+03:00  WARN 29780 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:17:29.899+03:00  WARN 29780 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:17:29.899+03:00  WARN 29780 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:17:29.963+03:00  WARN 29780 --- [srhr-ms-requisition] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Error: 0, SQLState: 23502
+2026-07-28T18:17:29.964+03:00 ERROR 29780 --- [srhr-ms-requisition] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : ERROR: null value in column "id" of relation "pending_candidates" violates not-null constraint
+  Подробности: Failing row contains (null, 200, 1, John Doe, 123456).
+2026-07-28T18:17:30.002+03:00  WARN 29780 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:17:30.002+03:00  WARN 29780 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:17:30.002+03:00  WARN 29780 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:17:30.002+03:00  WARN 29780 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:17:30.004+03:00  WARN 29780 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:17:30.004+03:00  WARN 29780 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-07-28T18:17:30.004+03:00  WARN 29780 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-07-28T18:17:30.004+03:00  WARN 29780 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+
+org.springframework.dao.DataIntegrityViolationException: could not execute statement [ERROR: null value in column "id" of relation "pending_candidates" violates not-null constraint
+  Подробности: Failing row contains (null, 200, 1, John Doe, 123456).] [insert into srhr_requisition.pending_candidates (approver_pernr,candidate_id,full_name,vacancy_id,id) values (?,?,?,?,default)]; SQL [insert into srhr_requisition.pending_candidates (approver_pernr,candidate_id,full_name,vacancy_id,id) values (?,?,?,?,default)]; constraint [null]
+
+	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.convertHibernateAccessException(HibernateJpaDialect.java:290)
+	at org.springframework.orm.jpa.vendor.HibernateJpaDialect.translateExceptionIfPossible(HibernateJpaDialect.java:241)
+	at org.springframework.orm.jpa.AbstractEntityManagerFactoryBean.translateExceptionIfPossible(AbstractEntityManagerFactoryBean.java:550)
+	at org.springframework.dao.support.ChainedPersistenceExceptionTranslator.translateExceptionIfPossible(ChainedPersistenceExceptionTranslator.java:61)
+	at org.springframework.dao.support.DataAccessUtils.translateIfNecessary(DataAccessUtils.java:335)
+	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:152)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.data.jpa.repository.support.CrudMethodMetadataPostProcessor$CrudMethodMetadataPopulatingMethodInterceptor.invoke(CrudMethodMetadataPostProcessor.java:164)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.interceptor.ExposeInvocationInterceptor.invoke(ExposeInvocationInterceptor.java:97)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.framework.JdkDynamicAopProxy.invoke(JdkDynamicAopProxy.java:249)
+	at jdk.proxy2/jdk.proxy2.$Proxy257.saveAll(Unknown Source)
+	at ru.ntdev.srhr.ms.requisition.service.impl.DatabaseServiceImpl.replaceForApprover(DatabaseServiceImpl.java:688)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:352)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:765)
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:123)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:385)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:765)
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:717)
+	at ru.ntdev.srhr.ms.requisition.service.impl.DatabaseServiceImpl$$SpringCGLIB$$0.replaceForApprover(<generated>)
+	at ru.ntdev.srhr.ms.requisition.application.usecase.PendingCandidatesUseCase.execute(PendingCandidatesUseCase.java:68)
+	at ru.ntdev.srhr.ms.requisition.application.usecase.PendingCandidatesUseCaseIntegrationTest.execute_shouldReturnCorrectResponse_whenMultipleCandidatesAndEvents(PendingCandidatesUseCaseIntegrationTest.java:145)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+Caused by: org.hibernate.exception.ConstraintViolationException: could not execute statement [ERROR: null value in column "id" of relation "pending_candidates" violates not-null constraint
+  Подробности: Failing row contains (null, 200, 1, John Doe, 123456).] [insert into srhr_requisition.pending_candidates (approver_pernr,candidate_id,full_name,vacancy_id,id) values (?,?,?,?,default)]
+	at org.hibernate.exception.internal.SQLStateConversionDelegate.convert(SQLStateConversionDelegate.java:97)
+	at org.hibernate.exception.internal.StandardSQLExceptionConverter.convert(StandardSQLExceptionConverter.java:58)
+	at org.hibernate.engine.jdbc.spi.SqlExceptionHelper.convert(SqlExceptionHelper.java:108)
+	at org.hibernate.engine.jdbc.internal.ResultSetReturnImpl.executeUpdate(ResultSetReturnImpl.java:283)
+	at org.hibernate.id.insert.GetGeneratedKeysDelegate.performInsert(GetGeneratedKeysDelegate.java:107)
+	at org.hibernate.engine.jdbc.mutation.internal.MutationExecutorPostInsertSingleTable.execute(MutationExecutorPostInsertSingleTable.java:100)
+	at org.hibernate.persister.entity.mutation.InsertCoordinator.doStaticInserts(InsertCoordinator.java:171)
+	at org.hibernate.persister.entity.mutation.InsertCoordinator.coordinateInsert(InsertCoordinator.java:112)
+	at org.hibernate.persister.entity.AbstractEntityPersister.insert(AbstractEntityPersister.java:2860)
+	at org.hibernate.action.internal.EntityIdentityInsertAction.execute(EntityIdentityInsertAction.java:81)
+	at org.hibernate.engine.spi.ActionQueue.execute(ActionQueue.java:667)
+	at org.hibernate.engine.spi.ActionQueue.addResolvedEntityInsertAction(ActionQueue.java:290)
+	at org.hibernate.engine.spi.ActionQueue.addInsertAction(ActionQueue.java:271)
+	at org.hibernate.engine.spi.ActionQueue.addAction(ActionQueue.java:321)
+	at org.hibernate.event.internal.AbstractSaveEventListener.addInsertAction(AbstractSaveEventListener.java:386)
+	at org.hibernate.event.internal.AbstractSaveEventListener.performSaveOrReplicate(AbstractSaveEventListener.java:300)
+	at org.hibernate.event.internal.AbstractSaveEventListener.performSave(AbstractSaveEventListener.java:219)
+	at org.hibernate.event.internal.AbstractSaveEventListener.saveWithGeneratedId(AbstractSaveEventListener.java:134)
+	at org.hibernate.event.internal.DefaultPersistEventListener.entityIsTransient(DefaultPersistEventListener.java:175)
+	at org.hibernate.event.internal.DefaultPersistEventListener.persist(DefaultPersistEventListener.java:93)
+	at org.hibernate.event.internal.DefaultPersistEventListener.onPersist(DefaultPersistEventListener.java:77)
+	at org.hibernate.event.internal.DefaultPersistEventListener.onPersist(DefaultPersistEventListener.java:54)
+	at org.hibernate.event.service.internal.EventListenerGroupImpl.fireEventOnEachListener(EventListenerGroupImpl.java:127)
+	at org.hibernate.internal.SessionImpl.firePersist(SessionImpl.java:766)
+	at org.hibernate.internal.SessionImpl.persist(SessionImpl.java:750)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.orm.jpa.SharedEntityManagerCreator$SharedEntityManagerInvocationHandler.invoke(SharedEntityManagerCreator.java:311)
+	at jdk.proxy2/jdk.proxy2.$Proxy231.persist(Unknown Source)
+	at org.springframework.data.jpa.repository.support.SimpleJpaRepository.save(SimpleJpaRepository.java:618)
+	at org.springframework.data.jpa.repository.support.SimpleJpaRepository.saveAll(SimpleJpaRepository.java:644)
+	at org.springframework.data.jpa.repository.support.SimpleJpaRepository.saveAll(SimpleJpaRepository.java:95)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:352)
+	at org.springframework.data.repository.core.support.RepositoryMethodInvoker$RepositoryFragmentMethodInvoker.lambda$new$0(RepositoryMethodInvoker.java:277)
+	at org.springframework.data.repository.core.support.RepositoryMethodInvoker.doInvoke(RepositoryMethodInvoker.java:170)
+	at org.springframework.data.repository.core.support.RepositoryMethodInvoker.invoke(RepositoryMethodInvoker.java:158)
+	at org.springframework.data.repository.core.support.RepositoryComposition$RepositoryFragments.invoke(RepositoryComposition.java:516)
+	at org.springframework.data.repository.core.support.RepositoryComposition.invoke(RepositoryComposition.java:285)
+	at org.springframework.data.repository.core.support.RepositoryFactorySupport$ImplementationMethodExecutionInterceptor.invoke(RepositoryFactorySupport.java:628)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.doInvoke(QueryExecutorMethodInterceptor.java:168)
+	at org.springframework.data.repository.core.support.QueryExecutorMethodInterceptor.invoke(QueryExecutorMethodInterceptor.java:143)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.data.projection.DefaultMethodInvokingMethodInterceptor.invoke(DefaultMethodInvokingMethodInterceptor.java:70)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:123)
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:385)
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119)
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184)
+	at org.springframework.dao.support.PersistenceExceptionTranslationInterceptor.invoke(PersistenceExceptionTranslationInterceptor.java:137)
+	... 28 more
+Caused by: org.postgresql.util.PSQLException: ERROR: null value in column "id" of relation "pending_candidates" violates not-null constraint
+  Подробности: Failing row contains (null, 200, 1, John Doe, 123456).
+	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2713)
+	at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2401)
+	at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:368)
+	at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:498)
+	at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:415)
+	at org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:190)
+	at org.postgresql.jdbc.PgPreparedStatement.executeUpdate(PgPreparedStatement.java:152)
+	at com.zaxxer.hikari.pool.ProxyPreparedStatement.executeUpdate(ProxyPreparedStatement.java:61)
+	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeUpdate(HikariProxyPreparedStatement.java)
+	at org.hibernate.engine.jdbc.internal.ResultSetReturnImpl.executeUpdate(ResultSetReturnImpl.java:280)
+	... 80 more
+
