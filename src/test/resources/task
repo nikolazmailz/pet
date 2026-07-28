@@ -256,3 +256,12 @@ public record RequisitionEnrichment(
 ) {
     public record StructUnitPathNode(String id, String typeDesc, String name) {}
 }
+
+
+// 3. события этих кандидатов, отсортированы в SQL по status_date
+Map<Integer, List<PendingCandidateEventRow>> eventsByCandidateId =
+        repository.findEventRowsByCandidateIds(ids).stream()
+                .collect(Collectors.groupingBy(
+                        PendingCandidateEventRow::getPendingCandidateId,
+                        LinkedHashMap::new,
+                        Collectors.toList()));
