@@ -105,4 +105,58 @@ void printSchema() {
 }
 
 
-CountActiveCandidatesAndCandidatesEventsByVacancyIdWithFiltersIT
+vacancy: {column_name=id, data_type=integer, is_nullable=NO}
+vacancy: {column_name=integration_id, data_type=integer, is_nullable=NO}
+vacancy: {column_name=requisition_guid, data_type=character varying, is_nullable=YES}
+vacancy: {column_name=vacancy_id, data_type=character varying, is_nullable=YES}
+vacancy: {column_name=vacancy_code, data_type=character varying, is_nullable=YES}
+vacancy: {column_name=vacancy_status, data_type=character varying, is_nullable=YES}
+vacancy: {column_name=last_status_change_date, data_type=timestamp without time zone, is_nullable=YES}
+vacancy: {column_name=last_name_recruiter, data_type=character varying, is_nullable=YES}
+vacancy: {column_name=first_name_recruiter, data_type=character varying, is_nullable=YES}
+vacancy: {column_name=middle_name_recruiter, data_type=character varying, is_nullable=YES}
+vacancy: {column_name=last_name_boss_recruiter, data_type=character varying, is_nullable=YES}
+vacancy: {column_name=first_name_boss_recruiter, data_type=character varying, is_nullable=YES}
+vacancy: {column_name=middle_name_boss_recruiter, data_type=character varying, is_nullable=YES}
+vacancy: {column_name=publication_id, data_type=character varying, is_nullable=YES}
+vacancy: {column_name=confidential, data_type=boolean, is_nullable=YES}
+vacancy: {column_name=referral, data_type=boolean, is_nullable=YES}
+vacancy: {column_name=last_update, data_type=timestamp without time zone, is_nullable=YES}
+vacancy: {column_name=candidates_last_update, data_type=timestamp without time zone, is_nullable=YES}
+requisitions: {column_name=id, data_type=integer, is_nullable=NO}
+requisitions: {column_name=integration_id, data_type=integer, is_nullable=NO}
+requisitions: {column_name=guid, data_type=character varying, is_nullable=NO}
+requisitions: {column_name=number, data_type=character varying, is_nullable=YES}
+requisitions: {column_name=author_name, data_type=character varying, is_nullable=YES}
+requisitions: {column_name=author_fullname, data_type=character varying, is_nullable=YES}
+requisitions: {column_name=author_pernr, data_type=character varying, is_nullable=YES}
+requisitions: {column_name=author_position, data_type=text, is_nullable=YES}
+requisitions: {column_name=author_department, data_type=text, is_nullable=YES}
+requisitions: {column_name=delegator_name, data_type=character varying, is_nullable=YES}
+requisitions: {column_name=delegator_fullname, data_type=character varying, is_nullable=YES}
+requisitions: {column_name=delegator_pernr, data_type=character varying, is_nullable=YES}
+requisitions: {column_name=delegator_position, data_type=text, is_nullable=YES}
+requisitions: {column_name=delegator_department, data_type=text, is_nullable=YES}
+requisitions: {column_name=status_code, data_type=character varying, is_nullable=YES}
+requisitions: {column_name=status_name, data_type=character varying, is_nullable=YES}
+requisitions: {column_name=created_at, data_type=timestamp without time zone, is_nullable=YES}
+requisitions: {column_name=position_type, data_type=character varying, is_nullable=YES}
+requisitions: {column_name=staff_position_name, data_type=character varying, is_nullable=YES}
+requisitions: {column_name=staff_position_id, data_type=character varying, is_nullable=YES}
+requisitions: {column_name=struct_unit_name, data_type=text, is_nullable=YES}
+requisitions: {column_name=struct_unit_id, data_type=character varying, is_nullable=YES}
+requisitions: {column_name=hiring_request_number, data_type=character varying, is_nullable=YES}
+requisitions: {column_name=hiring_request_created_date, data_type=timestamp without time zone, is_nullable=YES}
+requisitions: {column_name=hiring_request_status_code, data_type=character varying, is_nullable=YES}
+requisitions: {column_name=hiring_request_status_name, data_type=character varying, is_nullable=YES}
+requisitions: {column_name=hiring_request_candidate_name, data_type=character varying, is_nullable=YES}
+requisitions: {column_name=hiring_request_url, data_type=character varying, is_nullable=YES}
+requisitions: {column_name=computed_status, data_type=character varying, is_nullable=YES}
+requisitions: {column_name=search_text, data_type=text, is_nullable=YES}
+requisitions: {column_name=func_struct_unit_id, data_type=character varying, is_nullable=YES}
+structure_unit: {column_name=id, data_type=integer, is_nullable=NO}
+structure_unit: {column_name=requisition_uuid, data_type=character varying, is_nullable=NO}
+structure_unit: {column_name=order_number, data_type=integer, is_nullable=YES}
+structure_unit: {column_name=path_id, data_type=character varying, is_nullable=YES}
+structure_unit: {column_name=type_desc, data_type=character varying, is_nullable=YES}
+structure_unit: {column_name=path_name, data_type=character varying, is_nullable=YES}
