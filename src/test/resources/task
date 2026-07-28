@@ -160,3 +160,85 @@ structure_unit: {column_name=order_number, data_type=integer, is_nullable=YES}
 structure_unit: {column_name=path_id, data_type=character varying, is_nullable=YES}
 structure_unit: {column_name=type_desc, data_type=character varying, is_nullable=YES}
 structure_unit: {column_name=path_name, data_type=character varying, is_nullable=YES}
+
+
+
+public interface VacancyEnrichmentRepository extends Repository<VacancyEntity, Integer> {
+
+    @Query(value = """
+        select v.id            as "vacancyId",
+               r.guid          as "guid",
+               r.number        as "number",
+               r.position_type as "positionType",
+               r.staff_position_id   as "staffPositionId",
+               r.staff_position_name as "staffPositionName",
+               r.struct_unit_id      as "structUnitId",
+               r.struct_unit_name    as "structUnitName"
+        from vacancy v
+        join requisitions r on r.guid = v.requisition_guid
+        where v.id in (:vacancyIds)
+        """, nativeQuery = true)
+    List<RequisitionEnrichmentRow> findEnrichmentByVacancyIds(Collection<Integer> vacancyIds);
+
+    @Query(value = """
+        select su.requisition_uuid as "requisitionGuid",
+               su.path_id   as "id",
+               su.type_desc as "typeDesc",
+               su.path_name as "name"
+        from structure_unit su
+        where su.requisition_uuid in (:guids)
+        order by su.requisition_uuid, su.order_number
+        """, nativeQuery = true)
+    List<StructUnitPathRow> findPathsByRequisitionGuids(Collection<String> guids);
+}
+
+
+
+public interface RequisitionEnrichmentRow {
+    Integer getVacancyId();
+    String getGuid();
+    String getNumber();
+    String getPositionType();
+    String getStaffPositionId();
+    String getStaffPositionName();
+    String getStructUnitId();
+    String getStructUnitName();
+}
+
+public interface StructUnitPathRow {
+    String getRequisitionGuid();
+    String getId();
+    String getTypeDesc();
+    String getName();
+}
+
+
+private Map<Integer, RequisitionEnrichment> loadEnrichment(List<PendingCandidateRow> rows) {
+    Set<Integer> vacancyIds = rows.stream()
+            .map(PendingCandidateRow::getVacancyId)
+            .collect(Collectors.toSet());
+    if (vacancyIds.isEmpty()) {
+        return Map.of();
+    }
+
+    List<RequisitionEnrichmentRow> reqRows =
+            enrichmentRepository.findEnrichmentByVacancyIds(vacancyIds);
+
+    Map<String, List<RequisitionEnrichment.StructUnitPathNode>> pathsByGuid =
+            enrichmentRepository.findPathsByRequisitionGuids(
+                    reqRows.stream().map(RequisitionEnrichmentRow::getGuid).collect(Collectors.toSet()))
+            .stream()
+            .collect(Collectors.groupingBy(
+                    StructUnitPathRow::getRequisitionGuid,
+                    LinkedHashMap::new,   // сохранить order_number из SQL
+                    Collectors.mapping(p -> new RequisitionEnrichment.StructUnitPathNode(
+                            p.getId(), p.getTypeDesc(), p.getName()), Collectors.toList())));
+
+    return reqRows.stream().collect(Collectors.toMap(
+            RequisitionEnrichmentRow::getVacancyId,
+            r -> new RequisitionEnrichment(
+                    r.getVacancyId(), r.getGuid(), r.getNumber(), r.getPositionType(),
+                    r.getStaffPositionId(), r.getStaffPositionName(),
+                    r.getStructUnitId(), r.getStructUnitName(),
+                    pathsByGuid.getOrDefault(r.getGuid(), List.of()))));
+}
