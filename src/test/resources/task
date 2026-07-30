@@ -35,6 +35,25 @@ class OpenApiDocumentationIntegrationTest {
                 StandardCharsets.UTF_8
         );
     }
+
+@Test
+void shouldGenerateOpenApiYaml() throws Exception {
+    byte[] openApiYaml = mockMvc.perform(get("/v3/api-docs.yaml"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsByteArray();
+
+    Path outputFile = Path.of(
+            "build",
+            "generated",
+            "openapi",
+            "openapi.yaml"
+    );
+
+    Files.createDirectories(outputFile.getParent());
+    Files.write(outputFile, openApiYaml);
+}
 }
 
 
