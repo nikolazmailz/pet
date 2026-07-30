@@ -16,6 +16,8 @@ repositories {
 
 dependencies {
 //    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 //    implementation("org.springframework.boot:spring-boot-starter-validation")
 //    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
@@ -34,6 +36,15 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
+
+    testImplementation("io.kotest:kotest-runner-junit5:5.8.1")
+    testImplementation("io.kotest:kotest-assertions-core:5.8.1")
+
+    testImplementation("org.mockito:mockito-core:5.11.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.3.1")
+
+    testImplementation("io.mockk:mockk:1.12.8")
+
 //    testImplementation("org.springframework.boot:spring-boot-starter-webflux")
 //    testImplementation("io.projectreactor:reactor-test")
 //    testImplementation("org.testcontainers:junit-jupiter")
