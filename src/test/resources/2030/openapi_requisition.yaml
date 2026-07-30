@@ -1,0 +1,2953 @@
+openapi: 3.0.1
+info:
+  title: HR сервис "Личный кабинет руководителя"
+  description: Сервисы HR
+  version: 6.5.0
+servers:
+  - url: /
+    description: Default Server URL
+tags:
+  - name: Requisition
+    description: The Requisition API
+paths:
+  /vacancy-info:
+    post:
+      tags:
+        - requisition-post-vacancy-info
+        - Requisition
+      summary: Запрос на получение краткой информации о вакансии
+      operationId: postRequisitionVacancyInfo
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequisitionVacancyInfoRequest'
+        required: true
+      responses:
+        "401":
+          description: Unauthorized
+        "404":
+          description: Информация не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "200":
+          description: Информация получена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionVacancyInfoDtoOut'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /vacancy-candidates:
+    post:
+      tags:
+        - requisition-post-vacancy-candidates
+        - Requisition
+      summary: Возвращение данных кандидатов по вакансии
+      operationId: postRequisitionVacancyCandidates
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequisitionPostVacancyCandidatesRequest'
+        required: true
+      responses:
+        "200":
+          description: Формирование списка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionPostVacancyCandidatesDtoOut'
+        "401":
+          description: Unauthorized
+        "404":
+          description: Не получены данные для формирования списка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /pending-candidates:
+    post:
+      tags:
+        - pending-candidates
+        - Requisition
+      summary: "Запрос данных по кандидатам, ожидающих решения для текущего пользо\
+        вателя."
+      operationId: collectPendingCandidates
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PendingCandidatesApiRequest'
+        required: true
+      responses:
+        "401":
+          description: Unauthorized
+        "200":
+          description: Данные получены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PendingCandidatesApiResponse'
+        "404":
+          description: Данные не получены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /list:
+    post:
+      tags:
+        - requisition-post-list
+        - Requisition
+      summary: Формирование списка
+      operationId: postRequisitionList
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequisitionPostListRequest'
+        required: true
+      responses:
+        "401":
+          description: Unauthorized
+        "200":
+          description: Формирование списка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionPostListDtoOut'
+        "404":
+          description: Не получены данные для формирования списка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /interviewers-action:
+    post:
+      tags:
+        - requisition-interviewers-action
+        - Requisition
+      summary: Отправка действий по интервьюерам
+      operationId: getInterviewersActionResponse
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequisitionInterviewerActionRequest'
+        required: true
+      responses:
+        "404":
+          description: Интервьюеры не найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+        "200":
+          description: Интервьюеры получены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionGetInterviewersOut'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /candidate-recommendation:
+    post:
+      tags:
+        - requisition-post-candidate-recommendation
+        - Requisition
+      summary: Запрос на отправку рекомендации по кандидату
+      operationId: postRequisitionCandidateRecommendation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequisitionCandidateRecommendationRequest'
+        required: true
+      responses:
+        "404":
+          description: Не отправлена рекомендация по кандидату
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "200":
+          description: Рекомендация отправлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionCandidateResumeDto'
+        "401":
+          description: Unauthorized
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /candidate-action:
+    post:
+      tags:
+        - requisition-post-candidate-action
+        - Requisition
+      summary: Запрос на обновление данных кандидата на вакансию
+      operationId: postRequisitionCandidateAction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequisitionCandidateActionRequest'
+        required: true
+      responses:
+        "200":
+          description: Формирование списка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionGeneralCandidateDtoOut'
+        "404":
+          description: Не обновлены данные кандидата на вакансию
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /add-comment:
+    post:
+      tags:
+        - requisition-post-add-comment
+        - Requisition
+      summary: Запрос на добавление комментария кандидату
+      operationId: postRequisitionAddComment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequisitionAddCommentRequest'
+        required: true
+      responses:
+        "200":
+          description: Комментарий добавлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionGeneralCandidateDtoOut'
+        "401":
+          description: Unauthorized
+        "404":
+          description: Не добавлен комментарий
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /vacancy-statistics:
+    get:
+      tags:
+        - requisition-vacancy-statistics
+        - Requisition
+      summary: Получение данных по воронке подбора
+      operationId: getVacancyStatistic
+      parameters:
+        - name: vacancyId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Найдены данные по воронке подбора
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionVacancyStatisticDto'
+        "404":
+          description: Данные по воронке подбора не найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /vacancy-details:
+    get:
+      tags:
+        - requisition-vacancy-details
+        - Requisition
+      summary: Получение детальных данных по вакансии
+      operationId: getRequisitionVacancyDetails
+      parameters:
+        - name: vacancyId
+          in: query
+          required: true
+          schema:
+            maxLength: 19
+            minLength: 0
+            type: string
+        - name: delegatorTn
+          in: query
+          required: false
+          schema:
+            maxLength: 8
+            minLength: 0
+            type: string
+      responses:
+        "200":
+          description: Найдены детальные данные по вакансии
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionVacancyDetailsDtoOut'
+        "401":
+          description: Unauthorized
+        "404":
+          description: Детальные данные по вакансии не найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /user-info:
+    get:
+      tags:
+        - requisition-user-info
+        - Requisition
+      summary: Получение данных о текущем пользователе
+      operationId: getRequisitionUserInfo
+      responses:
+        "200":
+          description: Найдены данные о текущем пользователе
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionUserInfoDtoOut'
+        "404":
+          description: Данные о текущем пользователе не найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /ui-state:
+    get:
+      tags:
+        - requisition-ui-state
+        - Requisition
+      summary: Получение статуса интерфейса
+      operationId: getRequisitionUiState
+      parameters:
+        - name: delegatorTn
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "401":
+          description: Unauthorized
+        "404":
+          description: Статус интерфейса не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "200":
+          description: Найден статус интерфейса
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionUiStateDtoOut'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /staff-search:
+    get:
+      tags:
+        - requisition-staff-search
+        - Requisition
+      summary: Получение сотрудников банка
+      operationId: getRequisitionStaffSearch
+      parameters:
+        - name: searchStr
+          in: query
+          description: Строка поиска
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Найдены данные о сотрудниках банка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionStaffSearchDtoOut'
+        "404":
+          description: Данные о сотрудниках банка не найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /org-units-allowable:
+    get:
+      tags:
+        - requisition-org-units-allowable
+        - Requisition
+      summary: Получение доступных орг-единиц
+      operationId: getRequisitionOrgUnitsAllowable
+      responses:
+        "200":
+          description: Найдены доступные орг-единицы
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionOrgUnitsAllowableDtoOut'
+        "401":
+          description: Unauthorized
+        "404":
+          description: Доступные орг-единицы не найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /get-interviewers:
+    get:
+      tags:
+        - requisition-get-interviewers
+        - Requisition
+      summary: Получение интервьюеров
+      operationId: getInterviewers
+      parameters:
+        - name: vacancyId
+          in: query
+          required: true
+          schema:
+            maxLength: 19
+            minLength: 0
+            type: string
+      responses:
+        "200":
+          description: Интервьюеры получены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionGetInterviewersOut'
+        "401":
+          description: Unauthorized
+        "404":
+          description: Интервьюеры получены не найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /dict:
+    get:
+      tags:
+        - requisition-dict
+        - Requisition
+      summary: Получение справочников
+      operationId: getRequisitionDict
+      responses:
+        "404":
+          description: Справочники не найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+        "200":
+          description: Найдены справочники
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionDictDtoOut'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /delegations:
+    get:
+      tags:
+        - requisition-delegations
+        - Requisition
+      summary: Получение статуса делегирования
+      operationId: getRequisitionDelegations
+      responses:
+        "401":
+          description: Unauthorized
+        "404":
+          description: Статус делегирования не найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "200":
+          description: Найден статус делегирования
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionDelegationsDtoOut'
+      security:
+        - bearerAuth: [ ]
+  /candidate-resume:
+    get:
+      tags:
+        - requisition-candidate-resume
+        - Requisition
+      summary: Получение резюме по кандидату
+      operationId: getCandidateResume
+      parameters:
+        - name: vacancyId
+          in: query
+          required: true
+          schema:
+            maxLength: 20
+            minLength: 0
+            type: string
+        - name: candidateId
+          in: query
+          required: true
+          schema:
+            maxLength: 20
+            minLength: 0
+            type: string
+      responses:
+        "401":
+          description: Unauthorized
+        "404":
+          description: Информация не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "200":
+          description: Резюме по кандидату получена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionCandidateResumeDto'
+      security:
+        - bearerAuth: [ ]
+  /candidate-info:
+    get:
+      tags:
+        - requisition-candidate-info
+        - Requisition
+      summary: Получение информации по кандидату
+      operationId: getCandidateInfo
+      parameters:
+        - name: vacancyId
+          in: query
+          required: true
+          schema:
+            maxLength: 20
+            minLength: 0
+            type: string
+        - name: candidateId
+          in: query
+          required: true
+          schema:
+            maxLength: 20
+            minLength: 0
+            type: string
+      responses:
+        "200":
+          description: Информация по кандидату получена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequisitionGeneralCandidateDtoOut'
+        "401":
+          description: Unauthorized
+        "404":
+          description: Информация не найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+components:
+  schemas:
+    RequisitionVacancyInfoReqItem:
+      required:
+        - guid
+      type: object
+      properties:
+        guid:
+          maxLength: 36
+          type: string
+          description: GUID заявки на подбор
+      description: Объект с гуидом заявки на подбор
+    RequisitionVacancyInfoRequest:
+      type: object
+      properties:
+        requisitions:
+          maxItems: 99999
+          type: array
+          description: Список информации по заявкам на подбор
+          items:
+            $ref: '#/components/schemas/RequisitionVacancyInfoReqItem'
+      description: Тело запроса для получения информации по вакансии заявки на подбор
+    SapErrorDetails:
+      type: object
+      properties:
+        code:
+          maxLength: 255
+          type: string
+          description: Код ошибки
+          nullable: true
+          example: '''510'''
+        message:
+          maxLength: 1000
+          type: string
+          description: Текст ошибки
+          nullable: true
+          example: Отсутствуют полномочия к данной группе
+        '@SAP__common.Severity':
+          maxLength: 255
+          type: string
+          description: Уровень критичности
+          nullable: true
+          example: Error
+      description: Массив параметров деталей ошибки от сап
+    ServiceError:
+      type: object
+      properties:
+        message:
+          maxLength: 4000
+          type: string
+          description: Текст ошибки
+          nullable: true
+          example: Ответ не найден
+        code:
+          maxLength: 200
+          type: string
+          description: Код ошибки
+          nullable: true
+        logId:
+          maxLength: 200
+          type: string
+          description: Трейс ошибки
+          nullable: true
+        details:
+          maxItems: 99999
+          uniqueItems: true
+          type: array
+          description: Массив с детализированными данными по ошибке от сервисов
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SapErrorDetails'
+      description: Массив параметров деталей ошибки от сервиса
+      nullable: true
+    ServiceErrorDto:
+      type: object
+      properties:
+        ServiceError:
+          $ref: '#/components/schemas/ServiceError'
+      description: Сущность ошибки от сервисов
+    RequisitionVacancyInfoData:
+      required:
+        - guid
+        - statusLKRName
+        - vacancyId
+      type: object
+      properties:
+        guid:
+          maxLength: 36
+          type: string
+          description: GUID заявки на подбор
+        statusLKRName:
+          maxLength: 35
+          type: string
+          description: Наименование статуса ЛКР из таблицы status_mapping
+        vacancyId:
+          maxLength: 20
+          type: string
+          description: Идентификатор вакансии
+      description: Объект с информацией по вакансии и заявке на подбор
+    RequisitionVacancyInfoDtoOut:
+      type: object
+      properties:
+        requisitions:
+          maxItems: 99999
+          type: array
+          description: Список информации по заявкам на подбор
+          items:
+            $ref: '#/components/schemas/RequisitionVacancyInfoRequisItem'
+      description: Ответ на получение информации по заявке на подбор
+    RequisitionVacancyInfoRequisItem:
+      required:
+        - vacancyInfo
+      type: object
+      properties:
+        vacancyInfo:
+          $ref: '#/components/schemas/RequisitionVacancyInfoData'
+      description: Информация по заявке на подбор
+    RequisitionFilterEventStatusCodeItem:
+      type: object
+      properties:
+        statusCode:
+          maxLength: 255
+          type: string
+          description: Код статуса
+          nullable: true
+        stageCode:
+          maxLength: 255
+          type: string
+          description: Код этапа
+          nullable: true
+      description: Элемент списка фильтра по кодам статусов события
+    RequisitionPostVacancyCandidatesRequest:
+      required:
+        - candidateTabsCode
+        - page
+        - pageSize
+        - sortAttribute
+        - sortDirection
+        - vacancyId
+      type: object
+      properties:
+        uuid:
+          type: string
+        responseCode:
+          type: string
+        errorMessage:
+          type: string
+        requestType:
+          type: string
+        adLogin:
+          type: string
+        sessionId:
+          type: string
+        channel:
+          type: string
+        traceId:
+          type: string
+        realm:
+          type: string
+        fileUuid:
+          type: string
+        vacancyId:
+          maxLength: 20
+          type: string
+          description: Уникальный идентификатор вакансии
+        candidateTabsCode:
+          maxLength: 20
+          type: string
+          description: Код вкладки
+        page:
+          maximum: 1000000
+          minimum: 1
+          type: integer
+          description: Номер страницы
+          format: int32
+        pageSize:
+          maximum: 500
+          minimum: 1
+          type: integer
+          description: 'Размер страницы '
+          format: int32
+        filter:
+          $ref: '#/components/schemas/RequisitionVacancyCandidatesFiltersReq'
+        skipCache:
+          type: boolean
+          description: Признак скип кэша при действиях с кандидатами
+          nullable: true
+        sortAttribute:
+          maxLength: 11
+          type: string
+          description: Атрибут сортировки
+        sortDirection:
+          maxLength: 5
+          type: string
+          description: Направление сортировки
+      description: Запрос на список кандидатов по вакансии
+      nullable: true
+    RequisitionVacancyCandidatesFiltersReq:
+      required:
+        - search
+      type: object
+      properties:
+        search:
+          maxLength: 200
+          type: string
+          description: Свободный поиск
+          example: разработчик Java
+        eventCodeList:
+          maxItems: 999999
+          minItems: 0
+          type: array
+          description: Фильтр по этапам рассмотрения
+          nullable: true
+          items:
+            type: string
+        eventStatusCodeList:
+          maxItems: 999999
+          minItems: 0
+          type: array
+          description: Фильтр по статусам этапов рассмотрения
+          nullable: true
+          items:
+            $ref: '#/components/schemas/RequisitionFilterEventStatusCodeItem'
+      description: Корневой объект фильтров кандидатов по вакансии
+      nullable: true
+    CandidateEventCodeItem:
+      type: object
+      properties:
+        codeValue:
+          maxLength: 20
+          type: string
+          description: Код этапа
+          nullable: true
+          example: overview
+      description: Этапы кандидатов
+    CandidateEventItem:
+      type: object
+      properties:
+        eventCode:
+          maxLength: 20
+          type: string
+          description: Код этапа
+          nullable: true
+          example: overview
+        statusCode:
+          maxLength: 20
+          type: string
+          description: Код статуса
+          nullable: true
+          example: overview
+        statusDate:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Дата запланированного события
+          format: int64
+          nullable: true
+          example: 0
+        resultDate:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Дата установки результата
+          format: int64
+          nullable: true
+          example: 0
+        days:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Количество дней в статусе
+          format: int32
+          nullable: true
+        expirationZone:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Зона просрочки
+          format: int32
+          nullable: true
+      description: Данные этапов кандидатов
+      nullable: true
+    CandidateEventStatusCodeItem:
+      type: object
+      properties:
+        codeValue:
+          maxLength: 20
+          type: string
+          description: Статус этапа кандидата
+          nullable: true
+          example: failed
+        eventCode:
+          maxLength: 20
+          type: string
+          description: Код этапа кандидата
+          nullable: true
+          example: overview
+      description: Статусы этапов кандидатов
+    CandidateItem:
+      required:
+        - candidateId
+      type: object
+      properties:
+        candidateId:
+          maxLength: 20
+          type: string
+          description: Уникальный идентификатор кандидата
+        fullName:
+          maxLength: 132
+          type: string
+          description: ФИО кандидата
+          nullable: true
+        events:
+          $ref: '#/components/schemas/CandidateEventItem'
+      description: Данные кандидата
+    CandidateTabWithCountItem:
+      type: object
+      properties:
+        code:
+          maxLength: 50
+          minLength: 1
+          type: string
+          description: Код вкладки
+          nullable: true
+          example: overview
+        count:
+          maximum: 2000000000
+          minimum: 0
+          type: integer
+          description: Кол-во записей на вкладке
+          format: int32
+          nullable: true
+      description: Вкладка кандидатов
+    RequisitionPostVacancyCandidatesDtoOut:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/VacancyCandidatesData'
+      description: Ответ на список данных по кандидатам вакансии
+    VacancyCandidatesData:
+      required:
+        - page
+        - pageSize
+      type: object
+      properties:
+        tabs:
+          maxItems: 100
+          minItems: 0
+          type: array
+          description: Массив с данными по вкладкам
+          nullable: true
+          items:
+            $ref: '#/components/schemas/CandidateTabWithCountItem'
+        eventCode:
+          maxItems: 100
+          minItems: 0
+          type: array
+          description: Массив с уникальными записями кодов этапов
+          nullable: true
+          items:
+            $ref: '#/components/schemas/CandidateEventCodeItem'
+        eventStatusCode:
+          maxItems: 100
+          minItems: 0
+          type: array
+          description: Массив с уникальными записями кодов статусов
+          nullable: true
+          items:
+            $ref: '#/components/schemas/CandidateEventStatusCodeItem'
+        page:
+          maximum: 1000000
+          minimum: 1
+          type: integer
+          description: Номер страницы
+          format: int32
+        pageSize:
+          maximum: 500
+          minimum: 1
+          type: integer
+          description: 'Размер страницы '
+          format: int32
+        candidates:
+          maxItems: 99999
+          minItems: 0
+          type: array
+          description: Массив с данными по кандидатам
+          nullable: true
+          items:
+            $ref: '#/components/schemas/CandidateItem'
+      description: Данные по кандидатам вакансии
+      nullable: true
+    PendingCandidatesApiRequest:
+      required:
+        - page
+        - size
+      type: object
+      properties:
+        page:
+          maximum: 1000000
+          minimum: 1
+          type: integer
+          description: Номер страницы
+          format: int32
+        size:
+          maximum: 500
+          minimum: 1
+          type: integer
+          description: 'Размер страницы '
+          format: int32
+        filter:
+          $ref: '#/components/schemas/PendingCandidatesFilter'
+      description: "Запрос страницы кандидатов, ожидающих действия"
+    PendingCandidatesFilter:
+      type: object
+      properties:
+        search:
+          maxLength: 255
+          type: string
+          description: Строка поиска
+          nullable: true
+          example: Иванов
+        eventCodeList:
+          maxItems: 100
+          minItems: 0
+          type: array
+          items:
+            maxLength: 255
+            type: string
+            description: Коды этапов
+            nullable: true
+      description: "Фильтры списка кандидатов, ожидающих действия"
+      nullable: true
+    EventCodeView:
+      type: object
+      properties:
+        codeValue:
+          maxLength: 255
+          type: string
+          description: Значение кода
+          example: interview
+      description: Код этапа
+    PendingCandidateEventView:
+      required:
+        - code
+      type: object
+      properties:
+        code:
+          maxLength: 255
+          type: string
+          description: Код этапа
+          example: interview
+        days:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Дней на этапе
+          format: int32
+          nullable: true
+          example: 5
+        expirationZone:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Зона истечения срока
+          format: int32
+          nullable: true
+          example: 2
+      description: Этап кандидата
+    PendingCandidateView:
+      required:
+        - candidateId
+        - fullName
+        - requisition
+        - vacancyId
+      type: object
+      properties:
+        candidateId:
+          maximum: 999999999999999
+          minimum: -999999999999999
+          type: integer
+          description: Идентификатор кандидата
+          format: int32
+          example: 10000123
+        vacancyId:
+          maxLength: 255
+          type: string
+          description: Идентификатор вакансии
+          example: "50001234"
+        fullName:
+          maxLength: 255
+          type: string
+          description: ФИО кандидата
+          example: Иванов Иван Иванович
+        requisition:
+          $ref: '#/components/schemas/RequisitionView'
+        events:
+          maxItems: 1000
+          type: array
+          description: Этапы кандидата
+          items:
+            $ref: '#/components/schemas/PendingCandidateEventView'
+      description: "Кандидат, ожидающий действия"
+    PendingCandidatesApiResponse:
+      required:
+        - data
+      type: object
+      properties:
+        uuid:
+          type: string
+        responseCode:
+          type: string
+        errorMessage:
+          type: string
+        tabNumber:
+          type: string
+        adLogin:
+          type: string
+        sessionId:
+          type: string
+        channel:
+          type: string
+        rolesList:
+          type: string
+        traceId:
+          type: string
+        requestType:
+          type: string
+        requestTs:
+          type: string
+        responseTs:
+          type: string
+        realm:
+          type: string
+        fileUuid:
+          type: string
+        data:
+          $ref: '#/components/schemas/PendingCandidatesPage'
+      description: "Обёртка ответа списка кандидатов, ожидающих действия"
+    PendingCandidatesPage:
+      required:
+        - count
+        - page
+        - pageSize
+      type: object
+      properties:
+        page:
+          maximum: 99999999
+          minimum: 1
+          type: integer
+          description: Номер страницы
+          format: int32
+          example: 1
+        pageSize:
+          maximum: 200
+          minimum: 1
+          type: integer
+          description: Размер страницы
+          format: int32
+          example: 50
+        count:
+          maximum: 99999999999999
+          minimum: 0
+          type: integer
+          description: Общее количество кандидатов
+          format: int64
+          example: 137
+        eventCode:
+          maxItems: 500
+          type: array
+          description: Доступные коды этапов
+          items:
+            $ref: '#/components/schemas/EventCodeView'
+        candidates:
+          maxItems: 500
+          type: array
+          description: Кандидаты на странице
+          items:
+            $ref: '#/components/schemas/PendingCandidateView'
+      description: "Страница кандидатов, ожидающих действия"
+    RequisitionView:
+      required:
+        - guid
+        - number
+      type: object
+      properties:
+        guid:
+          maxLength: 255
+          type: string
+          description: GUID заявки
+          example: a1b2c3d4-...
+        number:
+          maxLength: 255
+          type: string
+          description: Номер заявки
+          example: REQ-2026-000123
+        positionType:
+          maxLength: 255
+          type: string
+          description: Тип позиции
+          nullable: true
+          example: STAFF
+        staffPosition:
+          $ref: '#/components/schemas/StaffPositionView'
+        structUnitName:
+          maxLength: 255
+          type: string
+          description: Название структурного подразделения
+          nullable: true
+        structUnitId:
+          maxLength: 255
+          type: string
+          description: Идентификатор структурного подразделения
+          nullable: true
+        structUnitPathList:
+          maxItems: 1000
+          type: array
+          description: Путь по структуре подразделений
+          items:
+            $ref: '#/components/schemas/StructUnitPathView'
+      description: Заявка
+    StaffPositionView:
+      required:
+        - id
+        - name
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификатор позиции
+        name:
+          maxLength: 255
+          type: string
+          description: Название позиции
+      description: Штатная позиция
+      nullable: true
+    StructUnitPathView:
+      required:
+        - id
+        - name
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификатор узла
+        typeDesc:
+          maxLength: 255
+          type: string
+          description: Описание типа узла
+          nullable: true
+          example: Департамент
+        name:
+          maxLength: 255
+          type: string
+          description: Название узла
+      description: Узел пути структуры подразделений
+    RequisitionFiltersPeriodFilterReq:
+      type: object
+      properties:
+        dateFrom:
+          maximum: 3250368000000
+          minimum: 0
+          type: integer
+          description: Дата начала
+          format: int64
+          nullable: true
+        dateTo:
+          maximum: 32503680000000
+          minimum: 0
+          type: integer
+          description: Дата окончания
+          format: int64
+          nullable: true
+      description: Фильтр периодов
+    RequisitionFiltersReq:
+      required:
+        - periodFilter
+        - search
+        - structureFilter
+      type: object
+      properties:
+        search:
+          maxLength: 200
+          type: string
+          description: Поисковая строка
+          example: '''8'''
+        structureFilter:
+          $ref: '#/components/schemas/RequisitionFiltersStructureFilterReq'
+        periodFilter:
+          $ref: '#/components/schemas/RequisitionFiltersPeriodFilterReq'
+        statusCodeList:
+          maxItems: 30
+          type: array
+          description: Фильтр статусов
+          nullable: true
+          items:
+            type: string
+      description: Корневой объект фильтров
+      nullable: true
+    RequisitionFiltersStructureFilterReq:
+      type: object
+      properties:
+        orgUnitIdList:
+          maxItems: 30
+          type: array
+          description: Фильтр идентификаторов орг.структур
+          nullable: true
+          items:
+            type: string
+        funcStructUnitIdList:
+          maxItems: 8
+          type: array
+          description: Фильтр идентификаторов функциональных структур
+          nullable: true
+          items:
+            type: string
+      description: Фильтр орг.структур
+    RequisitionPostListRequest:
+      required:
+        - page
+        - size
+      type: object
+      properties:
+        uuid:
+          type: string
+        responseCode:
+          type: string
+        errorMessage:
+          type: string
+        requestType:
+          type: string
+        adLogin:
+          type: string
+        sessionId:
+          type: string
+        channel:
+          type: string
+        traceId:
+          type: string
+        realm:
+          type: string
+        fileUuid:
+          type: string
+        tab:
+          maxLength: 50
+          minLength: 1
+          type: string
+          description: Код вкладки
+          nullable: true
+        delegatorTn:
+          maxLength: 8
+          type: string
+          description: '''Табельный номер выбранного делегатора'''
+          nullable: true
+        filters:
+          $ref: '#/components/schemas/RequisitionFiltersReq'
+        page:
+          maximum: 1000000
+          minimum: 1
+          type: integer
+          description: Номер страницы
+          format: int32
+        size:
+          maximum: 500
+          minimum: 1
+          type: integer
+          description: 'Размер страницы '
+          format: int32
+      description: Запрос на список
+      nullable: true
+    RequisitionHiringRequest:
+      required:
+        - candidateName
+        - createdDate
+        - number
+        - status
+        - url
+      type: object
+      properties:
+        number:
+          maxLength: 10
+          type: string
+          description: Номер заявки на прием
+          example: '''112212'''
+        candidateName:
+          maxLength: 255
+          type: string
+          description: "ФИО финального соискателя, для которого создана заявка на\
+            \ прием"
+          example: Лимитова Декрета Петровна
+        status:
+          $ref: '#/components/schemas/RequisitionHiringRequestStatus'
+        createdDate:
+          maximum: 9007199254740991
+          minimum: 0
+          type: integer
+          description: Дата создания зяаявки
+          format: int64
+        url:
+          maxLength: 2000
+          type: string
+          description: Ссылка на заявку на прием
+      description: Связанная заявка на прием
+    RequisitionHiringRequestStatus:
+      required:
+        - code
+        - name
+      type: object
+      properties:
+        code:
+          maxLength: 50
+          type: string
+          description: Код статуса заявки на прием
+          example: '''112212'''
+        name:
+          maxLength: 200
+          type: string
+          description: Наименование статуса заявки на прием.
+          example: Лимитова Декрета Петровна
+      description: Статус связанной заявки на прием
+    RequisitionListAuthor:
+      required:
+        - fullName
+        - pernr
+      type: object
+      properties:
+        pernr:
+          maxLength: 8
+          type: string
+          description: Идентификатор
+          example: '''112212'''
+        fullName:
+          maxLength: 255
+          type: string
+          description: Полное ФИО
+          example: Лимитова Декрета Петровна
+        name:
+          maxLength: 255
+          type: string
+          description: Фамилия и инициалы
+          nullable: true
+          example: Лимитова Д.Д.
+        position:
+          maxLength: 4000
+          type: string
+          description: Штатная должность
+          nullable: true
+        department:
+          maxLength: 4000
+          type: string
+          description: Департамент
+          nullable: true
+          example: Петровна
+      description: Данные о сотруднике авторе заявки
+    RequisitionListDelegator:
+      required:
+        - fullName
+        - pernr
+      type: object
+      properties:
+        pernr:
+          maxLength: 8
+          type: string
+          description: Идентификатор
+          example: '''112212'''
+        fullName:
+          maxLength: 255
+          type: string
+          description: Полное ФИО
+          example: Лимитова Декрета Петровна
+        name:
+          maxLength: 255
+          type: string
+          description: Фамилия и инициалы
+          nullable: true
+          example: Лимитова Д.Д.
+        position:
+          maxLength: 4000
+          type: string
+          description: Штатная должность
+          nullable: true
+        department:
+          maxLength: 4000
+          type: string
+          description: Департамент
+          nullable: true
+          example: Петровна
+      description: Данные о сотруднике делегаторе заявки
+    RequisitionListItem:
+      required:
+        - author
+        - createdDate
+        - delegator
+        - guid
+        - hiringRequest
+        - number
+        - positionType
+        - staffPosition
+        - statusLKRCode
+        - vacancyId
+      type: object
+      properties:
+        guid:
+          maxLength: 36
+          type: string
+          description: GUID заявки на подбор
+        number:
+          maxLength: 12
+          type: string
+          description: Номер заявки на подбор.
+        vacancyId:
+          maxLength: 20
+          type: string
+          description: Id вакансии
+        author:
+          $ref: '#/components/schemas/RequisitionListAuthor'
+        delegator:
+          $ref: '#/components/schemas/RequisitionListDelegator'
+        statusLKRCode:
+          maxLength: 50
+          type: string
+          description: Код ЛКР-статуса заявки.
+        positionType:
+          maxLength: 50
+          type: string
+          description: Тип должности.
+        createdDate:
+          maximum: 32503680000000
+          minimum: 0
+          type: integer
+          description: Дата создания зяаявки
+          format: int64
+        staffPosition:
+          $ref: '#/components/schemas/RequisitionStaffPosition'
+        structUnitName:
+          maxLength: 4000
+          type: string
+          description: "Подразделение, для которого создана заявка на прием. Назва\
+            ние."
+          nullable: true
+        structUnitId:
+          maxLength: 8
+          type: string
+          description: "Подразделение, для которого создана заявка на прием. Код."
+          nullable: true
+        funcStructUnitId:
+          maxLength: 8
+          type: string
+          description: Фильтр идентификаторов функциональных структур
+          nullable: true
+        structUnitPathList:
+          maxItems: 200
+          minItems: 0
+          type: array
+          description: Путь оргструктуры (список подразделений) до целевого подразделения
+            заявки.
+          nullable: true
+          items:
+            $ref: '#/components/schemas/RequisitionStructureUnitPathListItem'
+        hiringRequest:
+          $ref: '#/components/schemas/RequisitionHiringRequest'
+      description: Список заявок
+    RequisitionPostListDtoOut:
+      required:
+        - page
+        - size
+        - total
+        - userTn
+      type: object
+      properties:
+        requisitionList:
+          maxItems: 99999
+          minItems: 0
+          type: array
+          description: Список заявок
+          nullable: true
+          items:
+            $ref: '#/components/schemas/RequisitionListItem'
+        userTn:
+          maxLength: 200
+          type: string
+          description: Таб.номер юзера
+          example: "152285"
+        page:
+          maximum: 1000000
+          minimum: 1
+          type: integer
+          description: Номер страницы
+          format: int32
+        size:
+          maximum: 500
+          minimum: 1
+          type: integer
+          description: Размер страницы
+          format: int32
+        total:
+          maximum: 2000000000
+          minimum: 0
+          type: integer
+          description: Общее кол-во записей по вкладке и фильтрам
+          format: int32
+      description: Ответ на список заявок
+    RequisitionStaffPosition:
+      required:
+        - id
+        - name
+      type: object
+      properties:
+        id:
+          maxLength: 8
+          type: string
+          description: Штатная должность
+        name:
+          maxLength: 255
+          type: string
+          description: Штатная должность. Наименование
+      description: Штатная должность
+    RequisitionStructureUnitPathListItem:
+      required:
+        - id
+        - typeDesc
+      type: object
+      properties:
+        id:
+          maxLength: 8
+          type: string
+          description: Подразделение. Код.
+        typeDesc:
+          maxLength: 40
+          type: string
+          description: Наименование типа подразделения.
+        name:
+          maxLength: 255
+          type: string
+          description: Подразделение. Наименование.
+          nullable: true
+      description: Путь оргструктуры (список подразделений) до целевого подразделения
+        заявки
+    InterviewerActionItem:
+      type: object
+      properties:
+        pernrInterviewer:
+          maxLength: 8
+          type: string
+          description: Табельный номер интервьюера
+          nullable: true
+        mainRole:
+          type: boolean
+          description: Признак основного интервьюера
+          nullable: true
+        actionType:
+          maxLength: 11
+          type: string
+          description: Тип действия
+          nullable: true
+      description: Участник интервью
+    RequisitionInterviewerActionRequest:
+      required:
+        - vacancyId
+      type: object
+      properties:
+        vacancyId:
+          maxLength: 20
+          type: string
+          description: Уникальный идентификатор вакансии
+          example: '''123123123'''
+        pernr:
+          maxLength: 8
+          type: string
+          description: Табельный номер
+          nullable: true
+          example: '''152285'''
+        interviewers:
+          maxItems: 5
+          type: array
+          items:
+            $ref: '#/components/schemas/InterviewerActionItem'
+      description: Тело запроса для отправки действий по интервьюерам
+    EmployeePositionShort:
+      required:
+        - fullName
+        - id
+      type: object
+      properties:
+        fullName:
+          maxLength: 255
+          type: string
+          description: Наименование должности сотрудника
+          example: Руководитель
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификатор должности сотрудника
+      description: Объект со штатной должностью сотрудника
+      nullable: true
+    InterviewerItem:
+      type: object
+      properties:
+        id:
+          maxLength: 40
+          type: string
+          description: Табельный номер интервьюера
+          nullable: true
+        firstName:
+          maxLength: 40
+          type: string
+          description: Имя интервьюера
+          nullable: true
+        lastName:
+          maxLength: 40
+          type: string
+          description: Фамилия интервьюера
+          nullable: true
+        middleName:
+          maxLength: 40
+          type: string
+          description: Отчество интервьюера
+          nullable: true
+        position:
+          $ref: '#/components/schemas/EmployeePositionShort'
+        mainRole:
+          type: boolean
+          nullable: true
+      description: Участник интервью
+    RequisitionGetInterviewersDataDto:
+      required:
+        - interviewers
+      type: object
+      properties:
+        interviewers:
+          maxItems: 5
+          type: array
+          description: Участники интервью
+          items:
+            $ref: '#/components/schemas/InterviewerItem'
+        actionsVisible:
+          type: boolean
+          description: Поле видимости для действий с интервьюерами
+      description: Корневой объект успешного ответа
+    RequisitionGetInterviewersOut:
+      required:
+        - data
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/RequisitionGetInterviewersDataDto'
+      description: Ответ на запрос получения интервьюеров
+    RequisitionCandidateRecommendationRequest:
+      required:
+        - email
+        - vacancyId
+      type: object
+      properties:
+        vacancyId:
+          maxLength: 20
+          type: string
+          description: Идентификатор вакансии
+        email:
+          maxLength: 36
+          type: string
+          description: Почта Пользователя ЛКР
+      description: Тело запроса на передачу рекомендованного кандидата
+    RequisitionCandidateResumeDto:
+      type: object
+      properties:
+        resumeId:
+          maxLength: 36
+          type: string
+          description: Идентификатор резюме
+          nullable: true
+        candidateId:
+          maxLength: 20
+          type: string
+          description: Идентификатор кандидата
+          nullable: true
+        vacancyId:
+          maxLength: 20
+          type: string
+          description: Идентификатор вакансии
+          nullable: true
+        filename:
+          maxLength: 255
+          type: string
+          description: Наименование файла
+          nullable: true
+        base64:
+          maxLength: 999999999
+          type: string
+          description: Содержимое резюме в формате base64
+          nullable: true
+      description: Ответ на запрос получения резюме по кандидату
+    RequisitionCandidateActionRequest:
+      required:
+        - candidateId
+        - vacancyId
+      type: object
+      properties:
+        vacancyId:
+          maxLength: 20
+          type: string
+          description: Идентификатор вакансии
+        candidateId:
+          maxLength: 20
+          type: string
+          description: Идентификатор кандидата
+        eventId:
+          maxLength: 20
+          type: string
+          description: Идентификатор этапа
+          nullable: true
+        eventCode:
+          maxLength: 20
+          type: string
+          description: Код этапа
+          nullable: true
+          example: overview
+        statusCode:
+          maxLength: 20
+          type: string
+          description: Код статуса
+          nullable: true
+          example: overview
+        comment:
+          maxLength: 255
+          type: string
+          description: Текст комментария
+          nullable: true
+          example: overview
+      description: Тело запроса для обновления данных кандидата
+    RequisitionCandidateInfoCurrency:
+      type: object
+      properties:
+        currentCode:
+          maxLength: 3
+          type: string
+          description: currentCode
+          nullable: true
+      description: Объект с данными о валюте
+    RequisitionCandidateInfoEmployee:
+      type: object
+      properties:
+        id:
+          maxLength: 40
+          type: string
+          description: Табельный номер сотрудника
+          nullable: true
+        firstName:
+          maxLength: 40
+          type: string
+          description: Имя сотрудника
+          nullable: true
+        lastName:
+          maxLength: 40
+          type: string
+          description: Фамилия сотрудника
+          nullable: true
+        middleName:
+          maxLength: 40
+          type: string
+          description: Отчество сотрудника
+          nullable: true
+        position:
+          $ref: '#/components/schemas/EmployeePositionShort'
+      description: Данные сотрудника при возвращении информации по кандидату
+    RequisitionGeneralCandidateDtoOut:
+      type: object
+      properties:
+        candidate:
+          $ref: '#/components/schemas/RequisitionGeneralCandidateInfo'
+      description: Общее дто для работы с кандидатами
+    RequisitionGeneralCandidateInfo:
+      required:
+        - activePriem
+        - currency
+        - email
+        - events
+        - fullName
+        - hiringRequest
+        - mobilePhone
+        - positionType
+        - resumeId
+        - staffPosition
+        - structUnitId
+      type: object
+      properties:
+        fullName:
+          maxLength: 132
+          type: string
+          description: ФИО кандидата
+        email:
+          maxLength: 120
+          type: string
+          description: Почта
+        mobilePhone:
+          maxLength: 120
+          type: string
+          description: Номер телефона
+        city:
+          maxLength: 120
+          type: string
+          description: Город проживания
+          nullable: true
+        salary:
+          maximum: 10000000
+          minimum: 0
+          type: integer
+          description: Уровень вознаграждения
+          format: int32
+          nullable: true
+        resumeId:
+          maxLength: 36
+          type: string
+          description: Резюме
+        positionType:
+          maxLength: 50
+          type: string
+          description: Тип должности
+        structUnitName:
+          maxLength: 255
+          type: string
+          description: "Подразделение, для которого создана заявка на подбор"
+          nullable: true
+        structUnitId:
+          maxLength: 8
+          type: string
+          description: ИД Подразделения
+        staffPosition:
+          $ref: '#/components/schemas/RequisitionStaffPosition'
+        currency:
+          $ref: '#/components/schemas/RequisitionCandidateInfoCurrency'
+        hiringRequest:
+          $ref: '#/components/schemas/RequisitionHiringRequest'
+        structUnitPath:
+          maxItems: 99
+          minItems: 1
+          type: array
+          description: Массив данных о пути к подразделению из заявки на подбор
+          items:
+            $ref: '#/components/schemas/RequisitionStructureUnitPathListItem'
+        events:
+          maxItems: 999999
+          type: array
+          description: История кандидата по статусам этапов рассмотрения
+          items:
+            $ref: '#/components/schemas/RequisitionGeneralCandidateInfoEvent'
+        activePriem:
+          type: boolean
+          description: Признак приёмв кандидата
+      description: Общая информация по кандидату
+      nullable: true
+    RequisitionGeneralCandidateInfoEvent:
+      required:
+        - comment
+        - commentsTab
+        - creationDate
+        - eventCode
+        - eventId
+        - historyTab
+        - isApprovalStage
+        - system
+      type: object
+      properties:
+        system:
+          maxLength: 10
+          type: string
+          description: Система источник
+        eventId:
+          maxLength: 20
+          type: string
+          description: Идентификатор этапа
+        eventCode:
+          maxLength: 20
+          type: string
+          description: Код этапа ЛКР
+        statusCode:
+          maxLength: 20
+          type: string
+          description: Код статуса ЛКР
+          nullable: true
+        comment:
+          maxLength: 255
+          type: string
+          description: Комментарий
+        isApprovalStage:
+          type: boolean
+          description: "Флаг того, что этап требует принятия решения"
+        creationDate:
+          maximum: 9007199254740991
+          minimum: -99999999999999
+          type: integer
+          description: Дата и время создания этапа
+          format: int64
+        statusDate:
+          maximum: 9007199254740991
+          minimum: -99999999999999
+          type: integer
+          description: Дата запланированного события
+          format: int64
+          nullable: true
+        resultDate:
+          maximum: 9007199254740991
+          minimum: -99999999999999
+          type: integer
+          description: Дата результирующего статуса
+          format: int64
+          nullable: true
+        eventMembers:
+          maxItems: 99999
+          type: array
+          items:
+            $ref: '#/components/schemas/RequisitionCandidateInfoEmployee'
+        commentsTab:
+          type: boolean
+          description: Флаг наличия комментария
+        historyTab:
+          type: boolean
+          description: Флаг исторического события
+      description: Общая информация по событиям кандидата
+    RequisitionAddCommentRequest:
+      required:
+        - candidateId
+        - comment
+        - vacancyId
+      type: object
+      properties:
+        vacancyId:
+          maxLength: 20
+          type: string
+          description: Идентификатор вакансии
+        candidateId:
+          maxLength: 20
+          type: string
+          description: Идентификатор кандидата
+        comment:
+          maxLength: 255
+          type: string
+          description: Комментарий
+      description: Тело запроса на добавление комментария
+    RequisitionVacancyStatisticDto:
+      type: object
+      properties:
+        events:
+          maxItems: 99999
+          type: array
+          description: Статистика этапов
+          items:
+            $ref: '#/components/schemas/VacancyStatisticEventItem'
+      description: Тело ответа на запрос получения статистики вакансии
+    VacancyStatisticEventItem:
+      required:
+        - count
+        - name
+      type: object
+      properties:
+        name:
+          maxLength: 255
+          type: string
+          description: Название этапа (ЛКР)
+        count:
+          maximum: 99999999999999
+          minimum: 0
+          type: integer
+          description: Количество кандидатов
+          format: int32
+      description: Элемент статистики вакансии
+    RequisitionAndVacancyData:
+      required:
+        - requisition
+        - vacancy
+      type: object
+      properties:
+        requisition:
+          $ref: '#/components/schemas/RequisitionData'
+        vacancy:
+          $ref: '#/components/schemas/RequisitionVacancyData'
+      description: Данные по вакансии и заявке
+      nullable: true
+    RequisitionData:
+      required:
+        - backgroundColor
+        - createdDate
+        - guid
+        - hiringRequest
+        - number
+        - positionType
+        - staffPosition
+        - status
+        - structUnitId
+        - structUnitName
+        - textColor
+      type: object
+      properties:
+        guid:
+          maxLength: 36
+          type: string
+          description: GUID заявки на подбор
+        number:
+          maxLength: 12
+          type: string
+          description: Номер заявки на подбор.
+        status:
+          $ref: '#/components/schemas/RequisitionShortStatus'
+        textColor:
+          maxLength: 12
+          type: string
+          description: Цвет текста
+          example: '#1F2937'
+        backgroundColor:
+          maxLength: 12
+          type: string
+          description: Цвет фона
+          example: '#1F2937'
+        createdDate:
+          maximum: 32503680000000
+          minimum: 0
+          type: integer
+          description: Дата создания зяаявки
+          format: int64
+        positionType:
+          maxLength: 50
+          type: string
+          description: Тип должности.
+        staffPosition:
+          $ref: '#/components/schemas/RequisitionStaffPosition'
+        structUnitName:
+          maxLength: 4000
+          type: string
+          description: "Подразделение, для которого создана заявка на прием. Назва\
+            ние."
+        structUnitId:
+          maxLength: 8
+          type: string
+          description: "Подразделение, для которого создана заявка на прием. Код."
+        structUnitPathList:
+          maxItems: 200
+          minItems: 0
+          type: array
+          description: Путь оргструктуры (список подразделений) до целевого подразделения
+            заявки.
+          nullable: true
+          items:
+            $ref: '#/components/schemas/RequisitionStructureUnitPathListItem'
+        hiringRequest:
+          $ref: '#/components/schemas/RequisitionHiringRequest'
+      description: Данные по заявке
+    RequisitionShortStatus:
+      required:
+        - name
+      type: object
+      properties:
+        name:
+          maxLength: 50
+          type: string
+          description: Код статуса
+          example: DRAFT
+      description: Данные по статусу
+    RequisitionVacancyData:
+      required:
+        - backgroundColor
+        - requisitionGuid
+        - statusName
+        - textColor
+      type: object
+      properties:
+        statusName:
+          maxLength: 36
+          type: string
+          description: Название статуса
+        textColor:
+          maxLength: 12
+          type: string
+          description: Цвет текста
+          example: '#1F2937'
+        backgroundColor:
+          maxLength: 12
+          type: string
+          description: Цвет фона
+          example: '#1F2937'
+        requisitionGuid:
+          maxLength: 36
+          type: string
+          description: GUID заявки на подбор
+        vacancyId:
+          maxLength: 36
+          type: string
+          description: Идентификатор вакансии
+          nullable: true
+        firstNameRecruiter:
+          maxLength: 36
+          type: string
+          description: Имя рекрутера
+          nullable: true
+        middleNameRecruiter:
+          maxLength: 36
+          type: string
+          description: Отчество рекрутера
+          nullable: true
+        lastNameRecruiter:
+          maxLength: 36
+          type: string
+          description: Фамилия рекрутера
+          nullable: true
+        firstNameBossRecruiter:
+          maxLength: 36
+          type: string
+          description: Имя руководителя рекрутера
+          nullable: true
+        middleNameBossRecruiter:
+          maxLength: 36
+          type: string
+          description: Отчество руководителя рекрутера
+          nullable: true
+        lastNameBossRecruiter:
+          maxLength: 36
+          type: string
+          description: Фамилия руководителя рекрутера
+          nullable: true
+        publicationId:
+          maxLength: 36
+          type: string
+          description: Идентификатор публикации вакансии на корп. портале
+          nullable: true
+        confidential:
+          type: boolean
+          description: Признак конфиденциального поиска
+          nullable: true
+        referral:
+          type: boolean
+          description: Признак реферальной программы
+          nullable: true
+      description: Данные по вакансии
+    RequisitionVacancyDetailsDtoOut:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/RequisitionAndVacancyData'
+      description: Ответ на получение детальной информации по вакансии
+    RequisitionUserInfoDtoOut:
+      required:
+        - firstName
+        - id
+        - lastName
+        - middleName
+      type: object
+      properties:
+        id:
+          maxLength: 8
+          type: string
+          description: Табельный номер сотрудника
+          example: "12345678"
+        firstName:
+          maxLength: 255
+          type: string
+          description: Имя
+          example: Иван
+        lastName:
+          maxLength: 255
+          type: string
+          description: Фамилия
+          example: Иванов
+        middleName:
+          maxLength: 255
+          type: string
+          description: Отчество
+          example: Иванович
+      description: Дто ответа на запрос о получении данных текущего сотрудника
+    RequisitionUiStateDtoOut:
+      required:
+        - canCreateVisible
+        - userTn
+      type: object
+      properties:
+        tabList:
+          maxItems: 10
+          minItems: 1
+          type: array
+          description: Состояние вкладок
+          nullable: true
+          items:
+            $ref: '#/components/schemas/RequisitionUiStateTabItem'
+        userTn:
+          maxLength: 200
+          type: string
+          description: Таб.номер юзера
+          example: "152285"
+        canCreateVisible:
+          type: boolean
+          description: Видимость кнопки Создать заявку
+      description: Ответ на получение статуса вкладок
+    RequisitionUiStateTabItem:
+      required:
+        - code
+        - count
+        - structureFilterVisible
+        - visible
+      type: object
+      properties:
+        code:
+          maxLength: 50
+          type: string
+          description: Код вкладки
+          example: ACTIVE
+        visible:
+          type: boolean
+          description: Видимость вкладки
+        structureFilterVisible:
+          type: boolean
+          description: Доступность фильтра по подразделению
+        count:
+          maximum: 2000000000
+          minimum: 0
+          type: integer
+          description: "12"
+          format: int32
+      description: Состояние вкладок
+    RequisitionStaffSearch:
+      required:
+        - firstName
+        - id
+        - lastName
+        - middleName
+        - staffPositionName
+        - structUnitId
+        - structUnitName
+        - structUnitPath
+      type: object
+      properties:
+        lastName:
+          maxLength: 255
+          type: string
+          description: Фамилия
+        firstName:
+          maxLength: 255
+          type: string
+          description: Имя
+        middleName:
+          maxLength: 255
+          type: string
+          description: Фамилия
+        staffPositionName:
+          maxLength: 255
+          type: string
+          description: Название должности
+        id:
+          maxLength: 255
+          type: string
+          description: Табельный номер
+        structUnitName:
+          maxLength: 255
+          type: string
+          description: Название структурного подразделения
+        structUnitId:
+          maxLength: 255
+          type: string
+          description: Идентификатор структурного подразделения
+        structUnitPath:
+          maxItems: 99999
+          type: array
+          description: Массив данных о родительских подразделениях
+          items:
+            $ref: '#/components/schemas/RequisitionStructureUnitPathListItem'
+      description: Дто информации о сотруднике
+    RequisitionStaffSearchDtoOut:
+      type: object
+      properties:
+        searchResults:
+          maxItems: 99999
+          type: array
+          description: Массив данных о сотруднике
+          nullable: true
+          items:
+            $ref: '#/components/schemas/RequisitionStaffSearch'
+      description: Дто ответа на запрос получения информации о сотрудниках по поисковой
+        строке
+    RequisitionOrgUnitsAllowableDtoOut:
+      required:
+        - employee
+      type: object
+      properties:
+        employee:
+          maxLength: 8
+          type: string
+          description: "Табельный номер сотрудника или делегатора, для которого по\
+            лучена организационная структура"
+          example: "152285"
+        organizationLinearList:
+          maxItems: 99999
+          minItems: 0
+          type: array
+          description: Массив данных с линейной организационной структурой.
+          nullable: true
+          items:
+            $ref: '#/components/schemas/RequisitionOrganizationLinearListItem'
+        organizationFunctionalList:
+          maxItems: 99999
+          minItems: 0
+          type: array
+          description: Массив данных с функциональной организационной структурой.
+          nullable: true
+          items:
+            $ref: '#/components/schemas/RequisitionOrganizationFunctionalListItem'
+      description: Ответ на получение делегирования
+    RequisitionOrganizationFunctionalListItem:
+      required:
+        - object
+        - objectName
+        - objectType
+        - parentObject
+      type: object
+      properties:
+        object:
+          maxLength: 8
+          type: string
+          description: Идентификатор подразделения
+        objectType:
+          maxLength: 5
+          type: string
+          description: Тип подразделения
+        objectName:
+          maxLength: 200
+          type: string
+          description: Наименование подразделения
+        parentObject:
+          maxLength: 8
+          type: string
+          description: Идентификатор родительского подразделения
+      description: Массив данных с функциональной организационной структурой
+    RequisitionOrganizationLinearListItem:
+      required:
+        - object
+        - objectName
+        - objectType
+        - parentObject
+      type: object
+      properties:
+        object:
+          maxLength: 8
+          type: string
+          description: Идентификатор подразделения
+        objectType:
+          maxLength: 5
+          type: string
+          description: Тип подразделения
+        objectName:
+          maxLength: 200
+          type: string
+          description: Наименование подразделения
+        parentObject:
+          maxLength: 8
+          type: string
+          description: Идентификатор родительского подразделения
+      description: Массив данных с линейной организационной структурой
+    CandidateActionItem:
+      required:
+        - code
+        - name
+        - statusCode
+      type: object
+      properties:
+        code:
+          maxLength: 20
+          type: string
+          description: Код действия
+          example: invite_interview
+        name:
+          maxLength: 40
+          type: string
+          description: Название действия
+          example: Пригласить на собеседование
+        statusCode:
+          maxLength: 20
+          type: string
+          description: Код статуса
+          example: succeeded
+      description: Действие с кандидатом
+    CandidateStageItem:
+      required:
+        - code
+        - name
+        - sortId
+      type: object
+      properties:
+        code:
+          maxLength: 20
+          type: string
+          description: Код
+          example: interview
+        name:
+          maxLength: 50
+          type: string
+          description: Наименование
+          example: Собеседование
+        sortId:
+          maxLength: 10
+          type: string
+          description: Порядок сортировки для отображения в фильтре
+          example: "3"
+      description: Этап рассмотрения кандидата
+    CandidateStageStatusItem:
+      required:
+        - backgroundColor
+        - code
+        - isActive
+        - name
+        - stageCode
+        - textColor
+      type: object
+      properties:
+        stageCode:
+          maxLength: 40
+          type: string
+          description: "Код этапа, к которому относится статус"
+          example: interview
+        code:
+          maxLength: 20
+          type: string
+          description: Код статуса этапа
+          example: scheduled
+        name:
+          maxLength: 40
+          type: string
+          description: Наименование статуса этапа
+          example: Запланировано
+        backgroundColor:
+          maxLength: 7
+          type: string
+          description: Цвет фона этапа
+          example: '#E8F0FE'
+        textColor:
+          maxLength: 7
+          type: string
+          description: Цвет текста статуса
+          example: '#0056B3'
+        isActive:
+          type: boolean
+          description: Активный ли статус
+          example: true
+      description: Статус этапа рассмотрения кандидата
+    CandidateTabItem:
+      required:
+        - code
+        - label
+      type: object
+      properties:
+        code:
+          maxLength: 20
+          type: string
+          description: Код вкладки
+          example: overview
+        label:
+          maxLength: 40
+          type: string
+          description: Наименование вкладки
+          example: Обзор
+      description: Вкладка кандидатов
+    ExpirationZonesItem:
+      required:
+        - code
+        - textColor
+      type: object
+      properties:
+        code:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Код зоны просрочки
+          format: int32
+        textColor:
+          maxLength: 7
+          type: string
+          description: Цвет текста для зоны просрочки
+          example: "^#[0-9A-Fa-f]{6}$"
+      description: Зона истечения срока этапа кандидата
+    InterviewersActionItem:
+      required:
+        - code
+        - name
+      type: object
+      properties:
+        code:
+          maxLength: 50
+          type: string
+          description: Код действия
+          example: overview
+        name:
+          maxLength: 50
+          type: string
+          description: Наименование действия
+          example: Обзор
+      description: Действие с интервьюерами
+    RequisitionDictDtoOut:
+      type: object
+      properties:
+        tabList:
+          maxItems: 10
+          minItems: 1
+          type: array
+          description: Массив с данными по вкладкам
+          nullable: true
+          items:
+            $ref: '#/components/schemas/RequisitionTabItem'
+        statusList:
+          maxItems: 30
+          minItems: 1
+          type: array
+          description: Массив с данными по статусам
+          nullable: true
+          items:
+            $ref: '#/components/schemas/RequisitionStatusItem'
+        pagination:
+          $ref: '#/components/schemas/RequisitionPagination'
+        stageList:
+          maxItems: 9999
+          minItems: 1
+          type: array
+          description: Этапы рассмотрения
+          nullable: true
+          items:
+            $ref: '#/components/schemas/CandidateStageItem'
+        stageStatusList:
+          maxItems: 9999
+          minItems: 1
+          type: array
+          description: Статусы этапов рассмотрения
+          nullable: true
+          items:
+            $ref: '#/components/schemas/CandidateStageStatusItem'
+        candidateActionList:
+          maxItems: 9999
+          minItems: 1
+          type: array
+          description: Массив данных с действиями кандидатов
+          nullable: true
+          items:
+            $ref: '#/components/schemas/CandidateActionItem'
+        candidateTabList:
+          maxItems: 9999
+          minItems: 1
+          type: array
+          description: Вкладки кандидатов
+          nullable: true
+          items:
+            $ref: '#/components/schemas/CandidateTabItem'
+        interviewersActionList:
+          maxItems: 9999
+          minItems: 1
+          type: array
+          description: Действия с интервьюерами
+          nullable: true
+          items:
+            $ref: '#/components/schemas/InterviewersActionItem'
+        expirationZoneList:
+          maxItems: 9999
+          minItems: 1
+          type: array
+          description: 'Массив данных с видами истечения срока действия '
+          nullable: true
+          items:
+            $ref: '#/components/schemas/ExpirationZonesItem'
+      description: Ответ на получение справочников
+    RequisitionPagination:
+      required:
+        - defaultPageSize
+      type: object
+      properties:
+        defaultPageSize:
+          maximum: 500
+          minimum: 1
+          type: integer
+          description: Размер страницы по умолчанию
+          format: int32
+        pageSizeOptionList:
+          maximum: 9007199254740991
+          minimum: 0
+          maxItems: 10
+          minItems: 1
+          uniqueItems: true
+          type: array
+          description: Допустимые размеры страницы
+          nullable: true
+          items:
+            type: integer
+            format: int32
+      description: Данные по пагинации
+      nullable: true
+    RequisitionStatusItem:
+      required:
+        - code
+        - label
+        - sortId
+      type: object
+      properties:
+        code:
+          maxLength: 50
+          type: string
+          description: Код статуса
+          example: DRAFT
+        label:
+          maxLength: 200
+          type: string
+          description: Название статуса
+          example: Черновик
+        sortId:
+          maximum: 1000
+          minimum: 1
+          type: integer
+          description: Порядок отображения
+          format: int32
+        availableInTabList:
+          maxItems: 10
+          minItems: 1
+          type: array
+          description: "Вкладки, где статус доступен в фильтре"
+          nullable: true
+          items:
+            type: string
+        style:
+          $ref: '#/components/schemas/RequisitionStatusesStyle'
+      description: Данные по статусам
+    RequisitionStatusesStyle:
+      required:
+        - backgroundColor
+        - textColor
+      type: object
+      properties:
+        textColor:
+          maxLength: 12
+          type: string
+          description: Цвет текста
+          example: '#1F2937'
+        backgroundColor:
+          maxLength: 12
+          type: string
+          description: Цвет фона
+          example: '#1F2937'
+      description: Данные по стилям
+      nullable: true
+    RequisitionTabItem:
+      required:
+        - code
+        - label
+      type: object
+      properties:
+        code:
+          maxLength: 50
+          type: string
+          description: Код вкладки
+          example: ACTIVE
+        label:
+          maxLength: 200
+          type: string
+          description: Название вкладки
+          example: Активные заявки
+      description: Данные по вкладкам
+    RequisitionDelegationsDtoOut:
+      type: object
+      properties:
+        delegationsList:
+          maxItems: 99999
+          minItems: 0
+          type: array
+          description: Массив данными по делегатам.
+          nullable: true
+          items:
+            $ref: '#/components/schemas/RequisitionDelegationsItem'
+      description: Ответ на получение делегирования
+    RequisitionDelegationsItem:
+      required:
+        - authApprove
+        - authCreate
+        - id
+        - name
+      type: object
+      properties:
+        id:
+          maxLength: 8
+          type: string
+          description: Идентификационный номер сервиса в ЕАСУП
+          example: RECT
+        name:
+          maxLength: 250
+          type: string
+          description: Бизнес-описание идентификатора сервиса.
+        startDate:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Дата начала делегирования
+          format: int64
+          nullable: true
+          example: 0
+        endDate:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Дата окончания делегирования
+          format: int64
+          nullable: true
+          example: 0
+        employee:
+          $ref: '#/components/schemas/RequisitionEmployee'
+        authApprove:
+          type: boolean
+          description: Полномочие на согласование заявок
+        authCreate:
+          type: boolean
+          description: Полномочие на создание заявок
+      description: Данные о делегировании
+    RequisitionEmployee:
+      required:
+        - id
+      type: object
+      properties:
+        id:
+          maxLength: 8
+          type: string
+          description: Идентификатор
+          example: '''112212'''
+        fullName:
+          maxLength: 132
+          type: string
+          description: Полное имя
+          nullable: true
+          example: Лимитова Декрета Петровна
+        firstName:
+          maxLength: 40
+          type: string
+          description: Имя
+          nullable: true
+          example: Декрета
+        lastName:
+          maxLength: 40
+          type: string
+          description: Фамилия
+          nullable: true
+          example: Лимитова
+        middleName:
+          maxLength: 40
+          type: string
+          description: Отчество
+          nullable: true
+          example: Петровна
+      description: Данные о сотруднике
+      nullable: true
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
