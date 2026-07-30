@@ -1,18 +1,22 @@
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Schema(description = "Запрос для получения кандидатов в ожидании")
-public class PendingCandidatesRequest {
+public class OpenApiDocumentationIntegrationTest extends BaseIntegrationTest {
 
-    @Schema(description = "Корневой объект параметров запроса", required = true, nullable = false)
-    private Request request;
+    @Test
+    void shouldGenerateOpenApiYaml() throws Exception {
+        byte[] openApiYaml = mockMvc.perform(get("/v3/api-docs.yaml"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsByteArray();
 
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    @Schema(description = "Детали запроса")
-    public static class Request {
-        @Schema(description = "Персональный номер (pernr)", required = true, nullable = false)
-        private String pernr;
+        Path outputFile = Path.of(
+                "build",
+                "generated",
+                "openapi",
+                "openapi.yaml"
+        );
+
+        Files.createDirectories(outputFile.getParent());
+        Files.write(outputFile, openApiYaml);
     }
+
 }
