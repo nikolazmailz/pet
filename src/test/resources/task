@@ -1,3 +1,44 @@
+@SpringBootTest
+@AutoConfigureMockMvc
+class OpenApiDocumentationIntegrationTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Test
+    void shouldGenerateOpenApiSpecification() throws Exception {
+        String openApiJson = mockMvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+
+        Object openApi = objectMapper.readValue(openApiJson, Object.class);
+        String formattedOpenApi = objectMapper
+                .writerWithDefaultPrettyPrinter()
+                .writeValueAsString(openApi);
+
+        Path outputFile = Path.of(
+                "build",
+                "generated",
+                "openapi",
+                "openapi.json"
+        );
+
+        Files.createDirectories(outputFile.getParent());
+        Files.writeString(
+                outputFile,
+                formattedOpenApi,
+                StandardCharsets.UTF_8
+        );
+    }
+}
+
+
+
 public interface PendingCandidateRepository extends JpaRepository<PendingCandidateEntity, Integer> {
 
     // Фаза 1: страница ID с фильтрами
