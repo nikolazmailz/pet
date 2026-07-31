@@ -1,0 +1,26 @@
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>ru.vtb.omni</groupId>
+            <artifactId>omni-dependencies</artifactId>
+            <version>${omni-dependencies.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+
+<dependencies>
+    <dependency>
+        <groupId>ru.vtb.omni</groupId>
+        <artifactId>tsau-audit-lib-in-memory-storage</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>ru.vtb.omni</groupId>
+        <artifactId>tsau-audit-lib-kafka-sender</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>ru.vtb.omni</groupId>
+        <artifactId>tsau-audit-lib-servlet-context</artifactId>
+    </dependency>
+</dependencies>
