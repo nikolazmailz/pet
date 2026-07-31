@@ -24,3 +24,11 @@
         <artifactId>tsau-audit-lib-servlet-context</artifactId>
     </dependency>
 </dependencies>
+
+
+<dependency>
+  <groupId>ru.vtb.omni</groupId>
+  <artifactId>tsau-audit-lib-in-memory-storage</artifactId>
+  <version>8.0.0.6</version>
+  <type>pom</type>
+</dependency>
