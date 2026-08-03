@@ -1,1 +1,2 @@
-docker exec omni1-emulator-kafka-2 kafka-run-class kafka.tools.GetOffsetShell --broker-list localhost:39091 --topic audit-v2-vtb --time -1
+$ docker exec omni1-emulator-kafka-2 kafka-run-class kafka.tools.GetOffsetShell --broker-list localhost:39091 --topic audit-v2-vtb --time -1
+audit-v2-vtb:0:2
