@@ -1,5 +1,51 @@
-Заполнение oper_resultStatus, обработка логических ошибок по ШП.116
-Согласно ШП116 логические ошибки необходимо отправлять с классом SUCCESS, но заполненным полем
-oper_resultStatus: "FAILURE". Для того чтобы обозначить ваши логические ошибки необходимо использовать (или унаследоваться)
-BusinessLogicAuditException. Если библиотека увидит что метод выкинул exception BusinessLogicAuditException, то сообщение заудируется с классом SUCCESS,
-а резолвер OperResultStatusTsauResolver проставит oper_resultStatus
+#Аудит
+audit:
+  # Время работы в standin после переключения
+  standin-period-min: ${AUDIT_STANDIN_PERIOD_MIN:5}
+  # Число неудачных попыток для переключения основного продюсера на standin
+  standin-try-count-to-switch: ${AUDIT_STANDIN_TRY_COUNT_TO_SWITCH:2}
+  # Включение резервной кафки
+  standin-kafka:
+    enabled: ${AUDIT_STANDIN_KAFKA_ENABLED:false}
+    bootstrap-servers: ${AUDIT_STANDIN_KAFKA_BOOTSTRAP_SERVERS}
+    security:
+      protocol: ${AUDIT_SECURITY_PROTOCOL:PLAINTEXT}
+    ssl:
+      key-store-location: ${AUDIT_STANDIN_KEY_STORE:/path/to/store}
+      key-store-type: ${AUDIT_TRUST_STORE_TYPE:JKS}
+      key-store-password: ${AUDIT_STANDIN_KEY_STORE_PASSWORD:password}
+      trust-store-location: ${AUDIT_STANDIN_TRUST_STORE:/path/to/store}
+      trust-store-type: ${AUDIT_TRUST_STORE_TYPE:JKS}
+      trust-store-password: ${AUDIT_STANDIN_TRUST_STORE_PASSWORD:password}
+      key-password: ${AUDIT_STANDIN_KEY_PASSWORD:password}
+  local-mode: ${AUDIT_LOCAL_MODE:false}
+  enabled: ${AUDIT_ENABLE:true}
+  message:
+    # Максимальный размер сообщения в аудите, не требующий усечения
+    max-length: ${AUDIT_MESSAGE_MAX_LENGTH:10000}
+    # Ширина окна от середины. При добавлении новых AuditParam необходимо увеличить данное значение
+    offset: ${AUDIT_MESSAGE_OFFSET:450}
+  # нужно только для @AuditProcess, @Audit получает эти параметры из токена
+  default-resolver:
+    sub: sub_system
+    channel: channel_system
+  kafka:
+    bootstrap-servers: ${AUDIT_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${AUDIT_KAFKA_GROUP_ID:audit-management}
+      # initial-poll.time отвечает за таймаут (в милисекундах) консьюмера, кооторый читает из топика управляющих сообщений.
+      # Если сообщений в топике нет, то консьюмер будет ждать указанный таймаут.
+      # По-умолчанию стоит значение 30000, т.е. ожидание 30 секунд. Здесь можно переопределить это значение.
+      initial-poll:
+        time: ${AUDIT_CONSUMER_INITIAL_POOL_TIME:1000}
+    topic: ${AUDIT_KAFKA_TOPIC:audit}
+    security:
+      protocol: ${AUDIT_SECURITY_PROTOCOL:PLAINTEXT}
+    ssl:
+      key-store-location: ${AUDIT_KEY_STORE:/path/to/store}
+      key-store-type: ${AUDIT_KEY_STORE_TYPE:JKS}
+      key-store-password: ${AUDIT_KEY_STORE_PASSWORD:password}
+      trust-store-location: ${AUDIT_TRUST_STORE:/path/to/store}
+      trust-store-type: ${AUDIT_TRUST_STORE_TYPE:JKS}
+      trust-store-password: ${AUDIT_TRUST_STORE_PASSWORD:password}
+      key-password: ${AUDIT_KEY_PASSWORD:123}
