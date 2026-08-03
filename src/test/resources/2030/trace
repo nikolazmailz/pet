@@ -1,5 +1,37 @@
-docker exec omni1-emulator-kafka-2 \
-  kafka-console-consumer \
-  --bootstrap-server localhost:39091 \
-  --topic audit-v2 \
-  --from-beginning
+PS C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-mod-commons\audit> docker exec omni1-emulator-kafka-2 kafka-run-class kafka.tools.GetOffsetShell --broker-list localhost:39091 --topic audit-v2  --time -1
+audit-v2:0:0
+PS C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-mod-commons\audit> docker exec omni1-emulator-kafka-2 kafka-run-class kafka.tools.GetOffsetShell --broker-list localhost:3909 --topic audit-v2-auth_internal --time -1
+[2026-08-03 12:27:17,955] WARN [Consumer clientId=GetOffsetShell, groupId=null] Connection to node -1 (localhost/127.0.0.1:3909) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:17,955] WARN [Consumer clientId=GetOffsetShell, groupId=null] Bootstrap broker localhost:3909 (id: -1 rack: null) disconnected (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:18,059] WARN [Consumer clientId=GetOffsetShell, groupId=null] Connection to node -1 (localhost/127.0.0.1:3909) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:18,059] WARN [Consumer clientId=GetOffsetShell, groupId=null] Bootstrap broker localhost:3909 (id: -1 rack: null) disconnected (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:18,263] WARN [Consumer clientId=GetOffsetShell, groupId=null] Connection to node -1 (localhost/127.0.0.1:3909) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:18,263] WARN [Consumer clientId=GetOffsetShell, groupId=null] Bootstrap broker localhost:3909 (id: -1 rack: null) disconnected (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:18,466] WARN [Consumer clientId=GetOffsetShell, groupId=null] Connection to node -1 (localhost/127.0.0.1:3909) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:18,466] WARN [Consumer clientId=GetOffsetShell, groupId=null] Bootstrap broker localhost:3909 (id: -1 rack: null) disconnected (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:18,871] WARN [Consumer clientId=GetOffsetShell, groupId=null] Connection to node -1 (localhost/127.0.0.1:3909) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:18,872] WARN [Consumer clientId=GetOffsetShell, groupId=null] Bootstrap broker localhost:3909 (id: -1 rack: null) disconnected (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:19,779] WARN [Consumer clientId=GetOffsetShell, groupId=null] Connection to node -1 (localhost/127.0.0.1:3909) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:19,779] WARN [Consumer clientId=GetOffsetShell, groupId=null] Bootstrap broker localhost:3909 (id: -1 rack: null) disconnected (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:20,988] WARN [Consumer clientId=GetOffsetShell, groupId=null] Connection to node -1 (localhost/127.0.0.1:3909) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:20,988] WARN [Consumer clientId=GetOffsetShell, groupId=null] Bootstrap broker localhost:3909 (id: -1 rack: null) disconnected (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:21,996] WARN [Consumer clientId=GetOffsetShell, groupId=null] Connection to node -1 (localhost/127.0.0.1:3909) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:21,996] WARN [Consumer clientId=GetOffsetShell, groupId=null] Bootstrap broker localhost:3909 (id: -1 rack: null) disconnected (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:23,204] WARN [Consumer clientId=GetOffsetShell, groupId=null] Connection to node -1 (localhost/127.0.0.1:3909) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:23,204] WARN [Consumer clientId=GetOffsetShell, groupId=null] Bootstrap broker localhost:3909 (id: -1 rack: null) disconnected (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:24,213] WARN [Consumer clientId=GetOffsetShell, groupId=null] Connection to node -1 (localhost/127.0.0.1:3909) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:24,213] WARN [Consumer clientId=GetOffsetShell, groupId=null] Bootstrap broker localhost:3909 (id: -1 rack: null) disconnected (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:25,119] WARN [Consumer clientId=GetOffsetShell, groupId=null] Connection to node -1 (localhost/127.0.0.1:3909) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:25,119] WARN [Consumer clientId=GetOffsetShell, groupId=null] Bootstrap broker localhost:3909 (id: -1 rack: null) disconnected (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:26,324] WARN [Consumer clientId=GetOffsetShell, groupId=null] Connection to node -1 (localhost/127.0.0.1:3909) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:26,325] WARN [Consumer clientId=GetOffsetShell, groupId=null] Bootstrap broker localhost:3909 (id: -1 rack: null) disconnected (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:27,429] WARN [Consumer clientId=GetOffsetShell, groupId=null] Connection to node -1 (localhost/127.0.0.1:3909) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:27,429] WARN [Consumer clientId=GetOffsetShell, groupId=null] Bootstrap broker localhost:3909 (id: -1 rack: null) disconnected (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:28,434] WARN [Consumer clientId=GetOffsetShell, groupId=null] Connection to node -1 (localhost/127.0.0.1:3909) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:28,434] WARN [Consumer clientId=GetOffsetShell, groupId=null] Bootstrap broker localhost:3909 (id: -1 rack: null) disconnected (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:29,238] WARN [Consumer clientId=GetOffsetShell, groupId=null] Connection to node -1 (localhost/127.0.0.1:3909) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:29,238] WARN [Consumer clientId=GetOffsetShell, groupId=null] Bootstrap broker localhost:3909 (id: -1 rack: null) disconnected (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:30,347] WARN [Consumer clientId=GetOffsetShell, groupId=null] Connection to node -1 (localhost/127.0.0.1:3909) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
+[2026-08-03 12:27:30,347] WARN [Consumer clientId=GetOffsetShell, groupId=null] Bootstrap broker localhost:3909 (id: -1 rack: null) disconnected (org.apache.kafka.clients.NetworkClient)
+context canceled
+PS C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-mod-commons\audit>
