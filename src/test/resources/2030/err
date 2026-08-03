@@ -1,1 +1,38 @@
-ru.vtb.omni:common-dependencies:pom:8.0.0.2 was not found in https://maven.repo-ci.sfera.inno.local/repository/srhr-maven/ 
+<dependency>
+            <groupId>ru.vtb.omni</groupId>
+            <artifactId>tsau-audit-lib-in-memory-storage</artifactId>
+            <version>8.0.0.6</version>
+            <type>pom</type>
+        </dependency>
+        <!-- модуль отправки событий аудита непосредственно в кафку -->
+        <dependency>
+            <groupId>ru.vtb.omni</groupId>
+            <artifactId>tsau-audit-lib-kafka-sender</artifactId>
+            <version>8.0.0.6</version>
+            <type>pom</type>
+        </dependency>
+        <!-- модуль контекста, который используется для получения инициатора запроса, в данном случае servlet context -->
+        <dependency>
+            <groupId>ru.vtb.omni</groupId>
+            <artifactId>tsau-audit-lib-servlet-context</artifactId>
+            <version>8.0.0.6</version>
+            <type>pom</type>
+        </dependency>
+
+
+
+
+
+
+
+ru.vtb.omni:common-dependencies:pom:8.0.0.2 was not found in https://maven.repo-ci.sfera.inno.local/repository/srhr-maven/ during a previous attempt. This failure was cached in the local repository and resolution is not reattempted until the update interval of srhr-maven has elapsed or updates are forced
+
+Try to run Maven import with -U flag (force update snapshots)
+
+        <dependency>
+            <groupId>ru.vtb.omni</groupId>
+            <artifactId>common-dependencies</artifactId>
+            <version>8.0.0.2</version>
+            <type>pom</type>
+        </dependency>
+
