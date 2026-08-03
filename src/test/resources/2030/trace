@@ -1,48 +1,9 @@
-  config:
-    import:
-      - classpath:application-audit-2-events.yml
-
-
- /**
-     * Получение справочников
-     * @return JSON
-     */
-    @Audit(value = "SRHR_REQUISITION_GET_DICT")
-    @GetMapping(value = "/dict", produces = "application/json")
-    @ResponseBody
-    @Operation(summary = "Получение справочников",
-            tags = "requisition-dict",
-            security = @SecurityRequirement(name = "bearerAuth"))
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Найдены справочники",
-                    content = {
-                            @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = RequisitionDictDtoOut.class))
-                    }),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "Unauthorized",
-                    content = @Content),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Справочники не найдены",
-                    content = {
-                            @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = ServiceErrorDto.class))
-                    }),
-            @ApiResponse(
-                    responseCode = "500",
-                    description = "Непредвиденная ошибка сервера",
-                    content = {
-                            @Content(
-                                    mediaType = "application/json",
-                                    schema = @Schema(implementation = ServiceErrorDto.class))
-                    })
-    })
-    public ResponseEntity<Object> getRequisitionDict(
-            HttpServletRequest request
-    ) throws Exception
+audit:
+  enabled: true
+  kafka:
+    bootstrap-servers: localhost:39091
+    topic: audit-v2
+    security:
+      protocol: PLAINTEXT
+  standin-kafka:
+    enabled: false
