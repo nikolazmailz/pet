@@ -1,10 +1,15 @@
-        <dependency>
+<dependency>
+    <groupId>ru.ntdev.srhr</groupId>
+    <artifactId>srhr-mod-commons</artifactId>
+    <version>...</version>
+    <exclusions>
+        <exclusion>
             <groupId>ru.vtb.omni</groupId>
             <artifactId>audit-lib-api</artifactId>
-            <version>${audit-lib.version}</version>
-        </dependency>
-        <dependency>
+        </exclusion>
+        <exclusion>
             <groupId>ru.vtb.omni</groupId>
             <artifactId>audit-lib-core</artifactId>
-            <version>${audit-lib.version}</version>
-        </dependency>
+        </exclusion>
+    </exclusions>
+</dependency>
