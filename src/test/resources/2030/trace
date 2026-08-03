@@ -1,2 +1,5 @@
 docker logs --tail 100 omni1-emulator-kafka-pump
 docker logs --tail 100 omni1-emulator-opensearch-pump
+
+
+docker exec omni1-emulator-kafka-2 kafka-console-consumer --bootstrap-server localhost:39091 --topic audit-v2-vtb --from-beginning --max-messages 2 --property print.headers=true
