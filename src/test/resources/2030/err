@@ -1,51 +1,63 @@
-#Аудит
+
+ms:
+  properties:
+    info-system-code: SRHR
+    info-system-id: "1234567"
+    app-name: ${spring.application.name}
+
+
+
 audit:
-  # Время работы в standin после переключения
+  enabled: ${AUDIT_ENABLE:true}
+
+  # Добавлять сообщение исключения в oper_description
+  fill-error: ${AUDIT_FILL_ERROR:true}
+
+  # Системный инициатор для scheduler/Kafka/batch
+  default-resolver:
+    sub: ${AUDIT_DEFAULT_SUB:${spring.application.name}}
+    channel: ${AUDIT_DEFAULT_CHANNEL:SYSTEM}
+
+  deployment-context:
+    pod-name-environment: AUDITOMNI_POD_NAME
+    pod-namespace-environment: AUDITOMNI_POD_NAMESPACE
+
+  kafka:
+    bootstrap-servers: ${AUDIT_KAFKA_BOOTSTRAP_SERVERS:localhost:39091}
+    topic: ${AUDIT_KAFKA_TOPIC:audit-v2}
+
+    security:
+      protocol: ${AUDIT_SECURITY_PROTOCOL:PLAINTEXT}
+
   standin-period-min: ${AUDIT_STANDIN_PERIOD_MIN:5}
-  # Число неудачных попыток для переключения основного продюсера на standin
   standin-try-count-to-switch: ${AUDIT_STANDIN_TRY_COUNT_TO_SWITCH:2}
-  # Включение резервной кафки
+
   standin-kafka:
     enabled: ${AUDIT_STANDIN_KAFKA_ENABLED:false}
-    bootstrap-servers: ${AUDIT_STANDIN_KAFKA_BOOTSTRAP_SERVERS}
+    bootstrap-servers: ${AUDIT_STANDIN_KAFKA_BOOTSTRAP_SERVERS:localhost:49091}
+
     security:
-      protocol: ${AUDIT_SECURITY_PROTOCOL:PLAINTEXT}
-    ssl:
-      key-store-location: ${AUDIT_STANDIN_KEY_STORE:/path/to/store}
-      key-store-type: ${AUDIT_TRUST_STORE_TYPE:JKS}
-      key-store-password: ${AUDIT_STANDIN_KEY_STORE_PASSWORD:password}
-      trust-store-location: ${AUDIT_STANDIN_TRUST_STORE:/path/to/store}
-      trust-store-type: ${AUDIT_TRUST_STORE_TYPE:JKS}
-      trust-store-password: ${AUDIT_STANDIN_TRUST_STORE_PASSWORD:password}
-      key-password: ${AUDIT_STANDIN_KEY_PASSWORD:password}
-  local-mode: ${AUDIT_LOCAL_MODE:false}
-  enabled: ${AUDIT_ENABLE:true}
-  message:
-    # Максимальный размер сообщения в аудите, не требующий усечения
-    max-length: ${AUDIT_MESSAGE_MAX_LENGTH:10000}
-    # Ширина окна от середины. При добавлении новых AuditParam необходимо увеличить данное значение
-    offset: ${AUDIT_MESSAGE_OFFSET:450}
-  # нужно только для @AuditProcess, @Audit получает эти параметры из токена
-  default-resolver:
-    sub: sub_system
-    channel: channel_system
-  kafka:
-    bootstrap-servers: ${AUDIT_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-    consumer:
-      group-id: ${AUDIT_KAFKA_GROUP_ID:audit-management}
-      # initial-poll.time отвечает за таймаут (в милисекундах) консьюмера, кооторый читает из топика управляющих сообщений.
-      # Если сообщений в топике нет, то консьюмер будет ждать указанный таймаут.
-      # По-умолчанию стоит значение 30000, т.е. ожидание 30 секунд. Здесь можно переопределить это значение.
-      initial-poll:
-        time: ${AUDIT_CONSUMER_INITIAL_POOL_TIME:1000}
-    topic: ${AUDIT_KAFKA_TOPIC:audit}
-    security:
-      protocol: ${AUDIT_SECURITY_PROTOCOL:PLAINTEXT}
-    ssl:
-      key-store-location: ${AUDIT_KEY_STORE:/path/to/store}
-      key-store-type: ${AUDIT_KEY_STORE_TYPE:JKS}
-      key-store-password: ${AUDIT_KEY_STORE_PASSWORD:password}
-      trust-store-location: ${AUDIT_TRUST_STORE:/path/to/store}
-      trust-store-type: ${AUDIT_TRUST_STORE_TYPE:JKS}
-      trust-store-password: ${AUDIT_TRUST_STORE_PASSWORD:password}
-      key-password: ${AUDIT_KEY_PASSWORD:123}
+      protocol: ${AUDIT_STANDIN_SECURITY_PROTOCOL:PLAINTEXT}
+
+audit-events:
+  auditEventCodeList:
+    - event-code: "SRHR_PENDING_CANDIDATES_SYNC"
+      schema: "auth_internal"
+      group-resolvers: general, process
+
+      audit-event-general:
+        oper_name: "Синхронизация кандидатов"
+        object_name: "Кандидаты"
+
+      audit-event-start:
+        oper_description: "Начало синхронизации кандидатов"
+
+      audit-event-success:
+        oper_description: "Синхронизация кандидатов завершена"
+
+      audit-event-failure:
+        oper_description: "Ошибка синхронизации кандидатов"
+
+logging:
+  level:
+    ru.vtb.omni.audit: DEBUG
