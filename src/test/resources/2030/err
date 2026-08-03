@@ -1,15 +1,5 @@
-<dependency>
-    <groupId>ru.ntdev.srhr</groupId>
-    <artifactId>srhr-mod-commons</artifactId>
-    <version>...</version>
-    <exclusions>
-        <exclusion>
-            <groupId>ru.vtb.omni</groupId>
-            <artifactId>audit-lib-api</artifactId>
-        </exclusion>
-        <exclusion>
-            <groupId>ru.vtb.omni</groupId>
-            <artifactId>audit-lib-core</artifactId>
-        </exclusion>
-    </exclusions>
-</dependency>
+Заполнение oper_resultStatus, обработка логических ошибок по ШП.116
+Согласно ШП116 логические ошибки необходимо отправлять с классом SUCCESS, но заполненным полем
+oper_resultStatus: "FAILURE". Для того чтобы обозначить ваши логические ошибки необходимо использовать (или унаследоваться)
+BusinessLogicAuditException. Если библиотека увидит что метод выкинул exception BusinessLogicAuditException, то сообщение заудируется с классом SUCCESS,
+а резолвер OperResultStatusTsauResolver проставит oper_resultStatus
