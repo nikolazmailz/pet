@@ -1,6 +1,34 @@
-$  docker exec omni1-emulator-kafka-2 kafka-run-class kafka.tools.GetOffsetShell --broker-list localhost:39091 --topic audit-v2  --time -1
-audit-v2:0:6
+AuditListFieldsResolver
 
-NPushkaryov@NPushkaryov MINGW64 /
-$ docker exec omni1-emulator-kafka-2 kafka-run-class kafka.tools.GetOffsetShell --broker-list localhost:39091 --topic audit-v2-vtb --time -1
-audit-v2-vtb:0:3
+Интерфейс AuditListFieldsResolver в отличие от AuditFieldResolver может заполнить сразу несколько полей.
+AuditListFieldsResolver возвращает Map<String, Object> где ключ это наименование поле из схемы события, а значение - значение этого поля.
+
+public interface AuditListFieldsResolver {
+
+    /**
+     * Возвращает значение списка полей
+     *
+     * @param eventCode         Код события формируемого сообщения
+     * @param audLibEventClass  Класс сообщения
+     * @param auditMethodParams Параметры вызова аудируемого метода
+     * @param currentFields     Текущие заполненные поля
+     * @return Мапа где ключ - имя поля в схеме, значение - значения поля
+     */
+    Map<String, Object> getFields(String eventCode, AudLibEventClass audLibEventClass,
+                                  AuditMethodParams auditMethodParams, Map<String, Object> currentFields, Map<String, Object> contextOperation);
+}
+Пример:
+
+@RequiredArgsConstructor
+public class MsPropertiesResolverList implements AuditListFieldsResolver {
+
+    private final AuditMsProperties auditMsProperties;
+
+    @Override
+    public Map<String, Object> getFields(String eventCode, AudLibEventClass audLibEventClass, AuditMethodParams auditMethodParams, Map<String, Object> currentFields, Map<String, Object> contextOperation) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("event_infoSystemCode", auditMsProperties.getInfoSystemCode());
+        result.put("event_infoSystemId", auditMsProperties.getInfoSystemId());
+        return result;
+    }
+}
