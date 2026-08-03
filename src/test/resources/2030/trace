@@ -1,34 +1,57 @@
-AuditListFieldsResolver
+audit-group-resolver:
+  srhr: SrhrAuditResolver
 
-Интерфейс AuditListFieldsResolver в отличие от AuditFieldResolver может заполнить сразу несколько полей.
-AuditListFieldsResolver возвращает Map<String, Object> где ключ это наименование поле из схемы события, а значение - значение этого поля.
 
-public interface AuditListFieldsResolver {
+group-resolvers: general, web, srhr
 
-    /**
-     * Возвращает значение списка полей
-     *
-     * @param eventCode         Код события формируемого сообщения
-     * @param audLibEventClass  Класс сообщения
-     * @param auditMethodParams Параметры вызова аудируемого метода
-     * @param currentFields     Текущие заполненные поля
-     * @return Мапа где ключ - имя поля в схеме, значение - значения поля
-     */
-    Map<String, Object> getFields(String eventCode, AudLibEventClass audLibEventClass,
-                                  AuditMethodParams auditMethodParams, Map<String, Object> currentFields, Map<String, Object> contextOperation);
-}
-Пример:
 
-@RequiredArgsConstructor
-public class MsPropertiesResolverList implements AuditListFieldsResolver {
 
-    private final AuditMsProperties auditMsProperties;
+@Service
+@Order(50)
+public class SrhrAuditResolver implements AuditFieldResolver {
 
     @Override
-    public Map<String, Object> getFields(String eventCode, AudLibEventClass audLibEventClass, AuditMethodParams auditMethodParams, Map<String, Object> currentFields, Map<String, Object> contextOperation) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("event_infoSystemCode", auditMsProperties.getInfoSystemCode());
-        result.put("event_infoSystemId", auditMsProperties.getInfoSystemId());
-        return result;
+    public Object get(
+            String eventCode,
+            AudLibEventClass eventClass,
+            AuditMethodParams params,
+            Map<String, Object> currentFields,
+            Map<String, Object> contextOperation
+    ) {
+        return params.getParams().get("candidateId");
+    }
+
+    @Override
+    public String getFieldName() {
+        return "object_id";
     }
 }
+
+
+@Component
+public class AuditParamsResolver implements AuditListFieldsResolver {
+
+    @Override
+    public Map<String, Object> getFields(
+            String eventCode,
+            AudLibEventClass eventClass,
+            AuditMethodParams methodParams,
+            Map<String, Object> currentFields,
+            Map<String, Object> contextOperation
+    ) {
+        Map<String, Object> params = methodParams.getParams();
+
+        if (params == null || params.isEmpty()) {
+            return Map.of();
+        }
+
+        String description = params.entrySet().stream()
+                .filter(entry -> entry.getValue() != null)
+                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                .collect(Collectors.joining(", "));
+
+        return Map.of("oper_description", description);
+    }
+}
+
+
