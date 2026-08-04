@@ -12,3 +12,5 @@ docker exec omni1-emulator-kafka-2 kafka-run-class kafka.tools.GetOffsetShell --
 docker logs --tail 100 omni1-emulator-kafka-pump
 docker logs --tail 100 omni1-emulator-opensearch-pump
 
+kafka-topics
+docker exec omni1-emulator-kafka-2 kafka-topics --bootstrap-server localhost:39091 --list
