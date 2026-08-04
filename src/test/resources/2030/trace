@@ -211,3 +211,29 @@ private RequestContext toContext(CandidateStatusEvent event) {
             event.getSessionId(), event.getChannel(),
             null, traceProvider.getActiveSpanTraceId(), null);
 }
+
+
+public class ContextAwareAuditFieldsResolver implements AuditListFieldsResolver {
+
+    @Override
+    public List<AuditField> resolve(/* сигнатура вашей версии либы */) {
+        List<AuditField> fields = new ArrayList<>();
+
+        // прикладные поля из аргументов метода — как в вашем RequestParamsAuditResolver
+
+        RequestContext ctx = RequestContextHolder.getOrNull();
+        if (ctx != null) {
+            addIfPresent(fields, "adLogin", ctx.adLogin());
+            addIfPresent(fields, "sessionId", ctx.sessionId());
+            addIfPresent(fields, "channel", ctx.channel());
+            addIfPresent(fields, "traceId", ctx.traceId());
+        }
+        return fields;
+    }
+
+    private static void addIfPresent(List<AuditField> fields, String name, String value) {
+        if (value != null) {
+            fields.add(new AuditField(name, value));
+        }
+    }
+}
