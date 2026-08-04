@@ -3,3 +3,8 @@ docker exec omni1-emulator-kafka-2 kafka-console-consumer --bootstrap-server loc
 docker exec omni1-emulator-kafka-2 kafka-run-class kafka.tools.GetOffsetShell --broker-list localhost:39091 --topic audit-v2  --time -1
 
 docker exec omni1-emulator-kafka-2 kafka-run-class kafka.tools.GetOffsetShell --broker-list localhost:3909 --topic audit-v2-auth_internal --time -1
+
+
+docker logs --tail 100 omni1-emulator-kafka-pump
+docker logs --tail 100 omni1-emulator-opensearch-pump
+
