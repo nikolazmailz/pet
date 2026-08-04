@@ -1,3 +1,5 @@
+NPushkaryov@NPushkaryov MINGW64 /
+$ docker exec omni1-emulator-kafka-2 kafka-topics --bootstrap-server localhost:39091 --list
 [2026-08-04 07:02:21,020] WARN [AdminClient clientId=adminclient-1] Connection to node -1 (localhost/127.0.0.1:39091) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
 [2026-08-04 07:02:21,126] WARN [AdminClient clientId=adminclient-1] Connection to node -1 (localhost/127.0.0.1:39091) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
 [2026-08-04 07:02:21,228] WARN [AdminClient clientId=adminclient-1] Connection to node -1 (localhost/127.0.0.1:39091) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
@@ -7,3 +9,5 @@
 [2026-08-04 07:02:23,546] WARN [AdminClient clientId=adminclient-1] Connection to node -1 (localhost/127.0.0.1:39091) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
 [2026-08-04 07:02:24,653] WARN [AdminClient clientId=adminclient-1] Connection to node -1 (localhost/127.0.0.1:39091) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
 [2026-08-04 07:02:25,660] WARN [AdminClient clientId=adminclient-1] Connection to node -1 (localhost/127.0.0.1:39091) could not be established. Broker may not be available. (org.apache.kafka.clients.NetworkClient)
+context canceled
+
