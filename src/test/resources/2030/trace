@@ -30,3 +30,6 @@ public class OpenTelemetryTraceContextProvider {
         return context.isValid() ? context.getSpanId() : null;
     }
 }
+
+audit-group-resolver:
+  srhr-resolver: SrhrAuditResolver
