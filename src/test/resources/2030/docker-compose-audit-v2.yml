@@ -1,0 +1,57 @@
+version: "3.9"
+services:
+  omni1-emulator-kafka-pump:
+    image: docker.repo-ci.sfera.inno.local/tsau-docker-pub/kafka-pump:6.2.0.10
+    container_name: "omni1-emulator-kafka-pump"
+    depends_on:
+      - omni1-emulator-kafka-2
+    environment:
+      TSAU_KAFKA_PUMP_KAFKA_SOURCE_BOOTSTRAP_SERVERS: "omni1-emulator-kafka-2:39092"
+      TSAU_KAFKA_PUMP_KAFKA_TARGET_BOOTSTRAP_SERVERS: "omni1-emulator-kafka-2:39092"
+
+  omni1-emulator-opensearch-pump:
+    image: docker.repo-ci.sfera.inno.local/tsau-docker-pub/opensearch-pump-emulator:6.2.0.0
+    container_name: "omni1-emulator-opensearch-pump"
+    depends_on:
+      - omni1-emulator-kafka-2
+    environment:
+      TSAU_OPENSEARCH_PUMP_KAFKA_BOOTSTRAP_SERVERS: "omni1-emulator-kafka-2:39092"
+  omni1-emulator-meta-pump:
+    image: docker.repo-ci.sfera.inno.local/tsau-docker-pub/meta-pump:6.2.0.2
+    container_name: "omni1-emulator-meta-pump"
+    depends_on:
+      - omni1-emulator-kafka-2
+    environment:
+      META_PUMP_KAFKA_BOOTSTRAP_SERVERS: "omni1-emulator-kafka-2:39092"
+
+  omni1-emulator-zookeeper-2:
+    image: docker.repo-ci.sfera.inno.local/tsau-docker-pub/confluentinc/cp-zookeeper:6.2.2
+    hostname: zookeeper
+    container_name: omni1-emulator-zookeeper-2
+    ports:
+      - "3381:3181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 3381
+      ZOOKEEPER_TICK_TIME: 2000
+
+  omni1-emulator-kafka-2:
+    image: docker.repo-ci.sfera.inno.local/tsau-docker-pub/confluentinc/cp-kafka:6.2.2
+    hostname: broker
+    container_name: omni1-emulator-kafka-2
+    depends_on:
+      - omni1-emulator-zookeeper-2
+    ports:
+      - "39092:39092"
+      - "39091:39091"
+    restart: always
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'omni1-emulator-zookeeper-2:3381'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,LOCAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: LOCAL://localhost:39091,INTERNAL://omni1-emulator-kafka-2:39092
+      KAFKA_LISTENERS: LOCAL://:39091,INTERNAL://:39092
+      KAFKA_INTER_BROKER_LISTENER_NAME: LOCAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
