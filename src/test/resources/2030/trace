@@ -237,3 +237,17 @@ public class ContextAwareAuditFieldsResolver implements AuditListFieldsResolver 
         }
     }
 }
+
+
+        Map<String, Object> params = methodParams.getParams();
+
+        if (params == null || params.isEmpty()) {
+            return Map.of();
+        }
+
+        String description = params.entrySet().stream()
+                .filter(entry -> entry.getValue() != null)
+                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                .collect(Collectors.joining(", "));
+
+        return Map.of("oper_description", description);
