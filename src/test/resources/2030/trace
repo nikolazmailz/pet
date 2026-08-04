@@ -17,3 +17,83 @@ public class CustomAuditLibTracingServiceImpl implements AuditLibTracingService 
 
 
 }
+
+
+private final CustomAuditLibTracingServiceImpl auditLibTracingService;
+
+ @Override
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain chain
+    ) throws ServletException, IOException {
+        final String _authorizationHeader = request.getHeader(AUTH_TOKEN_HEADER_NAME);
+
+        String _jwt;
+
+        LocalDateTime sessionCreatedAt = LocalDateTime.now();
+        request.setAttribute("sessionCreatedAt", sessionCreatedAt);
+
+        if (!jwtDisabled) {
+            if (_authorizationHeader != null && _authorizationHeader.startsWith(BEARER)) {
+                _jwt = _authorizationHeader.substring(7).trim();
+                try {
+                    String adLoginWithDomain = JWTUtil.getSubWithDomain(_jwt);
+                    String adLogin = JWTUtil.getSub(_jwt);
+                    String sessionId = JWTUtil.getSessionId(_jwt);
+                    String channel = JWTUtil.getChannel(_jwt);
+                    String realm = JWTUtil.getRealm(_jwt);
+                    initiateTracingContext(adLogin, sessionId);
+                    EpaValidationResult validate = epaSdkService.checkJWT(_jwt);
+                    ValidationResult validationResult = validate.getValidationResult();
+                    if (!validationResult.isSuccess()) {
+                        sendJwtValidateEvent(sessionId, false, validationResult.toString());
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        return;
+                    }
+                    log.info("JWT Subject [{}]", JWTUtil.getFullSub(_jwt));
+                    if (!isAllowedChannel(channel)) {
+                        log.error("В JWT прибыл некорректный тип канала");
+                        handleError(response, ErrorResponse.ERROR_UNAUTHORIZED_CHANNEL_MESSAGE);
+                        sendJwtForbiddenEvent(sessionId);
+                        return;
+                    }
+                    if (adLogin != null && sessionId != null && channel != null
+                            && adLoginWithDomain != null) {
+                        request.setAttribute("adLogin", adLoginWithDomain);
+                        request.setAttribute("sessionId", sessionId);
+                        request.setAttribute("channel", channel);
+                        request.setAttribute("adLoginWithoutDomain", adLogin);
+                        request.setAttribute("realm", realm);
+                    } else {
+                        log.error(
+                                "В JWT отсутствует один из необходимых параметров: sub, ctxi, channel or realm.");
+                        handleError(response, ErrorResponse.ERROR_NOT_ALL_REQUIRED_JWT_PARAMS_MESSAGE);
+                        sendJwtForbiddenEvent(sessionId);
+                        return;
+                    }
+
+                } catch (Exception e) {
+                    log.error("Произошла ошибка при аутентификации: [{}]", e.getMessage());
+                    String sessionId = JWTUtil.getSessionId(_jwt);
+                    sendJwtUnexpectedErrorEvent(sessionId);
+                }
+            } else {
+                request.setAttribute("adLogin", jwtDefaultSub);
+            }
+        } else {
+            request.setAttribute("adLogin", JWT_LOCAL_SUB_WITH_DOMAIN);
+            request.setAttribute("sessionId", JWT_LOCAL_SESSION_ID);
+            request.setAttribute("channel", JWT_LOCAL_CHANNEL);
+            request.setAttribute("adLoginWithoutDomain", JWT_LOCAL_SUB);
+            request.setAttribute("realm", JWT_LOCAL_REALM);
+        }
+        chain.doFilter(request, response);
+    }
+
+
+    private void initiateTracingContext(String adlogin, String sessionId) {
+        MDC.put("userId", adlogin);
+        MDC.put("sessionId", sessionId);
+        MDC.put("traceId", auditLibTracingService.getActiveSpanTraceId());
+    }
