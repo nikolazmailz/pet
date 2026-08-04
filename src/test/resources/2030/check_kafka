@@ -14,3 +14,12 @@ docker logs --tail 100 omni1-emulator-opensearch-pump
 
 kafka-topics
 docker exec omni1-emulator-kafka-2 kafka-topics --bootstrap-server localhost:39091 --list
+
+
+docker compose -f docker-compose-audit-v2.yml down
+docker compose -f docker-compose-audit-v2.yml up -d
+
+docker compose -f docker-compose-audit-v2.yml logs -f
+
+docker compose -f docker-compose-audit-v2-standin.yml up -d
+
