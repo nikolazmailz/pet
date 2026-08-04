@@ -15,3 +15,18 @@ import javax.annotation.concurrent.ThreadSafe;
 
 @ThreadSafe
 public interface Span extends ImplicitContextKeyed
+
+
+@Service
+public class OpenTelemetryTraceContextProvider {
+
+    public String getActiveTraceId() {
+        SpanContext context = Span.current().getSpanContext();
+        return context.isValid() ? context.getTraceId() : null;
+    }
+
+    public String getActiveSpanId() {
+        SpanContext context = Span.current().getSpanContext();
+        return context.isValid() ? context.getSpanId() : null;
+    }
+}
