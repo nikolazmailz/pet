@@ -1,7 +1,12 @@
-@SpringBootTest(
-        classes = JwtFilterTestApplication.class,
-        properties = {
-                "spring.autoconfigure.exclude="
-                        + "ru.vtb.omni.audit.kafka.config.AuditLibKafkaSenderConfig"
-        }
-)
+public class OpenTelemetryTraceContextProvider {
+
+    public String getActiveSpanTraceId() {
+        SpanContext context = Span.current().getSpanContext();
+        return context.isValid() ? context.getTraceId() : null;
+    }
+
+    public String getActiveSpanId() {
+        SpanContext context = Span.current().getSpanContext();
+        return context.isValid() ? context.getSpanId() : null;
+    }
+}
