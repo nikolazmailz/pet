@@ -1,12 +1,213 @@
-public class OpenTelemetryTraceContextProvider {
+package ru.ntdev.srhr.common.context;
 
-    public String getActiveSpanTraceId() {
-        SpanContext context = Span.current().getSpanContext();
-        return context.isValid() ? context.getTraceId() : null;
+import java.time.LocalDateTime;
+
+public record RequestContext(
+        String adLogin,
+        String adLoginWithoutDomain,
+        String sessionId,
+        String channel,
+        String realm,
+        String traceId,
+        LocalDateTime sessionCreatedAt
+) {
+}
+
+
+package ru.ntdev.srhr.common.context;
+
+public final class RequestContextHolder {
+
+    private static final ThreadLocal<RequestContext> CONTEXT = new ThreadLocal<>();
+
+    private RequestContextHolder() {
     }
 
-    public String getActiveSpanId() {
-        SpanContext context = Span.current().getSpanContext();
-        return context.isValid() ? context.getSpanId() : null;
+    public static RequestContext get() {
+        RequestContext ctx = CONTEXT.get();
+        if (ctx == null) {
+            throw new IllegalStateException(
+                    "RequestContext не инициализирован: запрос не прошёл через RequestContextFilter");
+        }
+        return ctx;
     }
+
+    public static RequestContext getOrNull() {
+        return CONTEXT.get();
+    }
+
+    static void set(RequestContext ctx) {
+        CONTEXT.set(ctx);
+    }
+
+    static void clear() {
+        CONTEXT.remove();
+    }
+}
+
+
+package ru.ntdev.srhr.common.context;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.MDC;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+
+public class RequestContextFilter extends OncePerRequestFilter {
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain chain) throws ServletException, IOException {
+        RequestContext ctx = new RequestContext(
+                attr(request, "adLogin"),
+                attr(request, "adLoginWithoutDomain"),
+                attr(request, "sessionId"),
+                attr(request, "channel"),
+                attr(request, "realm"),
+                attr(request, "traceId"),
+                (LocalDateTime) request.getAttribute("sessionCreatedAt")
+        );
+        RequestContextHolder.set(ctx);
+        putMdc(ctx);
+        try {
+            chain.doFilter(request, response);
+        } finally {
+            RequestContextHolder.clear();
+            MDC.remove("traceId");
+            MDC.remove("sessionId");
+            MDC.remove("adLogin");
+        }
+    }
+
+    private static String attr(HttpServletRequest request, String name) {
+        return (String) request.getAttribute(name);
+    }
+
+    private static void putMdc(RequestContext ctx) {
+        if (ctx.traceId() != null) MDC.put("traceId", ctx.traceId());
+        if (ctx.sessionId() != null) MDC.put("sessionId", ctx.sessionId());
+        if (ctx.adLogin() != null) MDC.put("adLogin", ctx.adLogin());
+    }
+}
+
+
+package ru.ntdev.srhr.common.context;
+
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+
+@Configuration(proxyBeanMethods = false)
+public class RequestContextConfiguration {
+
+    @Bean
+    public FilterRegistrationBean<RequestContextFilter> requestContextFilter() {
+        FilterRegistrationBean<RequestContextFilter> registration =
+                new FilterRegistrationBean<>(new RequestContextFilter());
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 11);
+        return registration;
+    }
+}
+
+
+package ru.ntdev.srhr.common.context;
+
+import org.springframework.context.annotation.Import;
+
+import java.lang.annotation.*;
+
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Import(RequestContextConfiguration.class)
+public @interface EnableSrhrRequestContext {
+}
+
+
+
+public class RequestContextFilter extends OncePerRequestFilter {
+
+    private final OpenTelemetryTraceContextProvider traceProvider;
+
+    public RequestContextFilter(OpenTelemetryTraceContextProvider traceProvider) {
+        this.traceProvider = traceProvider;
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain chain) throws ServletException, IOException {
+        RequestContext ctx = new RequestContext(
+                attr(request, "adLogin"),
+                attr(request, "adLoginWithoutDomain"),
+                attr(request, "sessionId"),
+                attr(request, "channel"),
+                attr(request, "realm"),
+                traceProvider.getActiveSpanTraceId(),
+                (LocalDateTime) request.getAttribute("sessionCreatedAt")
+        );
+        // ...
+    }
+}
+
+
+@Configuration(proxyBeanMethods = false)
+public class RequestContextConfiguration {
+
+    @Bean
+    public FilterRegistrationBean<RequestContextFilter> requestContextFilter(
+            OpenTelemetryTraceContextProvider traceProvider) {
+        FilterRegistrationBean<RequestContextFilter> registration =
+                new FilterRegistrationBean<>(new RequestContextFilter(traceProvider));
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 11);
+        return registration;
+    }
+}
+
+
+public final class RequestContextHolder {
+
+    private static final ThreadLocal<RequestContext> CONTEXT = new ThreadLocal<>();
+
+    // ... get(), getOrNull() как были
+
+    public static ContextScope open(RequestContext ctx) {
+        RequestContext previous = CONTEXT.get();
+        CONTEXT.set(ctx);
+        putMdc(ctx);
+        return () -> {
+            if (previous != null) {
+                CONTEXT.set(previous);
+            } else {
+                CONTEXT.remove();
+            }
+            clearMdc();
+        };
+    }
+
+    public interface ContextScope extends AutoCloseable {
+        @Override
+        void close(); // без checked-исключения
+    }
+}
+
+@KafkaListener(topics = "${topics.requisition-from-easup}")
+public void onMessage(CandidateStatusEvent event) {
+    try (var ignored = RequestContextHolder.open(toContext(event))) {
+        handler.process(event);
+    }
+}
+
+private RequestContext toContext(CandidateStatusEvent event) {
+    return new RequestContext(
+            event.getInitiatorLogin(), null,
+            event.getSessionId(), event.getChannel(),
+            null, traceProvider.getActiveSpanTraceId(), null);
 }
