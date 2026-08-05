@@ -1,3 +1,25 @@
+pom
+<!-- модуль хранения событий аудита в оперативной памяти -->
+        <dependency>
+            <groupId>ru.vtb.omni</groupId>
+            <artifactId>tsau-audit-lib-in-memory-storage</artifactId>
+            <version>${omni-dependencies.version}</version>
+        </dependency>
+        <!-- модуль отправки событий аудита непосредственно в кафку -->
+        <dependency>
+            <groupId>ru.vtb.omni</groupId>
+            <artifactId>tsau-audit-lib-kafka-sender</artifactId>
+            <version>${omni-dependencies.version}</version>
+        </dependency>
+        <!-- модуль контекста, который используется для получения инициатора запроса, в данном случае servlet context -->
+        <dependency>
+            <groupId>ru.vtb.omni</groupId>
+            <artifactId>tsau-audit-lib-servlet-context</artifactId>
+            <version>${omni-dependencies.version}</version>
+        </dependency>
+
+-----
+
 AppConfig
 @ComponentScan(nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class,basePackageClasses = {
         SrhrAuditConfig.class,
@@ -57,22 +79,4 @@ RequestContextHolder.set(
 
 После выполнения закрыть RequestContextHolder.clear();
 -----
-pom
-<!-- модуль хранения событий аудита в оперативной памяти -->
-        <dependency>
-            <groupId>ru.vtb.omni</groupId>
-            <artifactId>tsau-audit-lib-in-memory-storage</artifactId>
-            <version>${omni-dependencies.version}</version>
-        </dependency>
-        <!-- модуль отправки событий аудита непосредственно в кафку -->
-        <dependency>
-            <groupId>ru.vtb.omni</groupId>
-            <artifactId>tsau-audit-lib-kafka-sender</artifactId>
-            <version>${omni-dependencies.version}</version>
-        </dependency>
-        <!-- модуль контекста, который используется для получения инициатора запроса, в данном случае servlet context -->
-        <dependency>
-            <groupId>ru.vtb.omni</groupId>
-            <artifactId>tsau-audit-lib-servlet-context</artifactId>
-            <version>${omni-dependencies.version}</version>
-        </dependency>
+
