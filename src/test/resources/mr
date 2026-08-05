@@ -8,6 +8,8 @@
         "classpath:audit.yml", "classpath:application.yml"
 })
 
+application.yaml
+
 ms:
   properties:
     info-system-code: srhr
