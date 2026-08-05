@@ -19,6 +19,7 @@ ms:
 audit-group-resolver:
   srhr-resolver: SrhrAuditResolver
 
+pom
 <!-- модуль хранения событий аудита в оперативной памяти -->
         <dependency>
             <groupId>ru.vtb.omni</groupId>
