@@ -22,6 +22,28 @@ audit-group-resolver:
 
 -----
 
+описание кодов
+
+audit-events:
+  # события аудита
+  auditEventCodeList:
+    - event-code: "SRHR_REQUISITION_POST_LIST"
+      group-resolvers: general, web, srhr-resolver
+      schema: "vtb"
+      audit-event-general:
+        oper_name: "Формирование списка"
+        object_name: "Ответ на список заявок"
+      audit-event-start:
+        oper_description: "Начало формирования списка"
+      audit-event-success:
+        oper_description: "Список успешно сформирован"
+      audit-event-failure:
+        oper_description: "Ошибка при формировании списка"
+
+group-resolvers: general, web, srhr-resolver - для рест запросов 
+group-resolvers: general, srhr-resolver - для методов
+-----
+
 pom
 <!-- модуль хранения событий аудита в оперативной памяти -->
         <dependency>
