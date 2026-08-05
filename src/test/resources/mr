@@ -86,3 +86,37 @@ RequestContextHolder.set(
 После выполнения закрыть RequestContextHolder.clear();
 -----
 
+Денис Б
+srhr-ms-bscs-integration
+srhr-ms-easup-integration
+srhr-ms-filestorage
+srhr-ms-payavg
+srhr-ms-payavg-rest
+srhr-ms-paystub
+srhr-ms-paystub-rest
+srhr-ms-salarychange
+srhr-ms-salarychange-rest
+
+Михаил
+srhr-ms-schedule-holiday
+srhr-ms-schedule-holiday-rest
+srhr-ms-sys-housekeep
+srhr-ms-sys-metric
+srhr-ms-sys-metric-rest
+srhr-ms-team-calendar
+srhr-ms-team-calendar-rest
+srhr-ms-timesheet
+srhr-ms-timesheet-rest
+srhr-ms-tsrm-integration
+
+Денис Т
+srhr-ms-staff-info
+srhr-ms-userinfo-rest
+srhr-ms-userphoto
+srhr-ms-userphoto-rest
+srhr-ms-vacationreq
+srhr-ms-vacationreq-rest
+srhr-ms-works-schedule
+srhr-ms-works-schedule-rest
+srhr-ms-yearbonus
+srhr-ms-yearbonus-rest
