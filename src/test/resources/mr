@@ -1,3 +1,13 @@
+
+@ComponentScan(nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class,basePackageClasses = {
+        SrhrAuditConfig.class,
+        JwtSecurityConfiguration.class
+})s
+
+@PropertySource({
+        "classpath:audit.yml", "classpath:application.yml"
+})
+
 ms:
   properties:
     info-system-code: srhr
