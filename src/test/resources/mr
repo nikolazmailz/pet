@@ -44,6 +44,19 @@ group-resolvers: general, web, srhr-resolver - для рест запросов
 group-resolvers: general, srhr-resolver - для методов
 -----
 
+Если не реквест запрос нужно создать ReuestContext
+
+RequestContextHolder.set(
+                new RequestContext(
+                        systemParams.getAdLogin(),
+                        systemParams.getSessionId(),
+                        systemParams.getChannel()
+                )
+        );
+
+
+После выполнения закрыть RequestContextHolder.clear();
+-----
 pom
 <!-- модуль хранения событий аудита в оперативной памяти -->
         <dependency>
