@@ -1,3 +1,12 @@
+ms:
+  properties:
+    info-system-code: srhr
+    info-system-id: "2020"
+    app-name: ${spring.application.name}
+
+audit-group-resolver:
+  srhr-resolver: SrhrAuditResolver
+
 <!-- модуль хранения событий аудита в оперативной памяти -->
         <dependency>
             <groupId>ru.vtb.omni</groupId>
