@@ -1,3 +1,9 @@
+SRHR-2030
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-backend/pulls/2548294
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-mod-commons/pulls/2546024
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition/pulls/2548857
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition-rest/pulls/2546025
+
 pom
 <!-- модуль хранения событий аудита в оперативной памяти -->
         <dependency>
