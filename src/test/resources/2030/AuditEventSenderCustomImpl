@@ -1,0 +1,3635 @@
+package ru.ntdev.srhr.common.audit.service.impl;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import ru.ntdev.srhr.common.audit.service.AuditEventSenderCustom;
+import ru.vtb.omni.audit.lib.api.annotation.Audit;
+import ru.vtb.omni.audit.lib.api.annotation.AuditParam;
+
+import java.time.LocalDateTime;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class AuditEventSenderCustomImpl implements AuditEventSenderCustom {
+    @Audit("SRHR_USERINFO_STAFF_NOT_FOUND_GET_BY_ADLOGIN")
+    @Override
+    public void sendUserinfoNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_USERINFO_STAFF_NOT_FOUND_GET_BY_ADLOGIN");
+    }
+
+    @Audit("SRHR_USERINFO_REST_FORBIDDEN_GET_STAFF")
+    @Override
+    public void sendUserinfoForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_USERINFO_REST_FORBIDDEN_GET_STAFF");
+    }
+
+    @Audit("SRHR_USERINFO_REST_UNEXPECTED_ERROR")
+    @Override
+    public void sendUserinfoError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_USERINFO_REST_UNEXPECTED_ERROR");
+    }
+
+    @Audit("SRHR_USERINFO_REST_NOT_FOUND_TEAM")
+    @Override
+    public void sendUserinfoTeamNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_USERINFO_REST_NOT_FOUND_TEAM");
+    }
+
+    @Audit("SRHR_USERINFO_REST_FORBIDDEN_TEAM")
+    @Override
+    public void sendUserinfoTeamForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_USERINFO_REST_FORBIDDEN_TEAM");
+    }
+
+    @Audit("SRHR_USERINFO_REST_UNEXPECTED_ERROR_TEAM")
+    @Override
+    public void sendUserinfoTeamError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_USERINFO_REST_UNEXPECTED_ERROR_TEAM");
+    }
+
+    @Audit("SRHR_USERINFO_REST_NOT_FOUND_USERLIST")
+    @Override
+    public void sendUserinfoUserlistNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_USERINFO_REST_NOT_FOUND_USERLIST");
+    }
+
+    @Audit("SRHR_USERINFO_REST_FORBIDDEN_USERLIST")
+    @Override
+    public void sendUserinfoUserlistForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_USERINFO_REST_FORBIDDEN_USERLIST");
+    }
+
+    @Audit("SRHR_USERINFO_REST_UNEXPECTED_ERROR_USERLIST")
+    @Override
+    public void sendUserinfoUserlistError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_USERINFO_REST_UNEXPECTED_ERROR_USERLIST");
+    }
+
+    @Audit("SRHR_USERINFO_REST_NOT_FOUND_CHILD")
+    @Override
+    public void sendUserinfoChildNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_USERINFO_REST_NOT_FOUND_CHILD");
+    }
+
+    @Audit("SRHR_USERINFO_REST_FORBIDDEN_CHILD")
+    @Override
+    public void sendUserinfoChildForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_USERINFO_REST_FORBIDDEN_CHILD");
+    }
+
+    @Audit("SRHR_USERINFO_REST_UNEXPECTED_ERROR_CHILD")
+    @Override
+    public void sendUserinfoChildError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_USERINFO_REST_UNEXPECTED_ERROR_CHILD");
+    }
+
+    @Audit("SRHR_USERINFO_REST_NOT_FOUND_ROLES")
+    @Override
+    public void sendUserinfoRolesNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_USERINFO_REST_NOT_FOUND_ROLES");
+    }
+
+    @Audit("SRHR_USERINFO_REST_FORBIDDEN_ROLES")
+    @Override
+    public void sendUserinfoRolesForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_USERINFO_REST_FORBIDDEN_ROLES");
+    }
+
+    @Audit("SRHR_USERINFO_REST_UNEXPECTED_ERROR_ROLES")
+    @Override
+    public void sendUserinfoRolesError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_USERINFO_REST_UNEXPECTED_ERROR_ROLES");
+    }
+
+    @Audit("SRHR_PAYSTUB_REST_NOT_FOUND_PERIOD")
+    @Override
+    public void sendPaystubPeriodNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYSTUB_REST_NOT_FOUND_PERIOD");
+    }
+
+    @Audit("SRHR_PAYSTUB_REST_FORBIDDEN_PERIOD")
+    @Override
+    public void sendPaystubPeriodForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYSTUB_REST_FORBIDDEN_PERIOD");
+    }
+
+    @Audit("SRHR_PAYSTUB_REST_UNEXPECTED_ERROR_PERIOD")
+    @Override
+    public void sendPaystubPeriodError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYSTUB_REST_UNEXPECTED_ERROR_PERIOD");
+    }
+
+    @Audit("SRHR_PAYSTUB_REST_NOT_FOUND_MAIL")
+    @Override
+    public void sendPaystubMailNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYSTUB_REST_NOT_FOUND_MAIL");
+    }
+
+    @Audit("SRHR_PAYSTUB_REST_FORBIDDEN_MAIL")
+    @Override
+    public void sendPaystubMailForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYSTUB_REST_FORBIDDEN_MAIL");
+    }
+
+    @Audit("SRHR_PAYSTUB_REST_UNEXPECTED_ERROR_MAIL")
+    @Override
+    public void sendPaystubMailError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYSTUB_REST_UNEXPECTED_ERROR_MAIL");
+    }
+
+    @Audit("SRHR_PAYSTUB_REST_NOT_FOUND_PDF")
+    @Override
+    public void sendPaystubPdfNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYSTUB_REST_NOT_FOUND_PDF");
+    }
+
+    @Audit("SRHR_PAYSTUB_REST_FORBIDDEN_PDF")
+    @Override
+    public void sendPaystubPdfForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYSTUB_REST_FORBIDDEN_PDF");
+    }
+
+    @Audit("SRHR_PAYSTUB_REST_UNEXPECTED_ERROR_PDF")
+    @Override
+    public void sendPaystubPdfError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYSTUB_REST_UNEXPECTED_ERROR_PDF");
+    }
+
+    @Audit("SRHR_PAYSTUB_REST_NOT_FOUND_BODY")
+    @Override
+    public void sendPaystubBodyNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYSTUB_REST_NOT_FOUND_BODY");
+    }
+
+    @Audit("SRHR_PAYSTUB_REST_FORBIDDEN_BODY")
+    @Override
+    public void sendPaystubBodyForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYSTUB_REST_FORBIDDEN_BODY");
+    }
+
+    @Audit("SRHR_PAYSTUB_REST_UNEXPECTED_ERROR_BODY")
+    @Override
+    public void sendPaystubBodyError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYSTUB_REST_UNEXPECTED_ERROR_BODY");
+    }
+
+    @Audit("SRHR_PAYSTUB_REST_NOT_FOUND_HEAD")
+    @Override
+    public void sendPaystubHeadNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYSTUB_REST_NOT_FOUND_HEAD");
+    }
+
+    @Audit("SRHR_PAYSTUB_REST_FORBIDDEN_HEAD")
+    @Override
+    public void sendPaystubHeadForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYSTUB_REST_FORBIDDEN_HEAD");
+    }
+
+    @Audit("SRHR_PAYSTUB_REST_UNEXPECTED_ERROR_HEAD")
+    @Override
+    public void sendPaystubHeadError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYSTUB_REST_UNEXPECTED_ERROR_HEAD");
+    }
+
+    @Audit("SRHR_PAYAVG_REST_NOT_FOUND_EVENT")
+    @Override
+    public void sendPayavgEventNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYAVG_REST_NOT_FOUND_EVENT");
+    }
+
+    @Audit("SRHR_PAYAVG_REST_FORBIDDEN_EVENT")
+    @Override
+    public void sendPayavgEventForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYAVG_REST_FORBIDDEN_EVENT");
+    }
+
+    @Audit("SRHR_PAYAVG_REST_UNEXPECTED_ERROR_EVENT")
+    @Override
+    public void sendPayavgEventError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYAVG_REST_UNEXPECTED_ERROR_EVENT");
+    }
+
+    @Audit("SRHR_PAYAVG_REST_NOT_FOUND_CALCULATE")
+    @Override
+    public void sendPayavgCalculateNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYAVG_REST_NOT_FOUND_CALCULATE");
+    }
+
+    @Audit("SRHR_PAYAVG_REST_FORBIDDEN_CALCULATE")
+    @Override
+    public void sendPayavgCalculateForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYAVG_REST_FORBIDDEN_CALCULATE");
+    }
+
+    @Audit("SRHR_PAYAVG_REST_UNEXPECTED_ERROR_CALCULATE")
+    @Override
+    public void sendPayavgCalculateError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_PAYAVG_REST_UNEXPECTED_ERROR_CALCULATE");
+    }
+
+    @Audit("SRHR_JWT_VALIDATE")
+    @Override
+    public void sendJwtValidateEvent(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            Boolean isValid,
+            String errorMessage
+    ) throws Exception {
+        log.debug("Отправка события: SRHR_JWT_VALIDATE");
+        if (!isValid) throw new Exception(errorMessage);
+    }
+
+    @Audit("SRHR_FORBIDDEN_INVALID_JWT")
+    @Override
+    public void sendJwtForbiddenEvent(
+            @AuditParam(value = SESSION_ID) String sessionId
+    ) {
+        log.debug("Отправка события: SRHR_FORBIDDEN_INVALID_JWT");
+    }
+
+    @Audit("SRHR_JWT_VALIDATE_UNEXPECTED_ERROR")
+    @Override
+    public void sendJwtUnexpectedErrorEvent(
+            @AuditParam(value = SESSION_ID) String sessionId
+    ) {
+        log.debug("Отправка события: SRHR_JWT_VALIDATE_UNEXPECTED_ERROR");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_REQUEST")
+    @Override
+    public void sendVacationreqRequestNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_REQUEST");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_REQUEST")
+    @Override
+    public void sendVacationreqRequestForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_REQUEST");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_REQUEST")
+    @Override
+    public void sendVacationreqRequestError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_REQUEST");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_AVDAY")
+    @Override
+    public void sendVacationreqAvdayNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_AVDAY");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_AVDAY")
+    @Override
+    public void sendVacationreqAvdayForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_AVDAY");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_AVDAY")
+    @Override
+    public void sendVacationreqAvdayError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_AVDAY");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_QUOTA")
+    @Override
+    public void sendVacationreqQuotaNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_QUOTA");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_QUOTA")
+    @Override
+    public void sendVacationreqQuotaForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_QUOTA");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_QUOTA")
+    @Override
+    public void sendVacationreqQuotaError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_QUOTA");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_REQBYID")
+    @Override
+    public void sendVacationreqReqByIdNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_REQBYID");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_REQBYID")
+    @Override
+    public void sendVacationreqReqByIdForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_REQBYID");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_REQBYID")
+    @Override
+    public void sendVacationreqReqByIdError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_REQBYID");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_AVDAY_CHECK")
+    @Override
+    public void sendVacationreqAvdayCheckNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_AVDAY_CHECK");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_AVDAY_CHECK")
+    @Override
+    public void sendVacationreqAvdayCheckForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_AVDAY_CHECK");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_AVDAY_CHECK")
+    @Override
+    public void sendVacationreqAvdayCheckError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_AVDAY_CHECK");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_DAYS_QUOTA")
+    @Override
+    public void sendVacationreqDaysQuotaNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_DAYS_QUOTA");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_DAYS_QUOTA")
+    @Override
+    public void sendVacationreqDaysQuotaForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_DAYS_QUOTA");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_DAYS_QUOTA")
+    @Override
+    public void sendVacationreqDaysQuotaError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_DAYS_QUOTA");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_ATTACH")
+    @Override
+    public void sendVacationreqAttachmentNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_ATTACH");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_ATTACH")
+    @Override
+    public void sendVacationreqAttachmentForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_ATTACH");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_ATTACH")
+    @Override
+    public void sendVacationreqAttachmentError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_ATTACH");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_POST_REQUEST")
+    @Override
+    public void sendVacationreqPostRequestNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_POST_REQUEST");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_POST_REQUEST")
+    @Override
+    public void sendVacationreqPostRequestForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_POST_REQUEST");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_POST_REQUEST")
+    @Override
+    public void sendVacationreqPostRequestError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_POST_REQUEST");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_DELEGATE")
+    @Override
+    public void sendVacationreqDelegateNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_DELEGATE");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_DELEGATE")
+    @Override
+    public void sendVacationreqDelegateForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_DELEGATE");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_DELEGATE")
+    @Override
+    public void sendVacationreqDelegateError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_DELEGATE");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_TRANSFER_AVAILABLE")
+    @Override
+    public void sendVacationreqTransferAvailableNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_TRANSFER_AVAILABLE");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_TRANSFER_AVAILABLE")
+    @Override
+    public void sendVacationreqTransferAvailableForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_TRANSFER_AVAILABLE");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_TRANSFER_AVAILABLE")
+    @Override
+    public void sendVacationreqTransferAvailableError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_TRANSFER_AVAILABLE");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_POST_TRANSFER")
+    @Override
+    public void sendVacationreqPostTransferNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_POST_TRANSFER");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_POST_TRANSFER")
+    @Override
+    public void sendVacationreqPostTransferForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_POST_TRANSFER");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_POST_TRANSFER")
+    @Override
+    public void sendVacationreqPostTransferError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_POST_TRANSFER");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_TRANSFER_HISTORY")
+    @Override
+    public void sendVacationreqTransferHistoryNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_TRANSFER_HISTORY");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_TRANSFER_HISTORY")
+    @Override
+    public void sendVacationreqTransferHistoryForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_TRANSFER_HISTORY");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_TRANSFER_HISTORY")
+    @Override
+    public void sendVacationreqTransferHistoryError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_TRANSFER_HISTORY");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_GET_TRANSFER")
+    @Override
+    public void sendVacationreqGetTransferNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_GET_TRANSFER");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_GET_TRANSFER")
+    @Override
+    public void sendVacationreqGetTransferForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_GET_TRANSFER");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_GET_TRANSFER")
+    @Override
+    public void sendVacationreqGetTransferError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_GET_TRANSFER");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_TRANSFER_CANCEL")
+    @Override
+    public void sendVacationreqTransferCancelNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_TRANSFER_CANCEL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_TRANSFER_CANCEL")
+    @Override
+    public void sendVacationreqTransferCancelForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_TRANSFER_CANCEL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_TRANSFER_CANCEL")
+    @Override
+    public void sendVacationreqTransferCancelError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_TRANSFER_CANCEL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_RECALL_AVAILABLE")
+    @Override
+    public void sendVacationreqRecallAvailableNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_RECALL_AVAILABLE");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_RECALL_AVAILABLE")
+    @Override
+    public void sendVacationreqRecallAvailableForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_RECALL_AVAILABLE");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_RECALL_AVAILABLE")
+    @Override
+    public void sendVacationreqRecallAvailableError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_RECALL_AVAILABLE");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_POST_RECALL")
+    @Override
+    public void sendVacationreqPostRecallNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_POST_RECALL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_POST_RECALL")
+    @Override
+    public void sendVacationreqPostRecallForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_POST_RECALL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_POST_RECALL")
+    @Override
+    public void sendVacationreqPostRecallError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_POST_RECALL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_RECALL_HISTORY")
+    @Override
+    public void sendVacationreqRecallHistoryNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_RECALL_HISTORY");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_RECALL_HISTORY")
+    @Override
+    public void sendVacationreqRecallHistoryForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_RECALL_HISTORY");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_RECALL_HISTORY")
+    @Override
+    public void sendVacationreqRecallHistoryError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_RECALL_HISTORY");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_GET_RECALL")
+    @Override
+    public void sendVacationreqGetRecallNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_GET_RECALL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_GET_RECALL")
+    @Override
+    public void sendVacationreqGetRecallForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_GET_RECALL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_GET_RECALL")
+    @Override
+    public void sendVacationreqGetRecallError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_GET_RECALL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_RECALL_CANCEL")
+    @Override
+    public void sendVacationreqRecallCancelNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_RECALL_CANCEL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_RECALL_CANCEL")
+    @Override
+    public void sendVacationreqRecallCancelForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_RECALL_CANCEL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_RECALL_CANCEL")
+    @Override
+    public void sendVacationreqRecallCancelError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_RECALL_CANCEL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_CANCEL_AVAILABLE")
+    @Override
+    public void sendVacationreqCancelAvailableNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_CANCEL_AVAILABLE");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_CANCEL_AVAILABLE")
+    @Override
+    public void sendVacationreqCancelAvailableForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_CANCEL_AVAILABLE");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_CANCEL_AVAILABLE")
+    @Override
+    public void sendVacationreqCancelAvailableError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_CANCEL_AVAILABLE");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_POST_CANCEL")
+    @Override
+    public void sendVacationreqPostCancelNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_POST_CANCEL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_POST_CANCEL")
+    @Override
+    public void sendVacationreqPostCancelForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_POST_CANCEL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_POST_CANCEL")
+    @Override
+    public void sendVacationreqPostCancelError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_POST_CANCEL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_CANCEL_HISTORY")
+    @Override
+    public void sendVacationreqCancelHistoryNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_CANCEL_HISTORY");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_CANCEL_HISTORY")
+    @Override
+    public void sendVacationreqCancelHistoryForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_CANCEL_HISTORY");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_CANCEL_HISTORY")
+    @Override
+    public void sendVacationreqCancelHistoryError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_CANCEL_HISTORY");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_GET_CANCEL")
+    @Override
+    public void sendVacationreqGetCancelNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_GET_CANCEL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_GET_CANCEL")
+    @Override
+    public void sendVacationreqGetCancelForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_GET_CANCEL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_GET_CANCEL")
+    @Override
+    public void sendVacationreqGetCancelError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_GET_CANCEL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_CANCEL_CANCEL")
+    @Override
+    public void sendVacationreqCancelCancelNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_CANCEL_CANCEL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_CANCEL_CANCEL")
+    @Override
+    public void sendVacationreqCancelCancelForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_CANCEL_CANCEL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_CANCEL_CANCEL")
+    @Override
+    public void sendVacationreqCancelCancelError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_CANCEL_CANCEL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_INFOTEXT_CANCEL")
+    @Override
+    public void sendVacationreqInfotextCancelNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_INFOTEXT_CANCEL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_INFOTEXT_CANCEL")
+    @Override
+    public void sendVacationreqInfotextCancelForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_INFOTEXT_CANCEL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_INFOTEXT_CANCEL")
+    @Override
+    public void sendVacationreqInfotextCancelError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_INFOTEXT_CANCEL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_INFOTEXT_RECALL")
+    @Override
+    public void sendVacationreqInfotextRecallNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_INFOTEXT_RECALL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_INFOTEXT_RECALL")
+    @Override
+    public void sendVacationreqInfotextRecallForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_INFOTEXT_RECALL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_INFOTEXT_RECALL")
+    @Override
+    public void sendVacationreqInfotextRecallError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_INFOTEXT_RECALL");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_CANCEL_DEBT_APPLICATION")
+    @Override
+    public void sendVacationreqCancelDebtApplicationNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_CANCEL_DEBT_APPLICATION");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_CANCEL_DEBT_APPLICATION")
+    @Override
+    public void sendVacationreqCancelDebtApplicationForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_CANCEL_DEBT_APPLICATION");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_CANCEL_DEBT_APPLICATION")
+    @Override
+    public void sendVacationreqCancelDebtApplicationError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_CANCEL_DEBT_APPLICATION");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_RECALL_DEBT_APPLICATION")
+    @Override
+    public void sendVacationreqRecallDebtApplicationNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_RECALL_DEBT_APPLICATION");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_RECALL_DEBT_APPLICATION")
+    @Override
+    public void sendVacationreqRecallDebtApplicationForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_RECALL_DEBT_APPLICATION");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_RECALL_DEBT_APPLICATION")
+    @Override
+    public void sendVacationreqRecallDebtApplicationError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_RECALL_DEBT_APPLICATION");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_NOT_FOUND_RECALL_DAYS_LEFT_AFTER")
+    @Override
+    public void sendVacationreqRecallDaysLeftAfterNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_NOT_FOUND_RECALL_DAYS_LEFT_AFTER");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_FORBIDDEN_RECALL_DAYS_LEFT_AFTER")
+    @Override
+    public void sendVacationreqRecallDaysLeftAfterForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_FORBIDDEN_RECALL_DAYS_LEFT_AFTER");
+    }
+
+    @Audit("SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_RECALL_DAYS_LEFT_AFTER")
+    @Override
+    public void sendVacationreqRecallDaysLeftAfterError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_VACATIONREQ_REST_UNEXPECTED_ERROR_RECALL_DAYS_LEFT_AFTER");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_STAFF_DEPENDENCY")
+    @Override
+    public void sendSalarychangeStaffDependencyNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_STAFF_DEPENDENCY");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_STAFF_DEPENDENCY")
+    @Override
+    public void sendSalarychangeStaffDependencyForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_STAFF_DEPENDENCY");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_STAFF_DEPENDENCY")
+    @Override
+    public void sendSalarychangeStaffDependencyError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_STAFF_DEPENDENCY");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_STAFF_DEPENDENCY_EXP")
+    @Override
+    public void sendSalarychangeStaffDependencyExpNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_STAFF_DEPENDENCY_EXP");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_STAFF_DEPENDENCY_EXP")
+    @Override
+    public void sendSalarychangeStaffDependencyExpForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_STAFF_DEPENDENCY_EXP");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_STAFF_DEPENDENCY_EXP")
+    @Override
+    public void sendSalarychangeStaffDependencyExpError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_STAFF_DEPENDENCY_EXP");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_STAFF_DETAIL")
+    @Override
+    public void sendSalarychangeStaffDetailNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_STAFF_DETAIL");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_STAFF_DETAIL")
+    @Override
+    public void sendSalarychangeStaffDetailForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_STAFF_DETAIL");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_STAFF_DETAIL")
+    @Override
+    public void sendSalarychangeStaffDetailError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_STAFF_DETAIL");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_POST_STAFF_DETAIL")
+    @Override
+    public void sendSalarychangePostStaffDetailNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_POST_STAFF_DETAIL");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_POST_STAFF_DETAIL")
+    @Override
+    public void sendSalarychangePostStaffDetailForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_POST_STAFF_DETAIL");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_POST_STAFF_DETAIL")
+    @Override
+    public void sendSalarychangePostStaffDetailError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_POST_STAFF_DETAIL");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_STAFF_DELEGATION_LIST")
+    @Override
+    public void sendSalarychangeStaffDelegationListNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_STAFF_DELEGATION_LIST");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_STAFF_DELEGATION_LIST")
+    @Override
+    public void sendSalarychangeStaffDelegationListForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_STAFF_DELEGATION_LIST");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_STAFF_DELEGATION_LIST")
+    @Override
+    public void sendSalarychangeStaffDelegationListError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_STAFF_DELEGATION_LIST");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_STAFF_LIST")
+    @Override
+    public void sendSalarychangeStaffListNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_STAFF_LIST");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_STAFF_LIST")
+    @Override
+    public void sendSalarychangeStaffListForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_STAFF_LIST");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_STAFF_LIST")
+    @Override
+    public void sendSalarychangeStaffListError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_STAFF_LIST");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_STAFF_LIST_DETAIL")
+    @Override
+    public void sendSalarychangeStaffListDetailNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_STAFF_LIST_DETAIL");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_STAFF_LIST_DETAIL")
+    @Override
+    public void sendSalarychangeStaffListDetailForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_STAFF_LIST_DETAIL");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_STAFF_LIST_DETAIL")
+    @Override
+    public void sendSalarychangeStaffListDetailError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_STAFF_LIST_DETAIL");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_POST_STAFF_LIST")
+    @Override
+    public void sendSalarychangePostStaffListNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_POST_STAFF_LIST");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_POST_STAFF_LIST")
+    @Override
+    public void sendSalarychangePostStaffListForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_POST_STAFF_LIST");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_POST_STAFF_LIST")
+    @Override
+    public void sendSalarychangePostStaffListError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_POST_STAFF_LIST");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_POST_STAFF_LIST_EVENT")
+    @Override
+    public void sendSalarychangePostStaffListEventNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_POST_STAFF_LIST_EVENT");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_POST_STAFF_LIST_EVENT")
+    @Override
+    public void sendSalarychangePostStaffListEventForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_POST_STAFF_LIST_EVENT");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_POST_STAFF_LIST_EVENT")
+    @Override
+    public void sendSalarychangePostStaffListEventError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_POST_STAFF_LIST_EVENT");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_REFERENCE_CITY")
+    @Override
+    public void sendSalarychangeReferenceCityNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_REFERENCE_CITY");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_REFERENCE_CITY")
+    @Override
+    public void sendSalarychangeReferenceCityForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_REFERENCE_CITY");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_REFERENCE_CITY")
+    @Override
+    public void sendSalarychangeReferenceCityError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_REFERENCE_CITY");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_REFERENCE_STAFF_POSITION")
+    @Override
+    public void sendSalarychangeReferenceStaffPositionNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_REFERENCE_STAFF_POSITION");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_REFERENCE_STAFF_POSITION")
+    @Override
+    public void sendSalarychangeReferenceStaffPositionForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_REFERENCE_STAFF_POSITION");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_REFERENCE_STAFF_POSITION")
+    @Override
+    public void sendSalarychangeReferenceStaffPositionError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_REFERENCE_STAFF_POSITION");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_REFERENCE_TRM")
+    @Override
+    public void sendSalarychangeReferenceTrmNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_REFERENCE_TRM");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_REFERENCE_TRM")
+    @Override
+    public void sendSalarychangeReferenceTrmForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_REFERENCE_TRM");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_REFERENCE_TRM")
+    @Override
+    public void sendSalarychangeReferenceTrmError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_REFERENCE_TRM");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_REFERENCE_DELEGATION")
+    @Override
+    public void sendSalarychangeReferenceDelegationNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_REFERENCE_DELEGATION");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_REFERENCE_DELEGATION")
+    @Override
+    public void sendSalarychangeReferenceDelegationForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_REFERENCE_DELEGATION");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_REFERENCE_DELEGATION")
+    @Override
+    public void sendSalarychangeReferenceDelegationError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_REFERENCE_DELEGATION");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_REFERENCE")
+    @Override
+    public void sendSalarychangeReferenceRefNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_REFERENCE");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_REFERENCE")
+    @Override
+    public void sendSalarychangeReferenceRefForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_REFERENCE");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_REFERENCE")
+    @Override
+    public void sendSalarychangeReferenceRefError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_REFERENCE");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_REFERENCE_TAB")
+    @Override
+    public void sendSalarychangeReferenceTabNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_REFERENCE_TAB");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_REFERENCE_TAB")
+    @Override
+    public void sendSalarychangeReferenceTabForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_REFERENCE_TAB");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_REFERENCE_TAB")
+    @Override
+    public void sendSalarychangeReferenceTabError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_REFERENCE_TAB");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_POST_DELEGATION")
+    @Override
+    public void sendSalarychangePostDelegationNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_POST_DELEGATION");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_POST_DELEGATION")
+    @Override
+    public void sendSalarychangePostDelegationForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_POST_DELEGATION");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_POST_DELEGATION")
+    @Override
+    public void sendSalarychangePostDelegationError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_POST_DELEGATION");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_REPORT_TASK_STATUS")
+    @Override
+    public void sendSalarychangeReportTaskStatusNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_REPORT_TASK_STATUS");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_REPORT_TASK_STATUS")
+    @Override
+    public void sendSalarychangeReportTaskStatusForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_REPORT_TASK_STATUS");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_REPORT_TASK_STATUS")
+    @Override
+    public void sendSalarychangeReportTaskStatusError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_REPORT_TASK_STATUS");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_POST_REPORT_TASK")
+    @Override
+    public void sendSalarychangePostReportTaskNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_POST_REPORT_TASK");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_POST_REPORT_TASK")
+    @Override
+    public void sendSalarychangePostReportTaskForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_POST_REPORT_TASK");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_POST_REPORT_TASK")
+    @Override
+    public void sendSalarychangePostReportTaskError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_POST_REPORT_TASK");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_REPORT_ATTACHMENT")
+    @Override
+    public void sendSalarychangeReportAttachmentNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_NOT_FOUND_SALARYCHANGE_POST_REPORT_TASK");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_REPORT_ATTACHMENT")
+    @Override
+    public void sendSalarychangeReportAttachmentForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_FORBIDDEN_SALARYCHANGE_POST_REPORT_TASK");
+    }
+
+    @Audit("SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_REPORT_ATTACHMENT")
+    @Override
+    public void sendSalarychangeReportAttachmentError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SALARYCHANGE_REST_UNEXPECTED_ERROR_SALARYCHANGE_POST_REPORT_TASK");
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_NOT_FOUND_SCHEDULE_HOLIDAY_USER")
+    @Override
+    public void sendScheduleHolidayUserNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SCHEDULE_HOLIDAY_REST_NOT_FOUND_SCHEDULE_HOLIDAY_USER");
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_FORBIDDEN_SCHEDULE_HOLIDAY_USER")
+    @Override
+    public void sendScheduleHolidayUserForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SCHEDULE_HOLIDAY_REST_FORBIDDEN_SCHEDULE_HOLIDAY_USER");
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_UNEXPECTED_ERROR_SCHEDULE_HOLIDAY_USER")
+    @Override
+    public void sendScheduleHolidayUserError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SCHEDULE_HOLIDAY_REST_UNEXPECTED_ERROR_SCHEDULE_HOLIDAY_USER");
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_NOT_FOUND_SCHEDULE_HOLIDAY_REF")
+    @Override
+    public void sendScheduleHolidayRefNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SCHEDULE_HOLIDAY_REST_NOT_FOUND_SCHEDULE_HOLIDAY_REF");
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_FORBIDDEN_SCHEDULE_HOLIDAY_REF")
+    @Override
+    public void sendScheduleHolidayRefForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SCHEDULE_HOLIDAY_REST_FORBIDDEN_SCHEDULE_HOLIDAY_REF");
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_UNEXPECTED_ERROR_SCHEDULE_HOLIDAY_REF")
+    @Override
+    public void sendScheduleHolidayRefError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SCHEDULE_HOLIDAY_REST_UNEXPECTED_ERROR_SCHEDULE_HOLIDAY_REF");
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_NOT_FOUND_SCHEDULE_HOLIDAY_REQUEST")
+    @Override
+    public void sendScheduleHolidayRequestNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SCHEDULE_HOLIDAY_REST_NOT_FOUND_SCHEDULE_HOLIDAY_REQUEST");
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_FORBIDDEN_SCHEDULE_HOLIDAY_REQUEST")
+    @Override
+    public void sendScheduleHolidayRequestForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SCHEDULE_HOLIDAY_REST_FORBIDDEN_SCHEDULE_HOLIDAY_REQUEST");
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_UNEXPECTED_ERROR_SCHEDULE_HOLIDAY_REQUEST")
+    @Override
+    public void sendScheduleHolidayRequestError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SCHEDULE_HOLIDAY_REST_UNEXPECTED_ERROR_SCHEDULE_HOLIDAY_REQUEST");
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_NOT_FOUND_SCHEDULE_HOLIDAY_REQUEST_INFO")
+    @Override
+    public void sendScheduleHolidayRequestInfoNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SCHEDULE_HOLIDAY_REST_NOT_FOUND_SCHEDULE_HOLIDAY_REQUEST_INFO");
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_FORBIDDEN_SCHEDULE_HOLIDAY_REQUEST_INFO")
+    @Override
+    public void sendScheduleHolidayRequestInfoForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SCHEDULE_HOLIDAY_REST_FORBIDDEN_SCHEDULE_HOLIDAY_REQUEST_INFO");
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_UNEXPECTED_ERROR_SCHEDULE_HOLIDAY_REQUEST_INFO")
+    @Override
+    public void sendScheduleHolidayRequestInfoError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SCHEDULE_HOLIDAY_REST_UNEXPECTED_ERROR_SCHEDULE_HOLIDAY_REQUEST_INFO");
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_NOT_FOUND_SCHEDULE_HOLIDAY_POST_REQUEST")
+    @Override
+    public void sendScheduleHolidayPostRequestNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SCHEDULE_HOLIDAY_REST_NOT_FOUND_SCHEDULE_HOLIDAY_POST_REQUEST");
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_FORBIDDEN_SCHEDULE_HOLIDAY_POST_REQUEST")
+    @Override
+    public void sendScheduleHolidayPostRequestForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SCHEDULE_HOLIDAY_REST_FORBIDDEN_SCHEDULE_HOLIDAY_POST_REQUEST");
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_UNEXPECTED_ERROR_SCHEDULE_HOLIDAY_POST_REQUEST")
+    @Override
+    public void sendScheduleHolidayPostRequestError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SCHEDULE_HOLIDAY_REST_UNEXPECTED_ERROR_SCHEDULE_HOLIDAY_POST_REQUEST");
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_NOT_FOUND_SCHEDULE_HOLIDAY_POST_VACATION_LIMIT")
+    @Override
+    public void sendScheduleHolidayPostVacationLimitNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SCHEDULE_HOLIDAY_REST_NOT_FOUND_SCHEDULE_HOLIDAY_POST_VACATION_LIMIT");
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_FORBIDDEN_SCHEDULE_HOLIDAY_POST_VACATION_LIMIT")
+    @Override
+    public void sendScheduleHolidayPostVacationLimitForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SCHEDULE_HOLIDAY_REST_FORBIDDEN_SCHEDULE_HOLIDAY_POST_VACATION_LIMIT");
+    }
+
+    @Audit("SRHR_SCHEDULE_HOLIDAY_REST_UNEXPECTED_ERROR_SCHEDULE_HOLIDAY_POST_VACATION_LIMIT")
+    @Override
+    public void sendScheduleHolidayPostVacationLimitError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_SCHEDULE_HOLIDAY_REST_UNEXPECTED_ERROR_SCHEDULE_HOLIDAY_POST_VACATION_LIMIT");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_NOT_FOUND_TEAM_CALENDAR_ORG_UNIT")
+    @Override
+    public void sendTeamCalendarOrgUnitNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_NOT_FOUND_TEAM_CALENDAR_ORG_UNIT");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_FORBIDDEN_TEAM_CALENDAR_ORG_UNIT")
+    @Override
+    public void sendTeamCalendarOrgUnitForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_FORBIDDEN_TEAM_CALENDAR_ORG_UNIT");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_UNEXPECTED_ERROR_TEAM_CALENDAR_ORG_UNIT")
+    @Override
+    public void sendTeamCalendarOrgUnitError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_UNEXPECTED_ERROR_TEAM_CALENDAR_ORG_UNIT");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_NOT_FOUND_TEAM_CALENDAR_PAGE_REFERENCE")
+    @Override
+    public void sendTeamCalendarPageReferenceNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_NOT_FOUND_TEAM_CALENDAR_PAGE_REFERENCE");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_FORBIDDEN_TEAM_CALENDAR_PAGE_REFERENCE")
+    @Override
+    public void sendTeamCalendarPageReferenceForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_FORBIDDEN_TEAM_CALENDAR_PAGE_REFERENCE");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_UNEXPECTED_ERROR_TEAM_CALENDAR_PAGE_REFERENCE")
+    @Override
+    public void sendTeamCalendarPageReferenceError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_UNEXPECTED_ERROR_TEAM_CALENDAR_PAGE_REFERENCE");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_NOT_FOUND_TEAM_CALENDAR_USER_INFO")
+    @Override
+    public void sendTeamCalendarUserInfoNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_NOT_FOUND_TEAM_CALENDAR_USER_INFO");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_FORBIDDEN_TEAM_CALENDAR_USER_INFO")
+    @Override
+    public void sendTeamCalendarUserInfoForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_FORBIDDEN_TEAM_CALENDAR_USER_INFO");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_UNEXPECTED_ERROR_TEAM_CALENDAR_USER_INFO")
+    @Override
+    public void sendTeamCalendarUserInfoError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_UNEXPECTED_ERROR_TEAM_CALENDAR_USER_INFO");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_NOT_FOUND_TEAM_CALENDAR_SETTINGS")
+    @Override
+    public void sendTeamCalendarSettingsNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_NOT_FOUND_TEAM_CALENDAR_SETTINGS");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_FORBIDDEN_TEAM_CALENDAR_SETTINGS")
+    @Override
+    public void sendTeamCalendarSettingsForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_FORBIDDEN_TEAM_CALENDAR_SETTINGS");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_UNEXPECTED_ERROR_TEAM_CALENDAR_SETTINGS")
+    @Override
+    public void sendTeamCalendarSettingsError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_UNEXPECTED_ERROR_TEAM_CALENDAR_SETTINGS");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_NOT_FOUND_TEAM_CALENDAR_ORG_UNIT_EMPLOYEE")
+    @Override
+    public void sendTeamCalendarOrgUnitEmployeeNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_NOT_FOUND_TEAM_CALENDAR_ORG_UNIT_EMPLOYEE");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_FORBIDDEN_TEAM_CALENDAR_ORG_UNIT_EMPLOYEE")
+    @Override
+    public void sendTeamCalendarOrgUnitEmployeeForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_FORBIDDEN_TEAM_CALENDAR_ORG_UNIT_EMPLOYEE");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_UNEXPECTED_ERROR_TEAM_CALENDAR_ORG_UNIT_EMPLOYEE")
+    @Override
+    public void sendTeamCalendarOrgUnitEmployeeError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_UNEXPECTED_ERROR_TEAM_CALENDAR_ORG_UNIT_EMPLOYEE");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_NOT_FOUND_TEAM_CALENDAR_POST_EMPLOYEE_LIST")
+    @Override
+    public void sendTeamCalendarPostEmployeeListNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_NOT_FOUND_TEAM_CALENDAR_POST_EMPLOYEE_LIST");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_FORBIDDEN_TEAM_CALENDAR_POST_EMPLOYEE_LIST")
+    @Override
+    public void sendTeamCalendarPostEmployeeListForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_FORBIDDEN_TEAM_CALENDAR_POST_EMPLOYEE_LIST");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_UNEXPECTED_ERROR_TEAM_CALENDAR_POST_EMPLOYEE_LIST")
+    @Override
+    public void sendTeamCalendarPostEmployeeListError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_UNEXPECTED_ERROR_TEAM_CALENDAR_POST_EMPLOYEE_LIST");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_NOT_FOUND_TEAM_CALENDAR_POST_REQUEST_RESOLUTION")
+    @Override
+    public void sendTeamCalendarPostRequestResolutionNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_NOT_FOUND_TEAM_CALENDAR_POST_REQUEST_RESOLUTION");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_FORBIDDEN_TEAM_CALENDAR_POST_REQUEST_RESOLUTION")
+    @Override
+    public void sendTeamCalendarPostRequestResolutionForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_FORBIDDEN_TEAM_CALENDAR_POST_REQUEST_RESOLUTION");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_UNEXPECTED_ERROR_TEAM_CALENDAR_POST_REQUEST_RESOLUTION")
+    @Override
+    public void sendTeamCalendarPostRequestResolutionError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_UNEXPECTED_ERROR_TEAM_CALENDAR_POST_REQUEST_RESOLUTION");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_NOT_FOUND_TEAM_CALENDAR_GET_REQUEST_RESOLUTION")
+    @Override
+    public void sendTeamCalendarGetRequestResolutionNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_NOT_FOUND_TEAM_CALENDAR_GET_REQUEST_RESOLUTION");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_FORBIDDEN_TEAM_CALENDAR_GET_REQUEST_RESOLUTION")
+    @Override
+    public void sendTeamCalendarGetRequestResolutionForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_FORBIDDEN_TEAM_CALENDAR_GET_REQUEST_RESOLUTION");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_UNEXPECTED_ERROR_TEAM_CALENDAR_GET_REQUEST_RESOLUTION")
+    @Override
+    public void sendTeamCalendarGetRequestResolutionError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_UNEXPECTED_ERROR_TEAM_CALENDAR_GET_REQUEST_RESOLUTION");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_NOT_FOUND_TEAM_CALENDAR_REPORT_PROCESSING_RESULT")
+    @Override
+    public void sendTeamCalendarReportProcessingResultNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_NOT_FOUND_TEAM_CALENDAR_REPORT_PROCESSING_RESULT");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_FORBIDDEN_TEAM_CALENDAR_REPORT_PROCESSING_RESULT")
+    @Override
+    public void sendTeamCalendarReportProcessingResultForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_FORBIDDEN_TEAM_CALENDAR_REPORT_PROCESSING_RESULT");
+    }
+
+    @Audit("SRHR_TEAM_CALENDAR_REST_UNEXPECTED_ERROR_TEAM_CALENDAR_REPORT_PROCESSING_RESULT")
+    @Override
+    public void sendTeamCalendarReportProcessingResultError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TEAM_CALENDAR_REST_UNEXPECTED_ERROR_TEAM_CALENDAR_REPORT_PROCESSING_RESULT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_REFERENCE_EVENT")
+    public void sendTimesheetReferenceEventNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_REFERENCE_EVENT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_REFERENCE_EVENT")
+    public void sendTimesheetReferenceEventForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_REFERENCE_EVENT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_REFERENCE_EVENT")
+    public void sendTimesheetReferenceEventError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_REFERENCE_EVENT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_REFERENCE_REPORT")
+    public void sendTimesheetReferenceReportNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_REFERENCE_REPORT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_REFERENCE_REPORT")
+    public void sendTimesheetReferenceReportForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_REFERENCE_REPORT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_REFERENCE_REPORT")
+    public void sendTimesheetReferenceReportError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_REFERENCE_REPORT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_ORGUNIT")
+    public void sendTimesheetOrgunitNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_ORGUNIT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_ORGUNIT")
+    public void sendTimesheetOrgunitForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_ORGUNIT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_ORGUNIT")
+    public void sendTimesheetOrgunitError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_ORGUNIT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_GET_STAFF_LIST")
+    public void sendTimesheetGetStaffListNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime createdAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_GET_STAFF_LIST");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_GET_STAFF_LIST")
+    public void sendTimesheetGetStaffListForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime createdAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_GET_STAFF_LIST");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_GET_STAFF_LIST")
+    public void sendTimesheetGetStaffListError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime createdAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_GET_STAFF_LIST");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_GET_STAFF")
+    public void sendTimesheetGetStaffNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_GET_STAFF");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_GET_STAFF")
+    public void sendTimesheetGetStaffForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_GET_STAFF");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_GET_STAFF")
+    public void sendTimesheetGetStaffError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_GET_STAFF");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_POST_STAFF")
+    public void sendTimesheetPostStaffNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_POST_STAFF");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_POST_STAFF")
+    public void sendTimesheetPostStaffForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_POST_STAFF");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_POST_STAFF")
+    public void sendTimesheetPostStaffError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_POST_STAFF");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_SCHEDULE")
+    public void sendTimesheetScheduleNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_SCHEDULE");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_SCHEDULE")
+    public void sendTimesheetScheduleForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_SCHEDULE");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_SCHEDULE")
+    public void sendTimesheetScheduleError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_SCHEDULE");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_TASK_RESULT")
+    public void sendTimesheetTaskResultNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_TASK_RESULT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_TASK_RESULT")
+    public void sendTimesheetTaskResultForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_TASK_RESULT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_TASK_RESULT")
+    public void sendTimesheetTaskResultError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_TASK_RESULT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_REPORT_TASK_RESULT")
+    public void sendTimesheetReportTaskResultNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_REPORT_TASK_RESULT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_REPORT_TASK_RESULT")
+    public void sendTimesheetReportTaskResultForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_REPORT_TASK_RESULT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_REPORT_TASK_RESULT")
+    public void sendTimesheetReportTaskResultError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_REPORT_TASK_RESULT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_ATTACHMENT_LIST")
+    public void sendTimesheetAttachmentListNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime createdAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_ATTACHMENT_LIST");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_ATTACHMENT_LIST")
+    public void sendTimesheetAttachmentListForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime createdAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_ATTACHMENT_LIST");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_ATTACHMENT_LIST")
+    public void sendTimesheetAttachmentListError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime createdAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_ATTACHMENT_LIST");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_ATTACHMENT")
+    public void sendTimesheetAttachmentNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_ATTACHMENT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_ATTACHMENT")
+    public void sendTimesheetAttachmentForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_ATTACHMENT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_ATTACHMENT")
+    public void sendTimesheetAttachmentError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_ATTACHMENT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_EVENT")
+    public void sendTimesheetGetEventNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_EVENT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_EVENT")
+    public void sendTimesheetGetEventForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_EVENT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_EVENT")
+    public void sendTimesheetGetEventError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_EVENT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_DELETE_TIMESHEET_EVENT")
+    public void sendTimesheetDeleteEventNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_DELETE_TIMESHEET_EVENT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_DELETE_TIMESHEET_EVENT")
+    public void sendTimesheetDeleteEventForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_DELETE_TIMESHEET_EVENT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_DELETE_TIMESHEET_EVENT")
+    public void sendTimesheetDeleteEventError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_DELETE_TIMESHEET_EVENT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_EVENT_PRESENCE")
+    public void sendTimesheetPresenceEventNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_EVENT_PRESENCE");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_EVENT_PRESENCE")
+    public void sendTimesheetPresenceEventForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_EVENT_PRESENCE");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_EVENT_PRESENCE")
+    public void sendTimesheetPresenceEventError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_EVENT_PRESENCE");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_EVENT_ABSENCE")
+    public void sendTimesheetAbsenceEventNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_EVENT_ABSENCE");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_EVENT_ABSENCE")
+    public void sendTimesheetAbsenceEventForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_EVENT_ABSENCE");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_EVENT_ABSENCE")
+    public void sendTimesheetAbsenceEventError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_EVENT_ABSENCE");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_EVENT_SUBSTITUTION")
+    public void sendTimesheetSubstitutionEventNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_EVENT_SUBSTITUTION");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_EVENT_SUBSTITUTION")
+    public void sendTimesheetSubstitutionEventForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_EVENT_SUBSTITUTION");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_EVENT_SUBSTITUTION")
+    public void sendTimesheetSubstitutionEventError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_EVENT_SUBSTITUTION");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_FORM")
+    public void sendTimesheetPrintNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_FORM");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_FORM")
+    public void sendTimesheetPrintForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_FORM");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_FORM")
+    public void sendTimesheetPrintError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_FORM");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_SIGNED_AGREEMENT")
+    public void sendTimesheetLaunchNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_SIGNED_AGREEMENT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_SIGNED_AGREEMENT")
+    public void sendTimesheetLaunchForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_SIGNED_AGREEMENT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_SIGNED_AGREEMENT")
+    public void sendTimesheetLaunchError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_SIGNED_AGREEMENT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_REPORT_PARAMS")
+    public void sendTimesheetReportParamsNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_REPORT_PARAMS");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_REPORT_PARAMS")
+    public void sendTimesheetReportParamsForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_REPORT_PARAMS");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_REPORT_PARAMS")
+    public void sendTimesheetReportParamsError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_REPORT_PARAMS");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_REPORT_TEMPLATE")
+    public void sendTimesheetReportTemplateNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_REPORT_TEMPLATE");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_REPORT_TEMPLATE")
+    public void sendTimesheetReportTemplateForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_REPORT_TEMPLATE");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_REPORT_TEMPLATE")
+    public void sendTimesheetReportTemplateError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_REPORT_TEMPLATE");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_REPORT_LOG")
+    public void sendTimesheetReportLogNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_REPORT_LOG");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_REPORT_LOG")
+    public void sendTimesheetReportLogForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_REPORT_LOG");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_REPORT_LOG")
+    public void sendTimesheetReportLogError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_REPORT_LOG");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_REPORT_PROCESSING_RESULT")
+    public void sendTimesheetReportProcessingResultNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_REPORT_PROCESSING_RESULT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_REPORT_PROCESSING_RESULT")
+    public void sendTimesheetReportProcessingResultForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_REPORT_PROCESSING_RESULT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_REPORT_PROCESSING_RESULT")
+    public void sendTimesheetReportProcessingResultError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_REPORT_PROCESSING_RESULT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_REPORT_PRESENCE")
+    public void sendTimesheetReportPresenceNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_REPORT_PRESENCE");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_REPORT_PRESENCE")
+    public void sendTimesheetReportPresenceForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_REPORT_PRESENCE");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_REPORT_PRESENCE")
+    public void sendTimesheetReportPresenceError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_REPORT_PRESENCE");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_GET_NOT_FOUND_REPORT_APPROXIMATE_TIME")
+    public void sendTimesheetGetReportApproximateTimeNotFound(
+            @AuditParam(value = SESSION_ID) String session,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime createdAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_GET_NOT_FOUND_REPORT_APPROXIMATE_TIME");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_GET_FORBIDDEN_REPORT_APPROXIMATE_TIME")
+    public void sendTimesheetGetReportApproximateTimeForbidden(
+            @AuditParam(value = SESSION_ID) String session,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime createdAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_GET_FORBIDDEN_REPORT_APPROXIMATE_TIME");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_GET_UNEXPECTED_ERROR_REPORT_APPROXIMATE_TIME")
+    public void sendTimesheetGetReportApproximateTimeUnexpectedError(
+            @AuditParam(value = SESSION_ID) String session,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime createdAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_GET_UNEXPECTED_ERROR_REPORT_APPROXIMATE_TIME");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_POST_NOT_FOUND_REPORT_APPROXIMATE_TIME")
+    public void sendTimesheetPostReportApproximateTimeNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime createdAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NO_FOUND_REPORT_APPROXIMATE_TIME");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_POST_FORBIDDEN_REPORT_APPROXIMATE_TIME")
+    public void sendTimesheetPostReportApproximateTimeForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime createdAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_REPORT_APPROXIMATE_TIME");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_POST_UNEXPECTED_ERROR_REPORT_APPROXIMATE_TIME")
+    public void sendTimesheetPostReportApproximateTimeUnexpectedError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime createdAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_REPORT_APPROXIMATE_TIME");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_REPORT_IWSU")
+    public void sendTimesheetReportIWSUNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_REPORT_IWSU");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_REPORT_IWSU")
+    public void sendTimesheetReportIWSUForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_REPORT_IWSU");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_REPORT_IWSU")
+    public void sendTimesheetReportIWSUError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_REPORT_IWSU");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_REPORT_IWSD")
+    public void sendTimesheetReportIWSDNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_REPORT_IWSD");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_REPORT_IWSD")
+    public void sendTimesheetReportIWSDForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_REPORT_IWSD");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_REPORT_IWSD")
+    public void sendTimesheetReportIWSDError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_REPORT_IWSD");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_REPORT_WRKT")
+    public void sendTimesheetReportWRKTNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_REPORT_WRKT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_REPORT_WRKT")
+    public void sendTimesheetReportWRKTForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_REPORT_WRKT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_REPORT_WRKT")
+    public void sendTimesheetReportWRKTError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_REPORT_WRKT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_REPORT_FWTS")
+    public void sendTimesheetReportFWTSNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_REPORT_FWTS");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_REPORT_FWTS")
+    public void sendTimesheetReportFWTSForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_REPORT_FWTS");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_REPORT_FWTS")
+    public void sendTimesheetReportFWTSError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_REPORT_FWTS");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_ATTACH_TYPE")
+    public void sendTimesheetAttachmentTypesNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_ATTACH_TYPE");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_ATTACH_TYPE")
+    public void sendTimesheetAttachmentTypesForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_ATTACH_TYPE");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_ATTACH_TYPE")
+    public void sendTimesheetAttachmentTypesError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_ATTACH_TYPE");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_REPORT_APPROVER")
+    public void sendTimesheetReportApproverNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_REPORT_APPROVER");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_REPORT_APPROVER")
+    public void sendTimesheetReportApproverForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_REPORT_APPROVER");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_REPORT_APPROVER")
+    public void sendTimesheetReportApproverError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_REPORT_APPROVER");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_ASSET")
+    public void sendTimesheetAssetNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_ASSET");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_ASSET")
+    public void sendTimesheetAssetForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_ASSET");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_ASSET")
+    public void sendTimesheetAssetError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_ASSET");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_REQUEST")
+    public void sendTimesheetRequestNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_REQUEST");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_REQUEST")
+    public void sendTimesheetRequestForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_REQUEST");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_REQUEST")
+    public void sendTimesheetRequestError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_REQUEST");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_REQUEST_DETAILS")
+    public void sendTimesheetRequestDetailsNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_REQUEST_DETAILS");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_REQUEST_DETAILS")
+    public void sendTimesheetRequestDetailsForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_REQUEST_DETAILS");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_REQUEST_DETAILS")
+    public void sendTimesheetRequestDetailsError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_REQUEST_DETAILS");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_ATTACHMENT_CONTENT")
+    public void sendTimesheetAttachmentContentNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_NOT_FOUND_TIMESHEET_ATTACHMENT_CONTENT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_ATTACHMENT_CONTENT")
+    public void sendTimesheetAttachmentContentForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_FORBIDDEN_TIMESHEET_ATTACHMENT_CONTENT");
+    }
+
+    @Override
+    @Audit("SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_ATTACHMENT_CONTENT")
+    public void sendTimesheetAttachmentContentError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_TIMESHEET_REST_UNEXPECTED_ERROR_TIMESHEET_ATTACHMENT_CONTENT");
+    }
+
+    @Override
+    @Audit("SRHR_USERPHOTO_REST_NOT_FOUND_AVATAR")
+    public void sendUserphotoAvatarNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_USERPHOTO_REST_NOT_FOUND_AVATAR");
+    }
+
+    @Override
+    @Audit("SRHR_USERPHOTO_REST_FORBIDDEN_AVATAR")
+    public void sendUserphotoAvatarForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_USERPHOTO_REST_FORBIDDEN_AVATAR");
+    }
+
+    @Override
+    @Audit("SRHR_USERPHOTO_REST_UNEXPECTED_ERROR_AVATAR")
+    public void sendUserphotoAvatarError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_USERPHOTO_REST_UNEXPECTED_ERROR_AVATAR");
+    }
+
+    @Override
+    @Audit("SRHR_YEARBONUS_REST_NOT_FOUND_INFO")
+    public void sendYearbonusInfoNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_YEARBONUS_REST_NOT_FOUND_INFO");
+    }
+
+    @Override
+    @Audit("SRHR_YEARBONUS_REST_FORBIDDEN_INFO")
+    public void sendYearbonusInfoForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_YEARBONUS_REST_FORBIDDEN_INFO");
+    }
+
+    @Override
+    @Audit("SRHR_YEARBONUS_REST_UNEXPECTED_ERROR_INFO")
+    public void sendYearbonusInfoError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_YEARBONUS_REST_UNEXPECTED_ERROR_INFO");
+    }
+
+    @Override
+    @Audit("SRHR_YEARBONUS_REST_NOT_FOUND_DETAILS")
+    public void sendYearbonusDetailsNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_YEARBONUS_REST_NOT_FOUND_DETAILS");
+    }
+
+    @Override
+    @Audit("SRHR_YEARBONUS_REST_FORBIDDEN_DETAILS")
+    public void sendYearbonusDetailsForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_YEARBONUS_REST_FORBIDDEN_DETAILS");
+    }
+
+    @Override
+    @Audit("SRHR_YEARBONUS_REST_UNEXPECTED_ERROR_DETAILS")
+    public void sendYearbonusDetailsError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_YEARBONUS_REST_UNEXPECTED_ERROR_DETAILS");
+    }
+
+    @Override
+    @Audit("SRHR_YEARBONUS_REST_NOT_FOUND_REPORT")
+    public void sendYearbonusReportNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime createdAt)
+    {
+        log.debug("Отправка события: SRHR_YEARBONUS_REST_NOT_FOUND_REPORT");
+    }
+
+    @Override
+    @Audit("SRHR_YEARBONUS_REST_FORBIDDEN_REPORT")
+    public void sendYearbonusReportForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime createdAt
+    ) {
+        log.debug("Отправка события: SRHR_YEARBONUS_REST_FORBIDDEN_REPORT");
+    }
+
+    @Override
+    @Audit("SRHR_YEARBONUS_REST_UNEXPECTED_ERROR_REPORT")
+    public void sendYearbonusReportError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime createdAt)
+    {
+        log.debug("Отправка события: SRHR_YEARBONUS_REST_UNEXPECTED_ERROR_REPORT");
+    }
+
+    @Audit("SRHR_REQUISITION_NOT_FOUND_GET_DELEGATIONS")
+    @Override
+    public void sendRequisitionDelegationsNotFound(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_NOT_FOUND_GET_DELEGATIONS");
+    }
+
+    @Audit("SRHR_REQUISITION_FORBIDDEN_GET_DELEGATIONS")
+    @Override
+    public void sendRequisitionDelegationsForbidden(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_FORBIDDEN_GET_DELEGATIONS");
+    }
+
+    @Audit("SRHR_REQUISITION_UNEXPECTED_ERROR_GET_DELEGATIONS")
+    @Override
+    public void sendRequisitionDelegationsError(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_UNEXPECTED_ERROR_GET_DELEGATIONS");
+    }
+
+    @Audit("SRHR_REQUISITION_NOT_FOUND_GET_DICT")
+    @Override
+    public void sendRequisitionDictNotFound(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_NOT_FOUND_GET_DICT");
+    }
+
+    @Audit("SRHR_REQUISITION_FORBIDDEN_GET_DICT")
+    @Override
+    public void sendRequisitionDictForbidden(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_FORBIDDEN_GET_DICT");
+    }
+
+    @Audit("SRHR_REQUISITION_UNEXPECTED_ERROR_GET_DICT")
+    @Override
+    public void sendRequisitionDictError(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_UNEXPECTED_ERROR_GET_DICT");
+    }
+
+    @Audit("SRHR_REQUISITION_NOT_FOUND_GET_ORG_UNITS_ALLOWABLE")
+    @Override
+    public void sendRequisitionOrgUnitsAllowableNotFound(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_NOT_FOUND_GET_ORG_UNITS_ALLOWABLE");
+    }
+
+    @Audit("SRHR_REQUISITION_FORBIDDEN_GET_ORG_UNITS_ALLOWABLE")
+    @Override
+    public void sendRequisitionOrgUnitsAllowableForbidden(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_FORBIDDEN_GET_ORG_UNITS_ALLOWABLE");
+    }
+
+    @Audit("SRHR_REQUISITION_UNEXPECTED_ERROR_GET_ORG_UNITS_ALLOWABLE")
+    @Override
+    public void sendRequisitionOrgUnitsAllowableError(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_UNEXPECTED_ERROR_GET_ORG_UNITS_ALLOWABLE");
+    }
+
+    @Audit("SRHR_REQUISITION_NOT_FOUND_POST_LIST")
+    @Override
+    public void sendRequisitionPostListNotFound(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_NOT_FOUND_POST_LIST");
+    }
+
+    @Audit("SRHR_REQUISITION_FORBIDDEN_POST_LIST")
+    @Override
+    public void sendRequisitionPostListForbidden(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_FORBIDDEN_POST_LIST");
+    }
+
+    @Audit("SRHR_REQUISITION_UNEXPECTED_ERROR_POST_LIST")
+    @Override
+    public void sendRequisitionPostListError(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_UNEXPECTED_ERROR_POST_LIST");
+    }
+
+    @Audit("SRHR_REQUISITION_NOT_FOUND_GET_UI_STATE")
+    @Override
+    public void sendRequisitionUiStateNotFound(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_NOT_FOUND_GET_UI_STATE");
+    }
+
+    @Audit("SRHR_REQUISITION_FORBIDDEN_GET_UI_STATE")
+    @Override
+    public void sendRequisitionUiStateForbidden(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_FORBIDDEN_GET_UI_STATE");
+    }
+
+    @Audit("SRHR_REQUISITION_UNEXPECTED_ERROR_GET_UI_STATE")
+    @Override
+    public void sendRequisitionUiStateError(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_UNEXPECTED_ERROR_GET_UI_STATE");
+    }
+
+    @Audit("SRHR_REQUISITION_NOT_FOUND_GET_USER_INFO")
+    @Override
+    public void sendRequisitionUserInfoNotFound(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_NOT_FOUND_GET_USER_INFO");
+    }
+
+    @Audit("SRHR_REQUISITION_FORBIDDEN_GET_USER_INFO")
+    @Override
+    public void sendRequisitionUserInfoForbidden(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_FORBIDDEN_GET_USER_INFO");
+    }
+
+    @Audit("SRHR_REQUISITION_UNEXPECTED_ERROR_GET_USER_INFO")
+    @Override
+    public void sendRequisitionUserInfoError(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_UNEXPECTED_ERROR_GET_USER_INFO");
+    }
+
+    @Audit("SRHR_REQUISITION_GET_STAFF_SEARCH_NOT_FOUND")
+    @Override
+    public void sendRequisitionStaffSearchNotFound(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_GET_STAFF_SEARCH_NOT_FOUND");
+    }
+
+    @Audit("SRHR_REQUISITION_GET_STAFF_SEARCH_FORBIDDEN")
+    @Override
+    public void sendRequisitionStaffSearchForbidden(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_GET_STAFF_SEARCH_FORBIDDEN");
+    }
+
+    @Audit("SRHR_REQUISITION_GET_STAFF_SEARCH_UNEXPECTED_ERROR")
+    @Override
+    public void sendRequisitionStaffSearchError(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_GET_STAFF_SEARCH_UNEXPECTED_ERROR");
+    }
+
+    @Audit("SRHR_REQUISITION_POST_VACANCY_CANDIDATES_NOT_FOUND")
+    @Override
+    public void sendRequisitionVacancyCandidatesNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_POST_VACANCY_CANDIDATES_NOT_FOUND");
+    }
+
+    @Audit("SRHR_REQUISITION_POST_VACANCY_CANDIDATES_FORBIDDEN")
+    @Override
+    public void sendRequisitionVacancyCandidatesForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_POST_VACANCY_CANDIDATES_FORBIDDEN");
+    }
+
+    @Audit("SRHR_REQUISITION_POST_VACANCY_CANDIDATES_UNEXPECTED_ERROR")
+    @Override
+    public void sendRequisitionVacancyCandidatesError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_POST_VACANCY_CANDIDATES_UNEXPECTED_ERROR");
+    }
+
+    @Audit("SRHR_REQUISITION_GET_VACANCY_DETAILS_NOT_FOUND")
+    @Override
+    public void sendRequisitionVacancyDetailsNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_GET_VACANCY_DETAILS_NOT_FOUND");
+    }
+
+    @Audit("SRHR_REQUISITION_GET_VACANCY_DETAILS_FORBIDDEN")
+    @Override
+    public void sendRequisitionVacancyDetailsForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_GET_VACANCY_DETAILS_FORBIDDEN");
+    }
+
+    @Audit("SRHR_REQUISITION_GET_VACANCY_DETAILS_UNEXPECTED_ERROR")
+    @Override
+    public void sendRequisitionVacancyDetailsError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_GET_VACANCY_DETAILS_UNEXPECTED_ERROR");
+    }
+
+    @Audit("SRHR_REQUISITION_POST_CANDIDATE_ACTION_NOT_FOUND")
+    @Override
+    public void sendRequisitionCandidateActionNotFound(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_POST_CANDIDATE_ACTION_NOT_FOUND");
+    }
+
+    @Audit("SRHR_REQUISITION_POST_CANDIDATE_ACTION_FORBIDDEN")
+    @Override
+    public void sendRequisitionCandidateActionForbidden(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_POST_CANDIDATE_ACTION_FORBIDDEN");
+    }
+
+    @Audit("SRHR_REQUISITION_POST_CANDIDATE_ACTION_UNEXPECTED_ERROR")
+    @Override
+    public void sendRequisitionCandidateActionError(
+            @AuditParam(value = SESSION_ID) String sessionId,
+            @AuditParam(value = SESSION_CREATED_AT) LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_POST_CANDIDATE_ACTION_UNEXPECTED_ERROR");
+    }
+
+    @Audit("SRHR_REQUISITION_GET_GET_INTERVIEWERS_NOT_FOUND")
+    @Override
+    public void sendRequisitionGetInterviewersNotFound(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_GET_GET_INTERVIEWERS_NOT_FOUND");
+    }
+
+    @Audit("SRHR_REQUISITION_GET_GET_INTERVIEWERS_FORBIDDEN")
+    @Override
+    public void sendRequisitionGetInterviewersForbidden(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_GET_GET_INTERVIEWERS_FORBIDDEN");
+    }
+
+    @Audit("SRHR_REQUISITION_GET_GET_INTERVIEWERS_UNEXPECTED_ERROR")
+    @Override
+    public void sendRequisitionGetInterviewersError(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_GET_GET_INTERVIEWERS_UNEXPECTED_ERROR");
+    }
+
+    @Audit("SRHR_REQUISITION_POST_INTERVIEWERS_ACTION_NOT_FOUND")
+    @Override
+    public void sendRequisitionInterviewersActionNotFound(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_POST_INTERVIEWERS_ACTION_NOT_FOUND");
+    }
+
+    @Audit("SRHR_REQUISITION_POST_INTERVIEWERS_ACTION_FORBIDDEN")
+    @Override
+    public void sendRequisitionInterviewersActionForbidden(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_POST_INTERVIEWERS_ACTION_FORBIDDEN");
+    }
+
+    @Audit("SRHR_REQUISITION_POST_INTERVIEWERS_ACTION_UNEXPECTED_ERROR")
+    @Override
+    public void sendRequisitionInterviewersActionError(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_POST_INTERVIEWERS_ACTION_UNEXPECTED_ERROR");
+    }
+
+    @Audit("SRHR_REQUISITION_GET_CANDIDATE_INFO_NOT_FOUND")
+    @Override
+    public void sendRequisitionCandidateInfoNotFound(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_GET_CANDIDATE_INFO_NOT_FOUND");
+    }
+
+    @Audit("SRHR_REQUISITION_GET_CANDIDATE_INFO_FORBIDDEN")
+    @Override
+    public void sendRequisitionCandidateInfoForbidden(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_GET_CANDIDATE_INFO_FORBIDDEN");
+    }
+
+    @Audit("SRHR_REQUISITION_GET_CANDIDATE_INFO_UNEXPECTED_ERROR")
+    @Override
+    public void sendRequisitionCandidateInfoError(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_GET_CANDIDATE_INFO_UNEXPECTED_ERROR");
+    }
+
+    @Audit("SRHR_REQUISITION_GET_VACANCY_STATISTICS_NOT_FOUND")
+    @Override
+    public void sendRequisitionVacancyStatisticsNotFound(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_GET_VACANCY_STATISTICS_NOT_FOUND");
+    }
+
+    @Audit("SRHR_REQUISITION_GET_VACANCY_STATISTICS_FORBIDDEN")
+    @Override
+    public void sendRequisitionVacancyStatisticsForbidden(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_GET_VACANCY_STATISTICS_FORBIDDEN");
+    }
+
+    @Audit("SRHR_REQUISITION_GET_VACANCY_STATISTICS_UNEXPECTED_ERROR")
+    @Override
+    public void sendRequisitionVacancyStatisticsError(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_GET_VACANCY_STATISTICS_UNEXPECTED_ERROR");
+    }
+
+    @Audit("SRHR_REQUISITION_POST_ADD_COMMENT_NOT_FOUND")
+    @Override
+    public void sendRequisitionAddCommentNotFound(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_POST_ADD_COMMENT_NOT_FOUND");
+    }
+
+    @Audit("SRHR_REQUISITION_POST_ADD_COMMENT_FORBIDDEN")
+    @Override
+    public void sendRequisitionAddCommentForbidden(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_POST_ADD_COMMENT_FORBIDDEN");
+    }
+
+    @Audit("SRHR_REQUISITION_POST_ADD_COMMENT_UNEXPECTED_ERROR")
+    @Override
+    public void sendRequisitionAddCommentError(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_POST_ADD_COMMENT_UNEXPECTED_ERROR");
+    }
+
+    @Audit("SRHR_REQUISITION_GET_CANDIDATE_RESUME_NOT_FOUND")
+    @Override
+    public void sendRequisitionCandidateResumeNotFound(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_GET_CANDIDATE_RESUME_NOT_FOUND");
+    }
+
+    @Audit("SRHR_REQUISITION_GET_CANDIDATE_RESUME_FORBIDDEN")
+    @Override
+    public void sendRequisitionCandidateResumeForbidden(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_GET_CANDIDATE_RESUME_FORBIDDEN");
+    }
+
+    @Audit("SRHR_REQUISITION_GET_CANDIDATE_RESUME_UNEXPECTED_ERROR")
+    @Override
+    public void sendRequisitionCandidateResumeError(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_GET_CANDIDATE_RESUME_UNEXPECTED_ERROR");
+    }
+
+    @Audit("SRHR_REQUISITION_POST_CANDIDATE_RECOMMENDATION_NOT_FOUND")
+    @Override
+    public void sendRequisitionCandidateRecommendationNotFound(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_POST_CANDIDATE_RECOMMENDATION_NOT_FOUND");
+    }
+
+    @Audit("SRHR_REQUISITION_POST_CANDIDATE_RECOMMENDATION_FORBIDDEN")
+    @Override
+    public void sendRequisitionCandidateRecommendationForbidden(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_POST_CANDIDATE_RECOMMENDATION_FORBIDDEN");
+    }
+
+    @Audit("SRHR_REQUISITION_POST_CANDIDATE_RECOMMENDATION_UNEXPECTED_ERROR")
+    @Override
+    public void sendRequisitionCandidateRecommendationError(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_POST_CANDIDATE_RECOMMENDATION_UNEXPECTED_ERROR");
+    }
+
+    @Audit("SRHR_REQUISITION_POST_VACANCY_INFO_NOT_FOUND")
+    @Override
+    public void sendRequisitionVacancyInfoNotFound(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_POST_VACANCY_INFO_NOT_FOUND");
+    }
+
+    @Audit("SRHR_REQUISITION_POST_VACANCY_INFO_FORBIDDEN")
+    @Override
+    public void sendRequisitionVacancyInfoForbidden(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_POST_VACANCY_INFO_FORBIDDEN");
+    }
+
+    @Audit("SRHR_REQUISITION_POST_VACANCY_INFO_UNEXPECTED_ERROR")
+    @Override
+    public void sendRequisitionVacancyInfoError(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_POST_VACANCY_INFO_UNEXPECTED_ERROR");
+    }
+
+    @Audit("SRHR_REQUISITION_PENDING_CANDIDATES_NOT_FOUND")
+    @Override
+    public void sendCollectPendingCandidatesNotFound(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_PENDING_CANDIDATES_NOT_FOUND");
+    }
+
+    @Audit("SRHR_REQUISITION_PENDING_CANDIDATES_FORBIDDEN")
+    @Override
+    public void sendCollectPendingCandidatesForbidden(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_PENDING_CANDIDATES_FORBIDDEN");
+    }
+
+    @Audit("SRHR_REQUISITION_PENDING_CANDIDATES_UNEXPECTED_ERROR")
+    @Override
+    public void sendCollectPendingCandidatesError(
+            @AuditParam(value = "SESSION_ID") String sessionId,
+            @AuditParam(value = "SESSION_CREATED_AT") LocalDateTime sessionCreatedAt
+    ) {
+        log.debug("Отправка события: SRHR_REQUISITION_PENDING_CANDIDATES_UNEXPECTED_ERROR");
+    }
+
+}
+
