@@ -1,0 +1,2021 @@
+package ru.ntdev.srhr.common.audit.service;
+
+import java.time.LocalDateTime;
+
+public interface AuditEventSenderCustom {
+
+    String SESSION_ID = "sessionId";
+    String SESSION_CREATED_AT = "sessionCreatedAt";
+
+    void sendUserinfoNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendUserinfoForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendUserinfoError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendUserinfoTeamNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendUserinfoTeamForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendUserinfoTeamError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendUserinfoUserlistNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendUserinfoUserlistForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendUserinfoUserlistError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendUserinfoChildNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendUserinfoChildForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendUserinfoChildError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendUserinfoRolesNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendUserinfoRolesForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendUserinfoRolesError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPaystubPeriodNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPaystubPeriodForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPaystubPeriodError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPaystubMailNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPaystubMailForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPaystubMailError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPaystubPdfNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPaystubPdfForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPaystubPdfError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPaystubBodyNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPaystubBodyForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPaystubBodyError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPaystubHeadNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPaystubHeadForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPaystubHeadError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPayavgEventNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPayavgEventForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPayavgEventError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPayavgCalculateNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPayavgCalculateForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendPayavgCalculateError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendJwtValidateEvent(
+            String sessionId,
+            Boolean isValid,
+            String errorMessage
+    ) throws Exception;
+
+    void sendJwtForbiddenEvent(
+            String sessionId
+    );
+
+    void sendJwtUnexpectedErrorEvent(
+            String sessionId
+    );
+
+    void sendVacationreqRequestNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqRequestForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqRequestError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqAvdayNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqAvdayForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqAvdayError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqQuotaNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqQuotaForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqQuotaError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqReqByIdNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqReqByIdForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqReqByIdError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqAvdayCheckNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqAvdayCheckForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqAvdayCheckError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqDaysQuotaNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqDaysQuotaForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqDaysQuotaError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqAttachmentNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqAttachmentForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqAttachmentError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqPostRequestNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqPostRequestForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqPostRequestError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqDelegateNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqDelegateForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqDelegateError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqTransferAvailableNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqTransferAvailableForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqTransferAvailableError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqPostTransferNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqPostTransferForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqPostTransferError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqTransferHistoryNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqTransferHistoryForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqTransferHistoryError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqGetTransferNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqGetTransferForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqGetTransferError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqTransferCancelNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqTransferCancelForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqTransferCancelError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqRecallAvailableNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqRecallAvailableForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqRecallAvailableError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqPostRecallNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqPostRecallForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqPostRecallError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqRecallHistoryNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqRecallHistoryForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqRecallHistoryError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqGetRecallNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqGetRecallForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqGetRecallError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqRecallCancelNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqRecallCancelForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqRecallCancelError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqCancelAvailableNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqCancelAvailableForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqCancelAvailableError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqPostCancelNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqPostCancelForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqPostCancelError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqCancelHistoryNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqCancelHistoryForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqCancelHistoryError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqGetCancelNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqGetCancelForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqGetCancelError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqCancelCancelNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqCancelCancelForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqCancelCancelError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqInfotextCancelNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqInfotextCancelForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqInfotextCancelError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqInfotextRecallNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqInfotextRecallForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqInfotextRecallError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqCancelDebtApplicationNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqCancelDebtApplicationForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqCancelDebtApplicationError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqRecallDebtApplicationNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqRecallDebtApplicationForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqRecallDebtApplicationError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqRecallDaysLeftAfterNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqRecallDaysLeftAfterForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendVacationreqRecallDaysLeftAfterError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeStaffDependencyNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeStaffDependencyForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeStaffDependencyError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeStaffDependencyExpNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeStaffDependencyExpForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeStaffDependencyExpError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeStaffDetailNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeStaffDetailForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeStaffDetailError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangePostStaffDetailNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangePostStaffDetailForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangePostStaffDetailError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeStaffDelegationListNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeStaffDelegationListForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeStaffDelegationListError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeStaffListNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeStaffListForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeStaffListError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeStaffListDetailNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeStaffListDetailForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeStaffListDetailError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangePostStaffListNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangePostStaffListForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangePostStaffListError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangePostStaffListEventNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangePostStaffListEventForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangePostStaffListEventError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReferenceCityNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReferenceCityForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReferenceCityError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReferenceStaffPositionNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReferenceStaffPositionForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReferenceStaffPositionError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReferenceTrmNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReferenceTrmForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReferenceTrmError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReferenceDelegationNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReferenceDelegationForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReferenceDelegationError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReferenceRefNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReferenceRefForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReferenceRefError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReferenceTabNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReferenceTabForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReferenceTabError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangePostDelegationNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangePostDelegationForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangePostDelegationError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReportTaskStatusNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReportTaskStatusForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReportTaskStatusError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangePostReportTaskNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangePostReportTaskForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangePostReportTaskError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReportAttachmentNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReportAttachmentForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendSalarychangeReportAttachmentError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendScheduleHolidayUserNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendScheduleHolidayUserForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendScheduleHolidayUserError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendScheduleHolidayRefNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendScheduleHolidayRefForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendScheduleHolidayRefError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendScheduleHolidayRequestNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendScheduleHolidayRequestForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendScheduleHolidayRequestError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendScheduleHolidayRequestInfoNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendScheduleHolidayRequestInfoForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendScheduleHolidayRequestInfoError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendScheduleHolidayPostRequestNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendScheduleHolidayPostRequestForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendScheduleHolidayPostRequestError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendScheduleHolidayPostVacationLimitNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendScheduleHolidayPostVacationLimitForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendScheduleHolidayPostVacationLimitError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarOrgUnitNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarOrgUnitForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarOrgUnitError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarPageReferenceNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarPageReferenceForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarPageReferenceError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarUserInfoNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarUserInfoForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarUserInfoError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarSettingsNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarSettingsForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarSettingsError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarOrgUnitEmployeeNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarOrgUnitEmployeeForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarOrgUnitEmployeeError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarPostEmployeeListNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarPostEmployeeListForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarPostEmployeeListError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarPostRequestResolutionNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarPostRequestResolutionForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarPostRequestResolutionError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarGetRequestResolutionNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarGetRequestResolutionForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarGetRequestResolutionError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarReportProcessingResultNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarReportProcessingResultForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTeamCalendarReportProcessingResultError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReferenceEventNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReferenceEventForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReferenceEventError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReferenceReportNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReferenceReportForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReferenceReportError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetOrgunitNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetOrgunitForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetOrgunitError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetGetStaffListNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetGetStaffListForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetGetStaffListError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetGetStaffNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetGetStaffForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetGetStaffError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetPostStaffNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetPostStaffForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetPostStaffError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+    void sendTimesheetScheduleNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetScheduleForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetScheduleError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetTaskResultNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetTaskResultForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetTaskResultError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportTaskResultNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportTaskResultForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportTaskResultError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetAttachmentListNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetAttachmentListForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetAttachmentListError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetAttachmentNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetAttachmentForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetAttachmentError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetGetEventNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetGetEventForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetGetEventError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetDeleteEventNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetDeleteEventForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetDeleteEventError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetPresenceEventNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetPresenceEventForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetPresenceEventError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetAbsenceEventNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetAbsenceEventForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetAbsenceEventError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetSubstitutionEventNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetSubstitutionEventForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetSubstitutionEventError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetPrintNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetPrintForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetPrintError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetLaunchNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetLaunchForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetLaunchError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportParamsNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportParamsForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportParamsError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportTemplateNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportTemplateForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportTemplateError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportLogNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportLogForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportLogError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportProcessingResultNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportProcessingResultForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportProcessingResultError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportPresenceNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportPresenceForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportPresenceError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetGetReportApproximateTimeNotFound(
+            String session,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetGetReportApproximateTimeForbidden(
+            String session,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetGetReportApproximateTimeUnexpectedError(
+            String session,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetPostReportApproximateTimeNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetPostReportApproximateTimeForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetPostReportApproximateTimeUnexpectedError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportIWSUNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportIWSUForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportIWSUError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportIWSDNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportIWSDForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportIWSDError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportWRKTNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportWRKTForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportWRKTError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportFWTSNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportFWTSForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportFWTSError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetAttachmentTypesNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetAttachmentTypesForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetAttachmentTypesError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportApproverNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportApproverForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetReportApproverError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetAssetNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetAssetForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetAssetError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetRequestNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetRequestForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetRequestError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetRequestDetailsNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetRequestDetailsForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetRequestDetailsError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetAttachmentContentNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetAttachmentContentForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendTimesheetAttachmentContentError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendUserphotoAvatarNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendUserphotoAvatarForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendUserphotoAvatarError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendYearbonusInfoNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendYearbonusInfoForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendYearbonusInfoError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendYearbonusDetailsNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendYearbonusDetailsForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendYearbonusDetailsError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendYearbonusReportNotFound(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendYearbonusReportForbidden(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendYearbonusReportError(
+            String sessionId,
+            LocalDateTime createdAt
+    );
+
+    void sendRequisitionDelegationsNotFound(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionDelegationsForbidden(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionDelegationsError(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionDictNotFound(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionDictForbidden(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionDictError(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionOrgUnitsAllowableNotFound(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionOrgUnitsAllowableForbidden(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionOrgUnitsAllowableError(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionPostListNotFound(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionPostListForbidden(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionPostListError(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionUiStateNotFound(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionUiStateForbidden(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionUiStateError(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionUserInfoNotFound(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionUserInfoForbidden(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionUserInfoError(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionStaffSearchNotFound(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionStaffSearchForbidden(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionStaffSearchError(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionVacancyCandidatesNotFound(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionVacancyCandidatesForbidden(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionVacancyCandidatesError(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionVacancyDetailsNotFound(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionVacancyDetailsForbidden(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionVacancyDetailsError(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionCandidateActionNotFound(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionCandidateActionForbidden(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionCandidateActionError(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionGetInterviewersNotFound(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionGetInterviewersForbidden(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionGetInterviewersError(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionInterviewersActionNotFound(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionInterviewersActionForbidden(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionInterviewersActionError(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionCandidateInfoNotFound(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionCandidateInfoForbidden(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionCandidateInfoError(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionVacancyStatisticsNotFound(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionVacancyStatisticsForbidden(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionVacancyStatisticsError(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionCandidateResumeNotFound(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionCandidateResumeForbidden(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionCandidateResumeError(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionAddCommentNotFound(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionAddCommentForbidden(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionAddCommentError(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionCandidateRecommendationNotFound(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionCandidateRecommendationForbidden(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionCandidateRecommendationError(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+
+
+    void sendRequisitionVacancyInfoNotFound(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionVacancyInfoForbidden(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendRequisitionVacancyInfoError(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+
+    void sendCollectPendingCandidatesNotFound(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendCollectPendingCandidatesForbidden(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+    void sendCollectPendingCandidatesError(
+            String sessionId,
+            LocalDateTime sessionCreatedAt
+    );
+
+}
