@@ -1,4 +1,4 @@
-
+AppConfig
 @ComponentScan(nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class,basePackageClasses = {
         SrhrAuditConfig.class,
         JwtSecurityConfiguration.class
@@ -8,6 +8,7 @@
         "classpath:audit.yml", "classpath:application.yml"
 })
 
+-----
 application.yaml
 
 ms:
@@ -18,6 +19,8 @@ ms:
 
 audit-group-resolver:
   srhr-resolver: SrhrAuditResolver
+
+-----
 
 pom
 <!-- модуль хранения событий аудита в оперативной памяти -->
