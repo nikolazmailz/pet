@@ -2,17 +2,17 @@
         <dependency>
             <groupId>ru.vtb.omni</groupId>
             <artifactId>tsau-audit-lib-in-memory-storage</artifactId>
-            <version>8.0.0.6</version>
+            <version>${omni-dependencies.version}</version>
         </dependency>
         <!-- модуль отправки событий аудита непосредственно в кафку -->
         <dependency>
             <groupId>ru.vtb.omni</groupId>
             <artifactId>tsau-audit-lib-kafka-sender</artifactId>
-            <version>8.0.0.6</version>
+            <version>${omni-dependencies.version}</version>
         </dependency>
         <!-- модуль контекста, который используется для получения инициатора запроса, в данном случае servlet context -->
         <dependency>
             <groupId>ru.vtb.omni</groupId>
             <artifactId>tsau-audit-lib-servlet-context</artifactId>
-            <version>8.0.0.6</version>
+            <version>${omni-dependencies.version}</version>
         </dependency>
