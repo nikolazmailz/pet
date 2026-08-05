@@ -1,3 +1,18 @@
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-swaggers/pulls/2546619
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-mod-commons/pulls/2546620
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition/pulls/2546823
+<!-- модуль хранения событий аудита в оперативной памяти -->
+        <dependency>
+            <groupId>ru.vtb.omni</groupId>
+            <artifactId>tsau-audit-lib-in-memory-storage</artifactId>
+            <version>8.0.0.6</version>
+        </dependency>
+        <!-- модуль отправки событий аудита непосредственно в кафку -->
+        <dependency>
+            <groupId>ru.vtb.omni</groupId>
+            <artifactId>tsau-audit-lib-kafka-sender</artifactId>
+            <version>8.0.0.6</version>
+        </dependency>
+        <!-- модуль контекста, который используется для получения инициатора запроса, в данном случае servlet context -->
+        <dependency>
+            <groupId>ru.vtb.omni</groupId>
+            <artifactId>tsau-audit-lib-servlet-context</artifactId>
+            <version>8.0.0.6</version>
+        </dependency>
