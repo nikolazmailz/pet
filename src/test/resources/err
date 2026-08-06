@@ -1,15 +1,36 @@
-            PendingCandidatesResponse pendingCandidatesResponse = masterDataIntegrationService.getPendingCandidates(systemParams, new PendingCandidatesRequest(
-                    new PendingCandidatesRequest.Request(pernr)
-            )).getBody();
+@Override
+@Transactional
+public void replaceForApprover(
+        String approverPernr,
+        PendingCandidatesResponse response
+) {
+    pendingCandidateEntityRepository.deleteAllByApproverPernr(approverPernr);
+    pendingCandidateEntityRepository.flush();
 
-//          todo  vacancyId = vacancyRepository.findIdByVacancyId()
-            databaseService.replaceForApprover(pernr, pendingCandidatesResponse);
-
-
-    @Override
-    @Transactional
-    public void replaceForApprover(String approverPernr, PendingCandidatesResponse response) {
-        pendingCandidateEntityRepository.deleteAllByApproverPernr(approverPernr);
-        pendingCandidateEntityRepository.flush();
-        pendingCandidateEntityRepository.saveAll(PendingCandidateEntity.toEntities(approverPernr, response));
+    if (response == null
+            || response.getData() == null
+            || response.getData().getCandidates() == null) {
+        return;
     }
+
+    Set<Long> vacancyIds = response.getData().getCandidates().stream()
+            .map(PendingCandidatesResponse.Candidate::getVacancyId)
+            .collect(Collectors.toSet());
+
+    Map<Long, Integer> internalVacancyIds = vacancyRepository
+            .findAllByVacancyIdIn(vacancyIds)
+            .stream()
+            .collect(Collectors.toMap(
+                    VacancyEntity::getVacancyId,
+                    VacancyEntity::getId
+            ));
+
+    List<PendingCandidateEntity> entities =
+            PendingCandidateEntity.toEntities(
+                    approverPernr,
+                    response,
+                    internalVacancyIds
+            );
+
+    pendingCandidateEntityRepository.saveAll(entities);
+}
