@@ -1,0 +1,11 @@
+select v.vacancy_id   as "vacancyId",
+                   r.guid          as "guid",
+                   r.number        as "number",
+                   r.position_type as "positionType",
+                   r.staff_position_id   as "staffPositionId",
+                   r.staff_position_name as "staffPositionName",
+                   r.struct_unit_id      as "structUnitId",
+                   r.struct_unit_name    as "structUnitName"
+            from srhr_requisition.vacancy v
+            join srhr_requisition.requisitions r on r.guid = v.requisition_guid
+            where v.vacancy_id = any(:vacancyIds)
