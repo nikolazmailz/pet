@@ -1,4 +1,9 @@
-@RequiredArgsConstructor
-class EasupIntegrationExceptionHandler {
+@Configuration
+public class SrhrAuditConfig {
 
-    private final AuditEventSenderCustom auditEventSender;
+    @Bean
+    @Order(Ordered.LOWEST_PRECEDENCE - 1000)
+    public SrhrAuditResolver srhrAuditResolver() {
+        return new SrhrAuditResolver();
+    }
+}
