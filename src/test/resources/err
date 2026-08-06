@@ -1,39 +1,199 @@
-@Entity
-@Getter
-@Setter
-@ToString
-@RequiredArgsConstructor
-@Table(name = "vacancy")
-public class VacancyEntity implements Serializable {
+databaseChangeLog:
+  - changeSet:
+      id: 2026-07-27-13-45-create-pending-candidates
+      author: n-pushkaryov
+      changes:
+        - createTable:
+            tableName: pending_candidates
+            remarks: Кандидаты, ожидающие решения
+            columns:
+              - column:
+                  name: id
+                  type: integer
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: vacancy_id
+                  type: integer
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_pending_candidates_vacancy
+                    references: vacancy(id)
+                    onDelete: cascade
+              - column:
+                  name: candidate_id
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: full_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: approver_pernr
+                  type: varchar(16)
+                  constraints:
+                    nullable: false
+        - createIndex:
+            tableName: pending_candidates
+            indexName: idx_pending_candidates_approver_pernr
+            columns:
+              - column:
+                  name: approver_pernr
 
-    @Id
-    @SequenceGenerator(name="vacancy_id_seq",sequenceName="vacancy_id_seq",allocationSize=1)
-    @GeneratedValue(strategy= GenerationType.SEQUENCE, generator="vacancy_id_seq")
-    @Column(nullable = false, updatable = false)
-    private Integer id;
 
-    @OneToOne(targetEntity = DataIntegrationEntity.class,
-            fetch = FetchType.LAZY)
-    @JoinColumn(name = "integration_id")
-    private DataIntegrationEntity integrationId;
 
-    @Column(name = "requisition_guid", unique = true, nullable = false)
-    private String guid;
+databaseChangeLog:
+  - changeSet:
+      id: 2026-08-06-12-00-change-vacancy-id-to-string
+      author: n-pushkaryov
+      changes:
+        - dropForeignKeyConstraint:
+            baseTableName: pending_candidates
+            constraintName: fk_pending_candidates_vacancy
+        - modifyDataType:
+            tableName: pending_candidates
+            columnName: vacancy_id
+            newDataType: VARCHAR(255)
+        - addForeignKeyConstraint:
+            baseTableName: pending_candidates
+            baseColumnNames: vacancy_id
+            constraintName: fk_pending_candidates_vacancy
+            referencedTableName: vacancy
+            referencedColumnNames: vacancy_id
+            onDelete: CASCADE
 
-    @Column(name = "vacancy_id")
-    private String vacancyId;
 
-@Query(value = """
-            select v.vacancy_id   as "vacancyId",
-                   r.guid          as "guid",
-                   r.number        as "number",
-                   r.position_type as "positionType",
-                   r.staff_position_id   as "staffPositionId",
-                   r.staff_position_name as "staffPositionName",
-                   r.struct_unit_id      as "structUnitId",
-                   r.struct_unit_name    as "structUnitName"
-            from srhr_requisition.vacancy v
-            join srhr_requisition.requisitions r on r.guid = v.requisition_guid
-            where v.vacancy_id = any(:vacancyIds)
-            """, nativeQuery = true)
-    List<RequisitionEnrichmentRow> findEnrichmentByVacancyIds(String[] vacancyIds);
+
+
+java.lang.IllegalStateException: Failed to load ApplicationContext for [WebMergedContextConfiguration@437b2db1 testClass = ru.ntdev.srhr.ms.requisition.application.usecase.PendingCandidatesUseCaseIntegrationTest, locations = [], classes = [ru.ntdev.srhr.ms.requisition.SrhrMsRequisitionApplication], contextInitializerClasses = [], activeProfiles = ["test"], propertySourceDescriptors = [], propertySourceProperties = ["org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true", "server.port=0"], contextCustomizers = [[ImportsContextCustomizer@2876584f key = [org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebDriverAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.SecurityFilterAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration, org.springframework.boot.autoconfigure.security.oauth2.resource.servlet.OAuth2ResourceServerAutoConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcSecurityConfiguration, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcWebClientAutoConfiguration, org.springframework.boot.test.autoconfigure.web.reactive.WebTestClientAutoConfiguration]], org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@3fc79729, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@14008db3, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@6a07529, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@2b175c00, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@4b3fa09d, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@727eb8cb, org.springframework.boot.testcontainers.service.connection.ServiceConnectionContextCustomizer@c21933bf, org.springframework.boot.test.context.SpringBootTestAnnotation@1bd4719a], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:180)
+	at org.springframework.test.context.support.DefaultTestContext.getApplicationContext(DefaultTestContext.java:130)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.postProcessFields(MockitoTestExecutionListener.java:110)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.injectFields(MockitoTestExecutionListener.java:94)
+	at org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener.prepareTestInstance(MockitoTestExecutionListener.java:61)
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:247)
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:163)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1625)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.forEachRemaining(StreamSpliterators.java:310)
+	at java.base/java.util.stream.Streams$ConcatSpliterator.forEachRemaining(Streams.java:735)
+	at java.base/java.util.stream.Streams$ConcatSpliterator.forEachRemaining(Streams.java:734)
+	at java.base/java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:762)
+	at java.base/java.util.Optional.orElseGet(Optional.java:364)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'liquibase' defined in class path resource [org/springframework/boot/autoconfigure/liquibase/LiquibaseAutoConfiguration$LiquibaseConfiguration.class]: liquibase.exception.CommandExecutionException: liquibase.exception.LiquibaseException: liquibase.exception.MigrationFailedException: Migration failed for changeset db/dev/v1/meta/2026-08-06-12-00-change-vacancy-id-to-string.yml::2026-08-06-12-00-change-vacancy-id-to-string::n-pushkaryov:
+     Reason: liquibase.exception.DatabaseException: ERROR: there is no unique constraint matching given keys for referenced table "vacancy" [Failed SQL: (0) ALTER TABLE srhr_requisition.pending_candidates ADD CONSTRAINT fk_pending_candidates_vacancy FOREIGN KEY (vacancy_id) REFERENCES srhr_requisition.vacancy (vacancy_id) ON DELETE CASCADE]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1775)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:601)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:523)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:325)
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:323)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:312)
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199)
+	at org.springframework.context.support.AbstractApplicationContext.getBean(AbstractApplicationContext.java:1173)
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:936)
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:616)
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146)
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:753)
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:455)
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:323)
+	at org.springframework.boot.test.context.SpringBootContextLoader.lambda$loadContext$3(SpringBootContextLoader.java:137)
+	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:58)
+	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:46)
+	at org.springframework.boot.SpringApplication.withHook(SpringApplication.java:1442)
+	at org.springframework.boot.test.context.SpringBootContextLoader$ContextLoaderHook.run(SpringBootContextLoader.java:552)
+	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:137)
+	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:108)
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContextInternal(DefaultCacheAwareContextLoaderDelegate.java:225)
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:152)
+	... 18 more
+Caused by: liquibase.exception.UnexpectedLiquibaseException: liquibase.exception.CommandExecutionException: liquibase.exception.LiquibaseException: liquibase.exception.MigrationFailedException: Migration failed for changeset db/dev/v1/meta/2026-08-06-12-00-change-vacancy-id-to-string.yml::2026-08-06-12-00-change-vacancy-id-to-string::n-pushkaryov:
+     Reason: liquibase.exception.DatabaseException: ERROR: there is no unique constraint matching given keys for referenced table "vacancy" [Failed SQL: (0) ALTER TABLE srhr_requisition.pending_candidates ADD CONSTRAINT fk_pending_candidates_vacancy FOREIGN KEY (vacancy_id) REFERENCES srhr_requisition.vacancy (vacancy_id) ON DELETE CASCADE]
+	at liquibase.integration.spring.SpringLiquibase.afterPropertiesSet(SpringLiquibase.java:267)
+	at org.springframework.boot.autoconfigure.liquibase.DataSourceClosingSpringLiquibase.afterPropertiesSet(DataSourceClosingSpringLiquibase.java:46)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.invokeInitMethods(AbstractAutowireCapableBeanFactory.java:1822)
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1771)
+	... 42 more
+Caused by: liquibase.exception.CommandExecutionException: liquibase.exception.LiquibaseException: liquibase.exception.MigrationFailedException: Migration failed for changeset db/dev/v1/meta/2026-08-06-12-00-change-vacancy-id-to-string.yml::2026-08-06-12-00-change-vacancy-id-to-string::n-pushkaryov:
+     Reason: liquibase.exception.DatabaseException: ERROR: there is no unique constraint matching given keys for referenced table "vacancy" [Failed SQL: (0) ALTER TABLE srhr_requisition.pending_candidates ADD CONSTRAINT fk_pending_candidates_vacancy FOREIGN KEY (vacancy_id) REFERENCES srhr_requisition.vacancy (vacancy_id) ON DELETE CASCADE]
+	at liquibase.command.CommandScope.execute(CommandScope.java:257)
+	at liquibase.Liquibase.lambda$update$0(Liquibase.java:245)
+	at liquibase.Scope.lambda$child$0(Scope.java:191)
+	at liquibase.Scope.child(Scope.java:200)
+	at liquibase.Scope.child(Scope.java:190)
+	at liquibase.Scope.child(Scope.java:169)
+	at liquibase.Liquibase.runInScope(Liquibase.java:1436)
+	at liquibase.Liquibase.update(Liquibase.java:234)
+	at liquibase.Liquibase.update(Liquibase.java:212)
+	at liquibase.integration.spring.SpringLiquibase.performUpdate(SpringLiquibase.java:305)
+	at liquibase.integration.spring.SpringLiquibase.lambda$afterPropertiesSet$0(SpringLiquibase.java:257)
+	at liquibase.Scope.lambda$child$0(Scope.java:191)
+	at liquibase.Scope.child(Scope.java:200)
+	at liquibase.Scope.child(Scope.java:190)
+	at liquibase.Scope.child(Scope.java:169)
+	at liquibase.Scope.child(Scope.java:257)
+	at liquibase.integration.spring.SpringLiquibase.afterPropertiesSet(SpringLiquibase.java:250)
+	... 45 more
+Caused by: liquibase.exception.LiquibaseException: liquibase.exception.MigrationFailedException: Migration failed for changeset db/dev/v1/meta/2026-08-06-12-00-change-vacancy-id-to-string.yml::2026-08-06-12-00-change-vacancy-id-to-string::n-pushkaryov:
+     Reason: liquibase.exception.DatabaseException: ERROR: there is no unique constraint matching given keys for referenced table "vacancy" [Failed SQL: (0) ALTER TABLE srhr_requisition.pending_candidates ADD CONSTRAINT fk_pending_candidates_vacancy FOREIGN KEY (vacancy_id) REFERENCES srhr_requisition.vacancy (vacancy_id) ON DELETE CASCADE]
+	at liquibase.changelog.ChangeLogIterator.run(ChangeLogIterator.java:148)
+	at liquibase.command.core.AbstractUpdateCommandStep.lambda$run$0(AbstractUpdateCommandStep.java:112)
+	at liquibase.Scope.lambda$child$0(Scope.java:191)
+	at liquibase.Scope.child(Scope.java:200)
+	at liquibase.Scope.child(Scope.java:190)
+	at liquibase.Scope.child(Scope.java:169)
+	at liquibase.command.core.AbstractUpdateCommandStep.run(AbstractUpdateCommandStep.java:110)
+	at liquibase.command.core.UpdateCommandStep.run(UpdateCommandStep.java:105)
+	at liquibase.command.CommandScope.execute(CommandScope.java:219)
+	... 61 more
+Caused by: liquibase.exception.MigrationFailedException: Migration failed for changeset db/dev/v1/meta/2026-08-06-12-00-change-vacancy-id-to-string.yml::2026-08-06-12-00-change-vacancy-id-to-string::n-pushkaryov:
+     Reason: liquibase.exception.DatabaseException: ERROR: there is no unique constraint matching given keys for referenced table "vacancy" [Failed SQL: (0) ALTER TABLE srhr_requisition.pending_candidates ADD CONSTRAINT fk_pending_candidates_vacancy FOREIGN KEY (vacancy_id) REFERENCES srhr_requisition.vacancy (vacancy_id) ON DELETE CASCADE]
+	at liquibase.changelog.ChangeSet.execute(ChangeSet.java:812)
+	at liquibase.changelog.visitor.UpdateVisitor.executeAcceptedChange(UpdateVisitor.java:119)
+	at liquibase.changelog.visitor.UpdateVisitor.visit(UpdateVisitor.java:68)
+	at liquibase.changelog.ChangeLogIterator.lambda$run$0(ChangeLogIterator.java:131)
+	at liquibase.Scope.lambda$child$0(Scope.java:191)
+	at liquibase.Scope.child(Scope.java:200)
+	at liquibase.Scope.child(Scope.java:190)
+	at liquibase.Scope.child(Scope.java:169)
+	at liquibase.changelog.ChangeLogIterator.lambda$run$1(ChangeLogIterator.java:120)
+	at liquibase.Scope.lambda$child$0(Scope.java:191)
+	at liquibase.Scope.child(Scope.java:200)
+	at liquibase.Scope.child(Scope.java:190)
+	at liquibase.Scope.child(Scope.java:169)
+	at liquibase.Scope.child(Scope.java:257)
+	at liquibase.Scope.child(Scope.java:261)
+	at liquibase.changelog.ChangeLogIterator.run(ChangeLogIterator.java:89)
+	... 69 more
+Caused by: liquibase.exception.DatabaseException: ERROR: there is no unique constraint matching given keys for referenced table "vacancy" [Failed SQL: (0) ALTER TABLE srhr_requisition.pending_candidates ADD CONSTRAINT fk_pending_candidates_vacancy FOREIGN KEY (vacancy_id) REFERENCES srhr_requisition.vacancy (vacancy_id) ON DELETE CASCADE]
+	at liquibase.executor.jvm.JdbcExecutor$ExecuteStatementCallback.doInStatement(JdbcExecutor.java:476)
+	at liquibase.executor.jvm.JdbcExecutor.execute(JdbcExecutor.java:83)
+	at liquibase.executor.jvm.JdbcExecutor.execute(JdbcExecutor.java:185)
+	at liquibase.executor.AbstractExecutor.execute(AbstractExecutor.java:141)
+	at liquibase.database.AbstractJdbcDatabase.executeStatements(AbstractJdbcDatabase.java:1176)
+	at liquibase.changelog.ChangeSet.execute(ChangeSet.java:768)
+	... 84 more
+Caused by: org.postgresql.util.PSQLException: ERROR: there is no unique constraint matching given keys for referenced table "vacancy"
+	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2713)
+	at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2401)
+	at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:368)
+	at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:498)
+	at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:415)
+	at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:335)
+	at org.postgresql.jdbc.PgStatement.executeCachedSql(PgStatement.java:321)
+	at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:297)
+	at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:292)
+	at liquibase.executor.jvm.JdbcExecutor$ExecuteStatementCallback.doInStatement(JdbcExecutor.java:470)
+	... 89 more
+
