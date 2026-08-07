@@ -124,3 +124,185 @@
     ]
   }
 }
+v
+
+
+mapper.readValue(message, PendingCandidatesApiResponse.class);
+
+
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Schema(description = "Обёртка ответа списка кандидатов, ожидающих действия")
+public class PendingCandidatesApiResponse extends SapResponseDtoExtended {
+    @Schema(description = "Данные страницы",
+            requiredMode = Schema.RequiredMode.REQUIRED)
+    PendingCandidatesPage data;
+}
+
+
+
+@Schema(description = "Страница кандидатов, ожидающих действия")
+public record PendingCandidatesPage(
+
+        @Schema(description = "Номер страницы", minimum = "1",  maximum = "99999999", example = "1",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        int page,
+
+        @Schema(description = "Размер страницы", minimum = "1", maximum = "200", example = "50",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        int pageSize,
+
+        @Schema(description = "Общее количество кандидатов", minimum = "0", maximum = "99999999999999", example = "137",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        long count,
+
+        @ArraySchema(
+                schema = @Schema(implementation = EventCodeView.class),
+                arraySchema = @Schema(description = "Доступные коды этапов"),
+                maxItems = 500)
+        List<EventCodeView> eventCode,
+
+        @ArraySchema(
+                schema = @Schema(implementation = PendingCandidateView.class),
+                arraySchema = @Schema(description = "Кандидаты на странице"),
+                maxItems = 500)
+        List<PendingCandidateView> candidates
+) {
+    public PendingCandidatesPage {
+        eventCode = eventCode == null ? List.of() : List.copyOf(eventCode);
+        candidates = candidates == null ? List.of() : List.copyOf(candidates);
+    }
+}
+
+
+@Schema(description = "Код этапа")
+public record EventCodeView(
+
+        @Schema(description = "Значение кода", example = "interview", maxLength = 255)
+        String codeValue
+) {}
+
+
+
+
+@Schema(description = "Кандидат, ожидающий действия")
+public record PendingCandidateView(
+
+        @Schema(description = "Идентификатор кандидата", example = "10000123",
+                requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 255)
+        String candidateId,
+
+        @Schema(description = "Идентификатор вакансии", example = "50001234",
+                requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 255)
+        String vacancyId,
+
+        @Schema(description = "ФИО кандидата", example = "Иванов Иван Иванович",
+                requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 255)
+        String fullName,
+
+        @Schema(description = "Заявка",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        RequisitionView requisition,
+
+        @ArraySchema(
+                schema = @Schema(implementation = PendingCandidateEventView.class),
+                arraySchema = @Schema(description = "Этапы кандидата",
+                        requiredMode = Schema.RequiredMode.REQUIRED),
+                maxItems = 1000)
+        List<PendingCandidateEventView> events
+) {
+    public PendingCandidateView {
+        events = events == null ? List.of() : List.copyOf(events);
+    }
+
+}
+
+
+
+
+@Schema(description = "Заявка")
+public record RequisitionView(
+
+        @Schema(description = "GUID заявки", example = "a1b2c3d4-...",
+                requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 255)
+        String guid,
+
+        @Schema(description = "Номер заявки", example = "REQ-2026-000123",
+                requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 255)
+        String number,
+
+        @Schema(description = "Тип позиции", example = "STAFF", nullable = true,
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED, maxLength = 255)
+        String positionType,
+
+        @Schema(description = "Штатная позиция", nullable = true,
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+        StaffPositionView staffPosition,
+
+        @Schema(description = "Название структурного подразделения", nullable = true,
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED, maxLength = 255)
+        String structUnitName,
+
+        @Schema(description = "Идентификатор структурного подразделения", nullable = true,
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED, maxLength = 255)
+        String structUnitId,
+
+        @ArraySchema(
+                schema = @Schema(implementation = StructUnitPathView.class),
+                arraySchema = @Schema(description = "Путь по структуре подразделений",
+                        requiredMode = Schema.RequiredMode.REQUIRED),
+                maxItems = 1000)
+        List<StructUnitPathView> structUnitPathList
+) {
+    public RequisitionView {
+        structUnitPathList = structUnitPathList == null ? List.of() : List.copyOf(structUnitPathList);
+    }
+}
+
+@Schema(description = "Штатная позиция")
+public record StaffPositionView(
+
+        @Schema(description = "Идентификатор позиции",
+                requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 255)
+        String id,
+
+        @Schema(description = "Название позиции",
+                requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 255)
+        String name
+) {}
+
+
+@Schema(description = "Узел пути структуры подразделений")
+public record StructUnitPathView(
+
+        @Schema(description = "Идентификатор узла",
+                requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 255)
+        String id,
+
+        @Schema(description = "Описание типа узла", example = "Департамент", nullable = true,
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED, maxLength = 255)
+        String typeDesc,
+
+        @Schema(description = "Название узла",
+                requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 255)
+        String name
+) {}
+
+
+@Schema(description = "Этап кандидата")
+public record PendingCandidateEventView(
+
+        @Schema(description = "Код этапа", example = "interview",
+                requiredMode = Schema.RequiredMode.REQUIRED, maxLength = 255)
+        String code,
+
+        @Schema(description = "Дней на этапе", example = "5", nullable = true,
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED, maximum = "99999999999999", minimum = "-99999999999999")
+        Integer days,
+
+        @Schema(description = "Зона истечения срока", example = "2", nullable = true,
+                requiredMode = Schema.RequiredMode.NOT_REQUIRED, maximum = "99999999999999", minimum = "-99999999999999")
+        Integer expirationZone
+) {}
