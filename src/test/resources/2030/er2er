@@ -1,50 +1,26 @@
-app:
-  scheduler:
-    enabled: false
-
-spring:
-  main:
-    allow-bean-definition-overriding: true
-
-  datasource:
-    url: jdbc:postgresql://localhost:5432/srhr_reference
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      schema: srhr_reference
-
-  liquibase:
-    enabled: true
-    default-schema: srhr_reference
-    liquibase-schema: srhr_reference
-
-  jpa:
-    hibernate:
-      ddl-auto: none
-    database-platform: org.hibernate.dialect.H2Dialect
-    properties:
-      hibernate:
-        default_schema: srhr_reference
-
-#  kafka:
-#    bootstrap-servers: localhost:9092
-#
-#  data:
-#    redis:
-#      enabled: false
-#
-#  config:
-#    import:
-#      - classpath:application-common.yml
-
-#audit:
-#  enabled: false
-#  standin-kafka:
-#    enabled: false
-
-
-
+"C:\Users\NPushkaryov\AppData\Local\Programs\Eclipse Adoptium\jdk-17.0.14.7-hotspot\bin\java.exe" -Dmaven.multiModuleProjectDirectory=C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-osrf-integration -Djansi.passthrough=true "-Dmaven.home=C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven3" "-Dclassworlds.conf=C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven3\bin\m2.conf" "-Dmaven.ext.class.path=C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven-event-listener.jar" "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\lib\idea_rt.jar=64736:C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\bin" -Dfile.encoding=UTF-8 -classpath "C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven3\boot\plexus-classworlds-2.7.0.jar;C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven3\boot\plexus-classworlds.license" org.codehaus.classworlds.Launcher -Didea.version=2024.1.3 install
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------< ru.ntdev.srhr:srhr-ms-osrf-integration >---------------
+[INFO] Building srhr-ms-osrf-integration 8.1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- spring-boot:3.2.0:build-info (default) @ srhr-ms-osrf-integration ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ srhr-ms-osrf-integration ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 10 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.9.0:compile (default-compile) @ srhr-ms-osrf-integration ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ srhr-ms-osrf-integration ---
+[INFO] Copying 2 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.9.0:testCompile (default-testCompile) @ srhr-ms-osrf-integration ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 2 source files to C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-osrf-integration\target\test-classes
 [INFO] 
 [INFO] --- surefire:2.22.2:test (default-test) @ srhr-ms-osrf-integration ---
 [INFO] 
@@ -54,32 +30,33 @@ spring:
 [INFO] Running ru.ntdev.srhr.ms.osrf.integration.service.impl.OrgUnitServiceImplTest
 [INFO] Running ru.ntdev.srhr.ms.osrf.integration.SrhrMsOsrfIntegrationApplicationTests
 Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
-13:49:32.175 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [ru.ntdev.srhr.ms.osrf.integration.SrhrMsOsrfIntegrationApplicationTests]: SrhrMsOsrfIntegrationApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-13:49:32.308 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
-13:49:32.315 [main] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
-13:49:33.041 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
-13:49:33.764 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
-13:49:33.767 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
-13:49:33.800 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+13:53:45.524 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [ru.ntdev.srhr.ms.osrf.integration.SrhrMsOsrfIntegrationApplicationTests]: SrhrMsOsrfIntegrationApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+13:53:45.646 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+13:53:45.653 [main] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+13:53:46.370 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+13:53:47.157 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
+13:53:47.161 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+13:53:47.203 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
   Server Version: 27.2.0
   API Version: 1.47
   Operating System: Docker Desktop
   Total Memory: 15649 MB
-13:49:33.872 [main] INFO tc.testcontainers/ryuk:0.5.1 -- Creating container for image: testcontainers/ryuk:0.5.1
-13:49:34.838 [main] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/
-13:49:35.121 [main] INFO tc.testcontainers/ryuk:0.5.1 -- Container testcontainers/ryuk:0.5.1 is starting: acc37d83ba3a566f226ac1e304db134ce3a3b135ac164672742397435441b0fe
-13:49:35.840 [main] INFO tc.testcontainers/ryuk:0.5.1 -- Container testcontainers/ryuk:0.5.1 started in PT1.9682249S
-13:49:35.861 [main] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
-13:49:35.862 [main] INFO org.testcontainers.DockerClientFactory -- Checking the system...
-13:49:35.864 [main] INFO org.testcontainers.DockerClientFactory -- ?? Docker server version should be at least 1.6.0
-13:49:35.865 [main] INFO tc.postgres:16-alpine -- Creating container for image: postgres:16-alpine
-13:49:35.954 [main] INFO tc.postgres:16-alpine -- Container postgres:16-alpine is starting: 301472c1397a57b90ff81aa95098540ef003e5f492206d115a1e1b609bee3a00
-[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.287 s - in ru.ntdev.srhr.ms.osrf.integration.service.impl.OrgUnitServiceImplTest
-13:49:38.115 [main] INFO tc.postgres:16-alpine -- Container postgres:16-alpine started in PT2.2503657S
-13:49:38.116 [main] INFO tc.postgres:16-alpine -- Container is started (JDBC URL: jdbc:postgresql://localhost:64107/test?loggerLevel=OFF)
-13:49:38.133 [main] INFO org.testcontainers.ext.ScriptUtils -- Executing database script from db/init-schema.sql
-13:49:38.451 [main] INFO org.testcontainers.ext.ScriptUtils -- Executed database script from db/init-schema.sql in 318 ms.
-13:49:38.686 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration ru.ntdev.srhr.ms.osrf.integration.SrhrMsOsrfIntegrationApplication for test class ru.ntdev.srhr.ms.osrf.integration.SrhrMsOsrfIntegrationApplicationTests
+13:53:47.283 [main] INFO tc.testcontainers/ryuk:0.5.1 -- Creating container for image: testcontainers/ryuk:0.5.1
+13:53:48.530 [main] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/
+13:53:48.805 [main] INFO tc.testcontainers/ryuk:0.5.1 -- Container testcontainers/ryuk:0.5.1 is starting: 855bc7e2771235dca8b8c10105c5384ae479f1875e5d8783174b4a5041add03a
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.328 s - in ru.ntdev.srhr.ms.osrf.integration.service.impl.OrgUnitServiceImplTest
+13:53:49.633 [main] INFO tc.testcontainers/ryuk:0.5.1 -- Container testcontainers/ryuk:0.5.1 started in PT2.3494724S
+13:53:49.654 [main] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+13:53:49.655 [main] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+13:53:49.657 [main] INFO org.testcontainers.DockerClientFactory -- ?? Docker server version should be at least 1.6.0
+13:53:49.658 [main] INFO tc.postgres:16-alpine -- Creating container for image: postgres:16-alpine
+13:53:49.746 [main] INFO tc.postgres:16-alpine -- Container postgres:16-alpine is starting: bcb5b9cb1f13065e2808ea187513e7102a1044a4355dec493a89531d9ad9da3b
+13:53:51.919 [main] INFO tc.postgres:16-alpine -- Container postgres:16-alpine started in PT2.2612841S
+13:53:51.920 [main] INFO tc.postgres:16-alpine -- Container is started (JDBC URL: jdbc:postgresql://localhost:64785/test?loggerLevel=OFF&currentSchema=srhr_reference)
+13:53:51.938 [main] INFO org.testcontainers.ext.ScriptUtils -- Executing database script from db/init-schema.sql
+13:53:52.240 [main] INFO org.testcontainers.ext.ScriptUtils -- Executed database script from db/init-schema.sql in 302 ms.
+13:53:52.471 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration ru.ntdev.srhr.ms.osrf.integration.SrhrMsOsrfIntegrationApplication for test class ru.ntdev.srhr.ms.osrf.integration.SrhrMsOsrfIntegrationApplicationTests
+
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
 ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
@@ -87,109 +64,287 @@ Standard Commons Logging discovery in action with spring-jcl: please remove comm
   '  |____| .__|_| |_|_| |_\__, | / / / /
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.2.0)
-2026-08-07T13:49:39.883+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] .i.SrhrMsOsrfIntegrationApplicationTests : Starting SrhrMsOsrfIntegrationApplicationTests using Java 17.0.14 with PID 10360 (started by NPushkaryov in C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-osrf-integration)
-2026-08-07T13:49:39.885+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] .i.SrhrMsOsrfIntegrationApplicationTests : The following 1 profile is active: "local"
-2026-08-07T13:49:43.005+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-08-07T13:49:43.295+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 268 ms. Found 1 JPA repository interface.
-2026-08-07T13:49:43.696+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] faultConfiguringBeanFactoryPostProcessor : No bean named 'errorChannel' has been explicitly defined. Therefore, a default PublishSubscribeChannel will be created.
-2026-08-07T13:49:43.741+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] faultConfiguringBeanFactoryPostProcessor : No bean named 'integrationHeaderChannelRegistry' has been explicitly defined. Therefore, a default DefaultHeaderChannelRegistry will be created.
-2026-08-07T13:49:44.369+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=4690469d-fb6c-3a7a-b574-d227089bc258
-2026-08-07T13:49:47.742+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.lockservice                    : Successfully acquired change log lock
-2026-08-07T13:49:47.783+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Creating database history table with name: srhr_reference.databasechangelog
-2026-08-07T13:49:47.794+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.command                        : Clearing database change log checksums for database postgresql
-2026-08-07T13:49:47.811+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.lockservice                    : Successfully released change log lock
-2026-08-07T13:49:47.814+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.command                        : Command execution complete
-2026-08-07T13:49:48.030+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Reading from srhr_reference.databasechangelog
-2026-08-07T13:49:48.242+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.lockservice                    : Successfully acquired change log lock
-2026-08-07T13:49:48.247+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.command                        : Using deploymentId: 6099788246
-2026-08-07T13:49:48.254+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Reading from srhr_reference.databasechangelog
-2026-08-07T13:49:48.316+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.ui                             : Running Changeset: db/dev/v1/meta/2026-05-20-16-30-create-table-osrf-lib-lock.yml::2026-05-20-16-30-create-table-osrf-lib-lock::a-gushchina
-2026-08-07T13:49:48.329+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.snapshot                       : Creating snapshot
-2026-08-07T13:49:48.398+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Table osrf_lib_lock created
-2026-08-07T13:49:48.405+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : ChangeSet db/dev/v1/meta/2026-05-20-16-30-create-table-osrf-lib-lock.yml::2026-05-20-16-30-create-table-osrf-lib-lock::a-gushchina ran successfully in 84ms
-2026-08-07T13:49:48.426+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.ui                             : Running Changeset: db/dev/v1/meta/2026-05-20-16-30-create-table-osrf-lib-lock.yml::add-composite-primary-key-to-osrf-lib-lock-table::a-gushchina
-2026-08-07T13:49:48.445+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Primary key added to osrf_lib_lock (lock_key, region)
-2026-08-07T13:49:48.450+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : ChangeSet db/dev/v1/meta/2026-05-20-16-30-create-table-osrf-lib-lock.yml::add-composite-primary-key-to-osrf-lib-lock-table::a-gushchina ran successfully in 22ms
-2026-08-07T13:49:48.469+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.ui                             : Running Changeset: db/dev/v1/meta/2026-05-21-09-40-create-table-osrf-lib-process-state.yml::2026-05-21-09-40-create-table-osrf-lib-process-state::a-gushchina
-2026-08-07T13:49:48.475+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.snapshot                       : Creating snapshot
-2026-08-07T13:49:48.514+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Table osrf_lib_process_state created
-2026-08-07T13:49:48.518+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : ChangeSet db/dev/v1/meta/2026-05-21-09-40-create-table-osrf-lib-process-state.yml::2026-05-21-09-40-create-table-osrf-lib-process-state::a-gushchina ran successfully in 49ms
-2026-08-07T13:49:48.528+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.ui                             : Running Changeset: db/dev/v1/meta/2026-05-20-10-20-add-dict-version-to-osrf-lib-process-state.yml::2026-05-20-10-20-add-dict-version-to-osrf-lib-process-state::a-gushchina
-2026-08-07T13:49:48.540+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Columns dictionary_version(integer) added to osrf_lib_process_state
-2026-08-07T13:49:48.545+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : ChangeSet db/dev/v1/meta/2026-05-20-10-20-add-dict-version-to-osrf-lib-process-state.yml::2026-05-20-10-20-add-dict-version-to-osrf-lib-process-state::a-gushchina ran successfully in 16ms
-2026-08-07T13:49:48.558+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.ui                             : Running Changeset: db/dev/v1/meta/2026-05-25-12-00-add-process-sync-date-to-osrf-lib-process-state.yml::2026-05-25-add-process-sync-date-to-osrf-lib-process-state::a-gushchina
-2026-08-07T13:49:48.570+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Columns process_sync_date(timestamptz) added to osrf_lib_process_state
-2026-08-07T13:49:48.574+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : ChangeSet db/dev/v1/meta/2026-05-25-12-00-add-process-sync-date-to-osrf-lib-process-state.yml::2026-05-25-add-process-sync-date-to-osrf-lib-process-state::a-gushchina ran successfully in 16ms
-2026-08-07T13:49:48.590+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.ui                             : Running Changeset: db/dev/v1/meta/2026-05-25-16-20-create-table-srhr-orgunit.yml::2026-05-25-16-20-create-table-srhr-orgunit::a-gushchina
-2026-08-07T13:49:48.597+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.snapshot                       : Creating snapshot
-2026-08-07T13:49:48.628+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Table srhr_orgunit created
-2026-08-07T13:49:48.632+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : ChangeSet db/dev/v1/meta/2026-05-25-16-20-create-table-srhr-orgunit.yml::2026-05-25-16-20-create-table-srhr-orgunit::a-gushchina ran successfully in 41ms
-2026-08-07T13:49:48.641+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.ui                             : Running Changeset: db/dev/v1/meta/2026-06-08-11-00-delete-nullable-false-constraint.yml::2026-06-08-11-00-delete-nullable-false-constraint::a-gushchina
-2026-08-07T13:49:48.648+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Null constraint dropped from osrf_lib_process_state.dictionary_code
-2026-08-07T13:49:48.652+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : ChangeSet db/dev/v1/meta/2026-06-08-11-00-delete-nullable-false-constraint.yml::2026-06-08-11-00-delete-nullable-false-constraint::a-gushchina ran successfully in 10ms
-2026-08-07T13:49:48.662+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.ui                             : Running Changeset: db/dev/v1/meta/2026-06-25-13-20-add-column-to-srhr_orgunits.yml::2026-06-25-13-20-add-column-to-srhr_orgunits::d-tuev
-2026-08-07T13:49:48.672+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Columns ou_type_id(varchar) added to srhr_orgunit
-2026-08-07T13:49:48.675+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : ChangeSet db/dev/v1/meta/2026-06-25-13-20-add-column-to-srhr_orgunits.yml::2026-06-25-13-20-add-column-to-srhr_orgunits::d-tuev ran successfully in 12ms
-2026-08-07T13:49:48.701+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.util                           : UPDATE SUMMARY
-2026-08-07T13:49:48.702+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.util                           : Run:                          8
-2026-08-07T13:49:48.702+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.util                           : Previously run:               0
-2026-08-07T13:49:48.702+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.util                           : Filtered out:                 0
-2026-08-07T13:49:48.702+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.util                           : -------------------------------
-2026-08-07T13:49:48.702+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.util                           : Total change sets:            8
-2026-08-07T13:49:48.705+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.util                           : Update summary generated
-2026-08-07T13:49:48.714+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.command                        : Update command completed successfully.
-2026-08-07T13:49:48.715+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.ui                             : Liquibase: Update has been successful. Rows affected: 8
-2026-08-07T13:49:48.728+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.lockservice                    : Successfully released change log lock
-2026-08-07T13:49:48.733+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] liquibase.command                        : Command execution complete
-2026-08-07T13:49:48.843+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2026-08-07T13:49:48.960+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@f4b2d13
-2026-08-07T13:49:48.969+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2026-08-07T13:49:49.511+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2026-08-07T13:49:49.759+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.3.1.Final
-2026-08-07T13:49:49.909+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2026-08-07T13:49:50.384+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-08-07T13:49:52.218+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-08-07T13:49:52.222+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-08-07T13:49:53.298+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-08-07T13:49:53.865+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] r.v.e.s.c.ApacheClientFactory            : Creating Apache HTTP client. SSL enabled: false
-2026-08-07T13:49:54.548+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] r.n.s.m.o.i.s.EpaSdkSecurityProvider     : EPA SDK Service инициализирован с URL: https://epa-ig-if-lb.test.vtb.ru
-2026-08-07T13:49:55.634+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] v.o.i.s.c.RestTemplateLoggingInterceptor : RestTemplateLoggingInterceptor initialized. logRequests=false, debugEnabled=false
-2026-08-07T13:49:56.972+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] r.v.e.s.c.ApacheClientFactory            : Creating Apache HTTP client. SSL enabled: false
-2026-08-07T13:49:56.999+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] r.n.s.common.epa.impl.EpaSdkServiceImpl  : EPA SDK Service инициализирован с URL: https://epa-ig-if-lb.test.vtb.ru
-2026-08-07T13:49:57.180+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] r.v.e.s.c.ApacheClientFactory            : Creating Apache HTTP client. SSL enabled: false
-2026-08-07T13:49:57.186+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] r.n.s.c.epa.impl.EpaSdkTechServiceImpl   : EPA SDK Service инициализирован с URL: https://epa-ig-if-lb.test.vtb.ru
-2026-08-07T13:49:58.509+03:00  WARN 10360 --- [srhr-ms-osrf-integration] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-08-07T13:49:58.723+03:00  WARN 10360 --- [srhr-ms-osrf-integration] [           main] .s.s.UserDetailsServiceAutoConfiguration : 
-Using generated security password: cb77bf1c-20b4-4ee1-9f4c-9ab1e254e70f
+
+2026-08-07T13:53:53.677+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] .i.SrhrMsOsrfIntegrationApplicationTests : Starting SrhrMsOsrfIntegrationApplicationTests using Java 17.0.14 with PID 19660 (started by NPushkaryov in C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-osrf-integration)
+2026-08-07T13:53:53.679+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] .i.SrhrMsOsrfIntegrationApplicationTests : The following 1 profile is active: "local"
+2026-08-07T13:53:56.807+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-07T13:53:57.083+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 261 ms. Found 1 JPA repository interface.
+2026-08-07T13:53:57.469+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] faultConfiguringBeanFactoryPostProcessor : No bean named 'errorChannel' has been explicitly defined. Therefore, a default PublishSubscribeChannel will be created.
+2026-08-07T13:53:57.497+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] faultConfiguringBeanFactoryPostProcessor : No bean named 'integrationHeaderChannelRegistry' has been explicitly defined. Therefore, a default DefaultHeaderChannelRegistry will be created.
+2026-08-07T13:53:57.839+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=4690469d-fb6c-3a7a-b574-d227089bc258
+2026-08-07T13:54:01.299+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.lockservice                    : Successfully acquired change log lock
+2026-08-07T13:54:01.340+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Creating database history table with name: srhr_reference.databasechangelog
+2026-08-07T13:54:01.353+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.command                        : Clearing database change log checksums for database postgresql
+2026-08-07T13:54:01.374+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.lockservice                    : Successfully released change log lock
+2026-08-07T13:54:01.379+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.command                        : Command execution complete
+2026-08-07T13:54:01.588+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Reading from srhr_reference.databasechangelog
+2026-08-07T13:54:01.784+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.lockservice                    : Successfully acquired change log lock
+2026-08-07T13:54:01.789+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.command                        : Using deploymentId: 6100041788
+2026-08-07T13:54:01.796+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Reading from srhr_reference.databasechangelog
+2026-08-07T13:54:01.860+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.ui                             : Running Changeset: db/dev/v1/meta/2026-05-20-16-30-create-table-osrf-lib-lock.yml::2026-05-20-16-30-create-table-osrf-lib-lock::a-gushchina
+2026-08-07T13:54:01.872+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.snapshot                       : Creating snapshot
+2026-08-07T13:54:01.935+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Table osrf_lib_lock created
+2026-08-07T13:54:01.940+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : ChangeSet db/dev/v1/meta/2026-05-20-16-30-create-table-osrf-lib-lock.yml::2026-05-20-16-30-create-table-osrf-lib-lock::a-gushchina ran successfully in 76ms
+2026-08-07T13:54:01.957+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.ui                             : Running Changeset: db/dev/v1/meta/2026-05-20-16-30-create-table-osrf-lib-lock.yml::add-composite-primary-key-to-osrf-lib-lock-table::a-gushchina
+2026-08-07T13:54:01.969+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Primary key added to osrf_lib_lock (lock_key, region)
+2026-08-07T13:54:01.973+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : ChangeSet db/dev/v1/meta/2026-05-20-16-30-create-table-osrf-lib-lock.yml::add-composite-primary-key-to-osrf-lib-lock-table::a-gushchina ran successfully in 15ms
+2026-08-07T13:54:01.987+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.ui                             : Running Changeset: db/dev/v1/meta/2026-05-21-09-40-create-table-osrf-lib-process-state.yml::2026-05-21-09-40-create-table-osrf-lib-process-state::a-gushchina
+2026-08-07T13:54:01.994+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.snapshot                       : Creating snapshot
+2026-08-07T13:54:02.032+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Table osrf_lib_process_state created
+2026-08-07T13:54:02.037+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : ChangeSet db/dev/v1/meta/2026-05-21-09-40-create-table-osrf-lib-process-state.yml::2026-05-21-09-40-create-table-osrf-lib-process-state::a-gushchina ran successfully in 49ms
+2026-08-07T13:54:02.048+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.ui                             : Running Changeset: db/dev/v1/meta/2026-05-20-10-20-add-dict-version-to-osrf-lib-process-state.yml::2026-05-20-10-20-add-dict-version-to-osrf-lib-process-state::a-gushchina
+2026-08-07T13:54:02.061+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Columns dictionary_version(integer) added to osrf_lib_process_state
+2026-08-07T13:54:02.065+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : ChangeSet db/dev/v1/meta/2026-05-20-10-20-add-dict-version-to-osrf-lib-process-state.yml::2026-05-20-10-20-add-dict-version-to-osrf-lib-process-state::a-gushchina ran successfully in 15ms
+2026-08-07T13:54:02.075+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.ui                             : Running Changeset: db/dev/v1/meta/2026-05-25-12-00-add-process-sync-date-to-osrf-lib-process-state.yml::2026-05-25-add-process-sync-date-to-osrf-lib-process-state::a-gushchina
+2026-08-07T13:54:02.083+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Columns process_sync_date(timestamptz) added to osrf_lib_process_state
+2026-08-07T13:54:02.086+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : ChangeSet db/dev/v1/meta/2026-05-25-12-00-add-process-sync-date-to-osrf-lib-process-state.yml::2026-05-25-add-process-sync-date-to-osrf-lib-process-state::a-gushchina ran successfully in 10ms
+2026-08-07T13:54:02.098+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.ui                             : Running Changeset: db/dev/v1/meta/2026-05-25-16-20-create-table-srhr-orgunit.yml::2026-05-25-16-20-create-table-srhr-orgunit::a-gushchina
+2026-08-07T13:54:02.105+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.snapshot                       : Creating snapshot
+2026-08-07T13:54:02.137+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Table srhr_orgunit created
+2026-08-07T13:54:02.140+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : ChangeSet db/dev/v1/meta/2026-05-25-16-20-create-table-srhr-orgunit.yml::2026-05-25-16-20-create-table-srhr-orgunit::a-gushchina ran successfully in 41ms
+2026-08-07T13:54:02.150+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.ui                             : Running Changeset: db/dev/v1/meta/2026-06-08-11-00-delete-nullable-false-constraint.yml::2026-06-08-11-00-delete-nullable-false-constraint::a-gushchina
+2026-08-07T13:54:02.157+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Null constraint dropped from osrf_lib_process_state.dictionary_code
+2026-08-07T13:54:02.159+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : ChangeSet db/dev/v1/meta/2026-06-08-11-00-delete-nullable-false-constraint.yml::2026-06-08-11-00-delete-nullable-false-constraint::a-gushchina ran successfully in 9ms
+2026-08-07T13:54:02.168+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.ui                             : Running Changeset: db/dev/v1/meta/2026-06-25-13-20-add-column-to-srhr_orgunits.yml::2026-06-25-13-20-add-column-to-srhr_orgunits::d-tuev
+2026-08-07T13:54:02.177+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : Columns ou_type_id(varchar) added to srhr_orgunit
+2026-08-07T13:54:02.182+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.changelog                      : ChangeSet db/dev/v1/meta/2026-06-25-13-20-add-column-to-srhr_orgunits.yml::2026-06-25-13-20-add-column-to-srhr_orgunits::d-tuev ran successfully in 13ms
+2026-08-07T13:54:02.212+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.util                           : UPDATE SUMMARY
+2026-08-07T13:54:02.212+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.util                           : Run:                          8
+2026-08-07T13:54:02.212+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.util                           : Previously run:               0
+2026-08-07T13:54:02.212+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.util                           : Filtered out:                 0
+2026-08-07T13:54:02.212+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.util                           : -------------------------------
+2026-08-07T13:54:02.212+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.util                           : Total change sets:            8
+2026-08-07T13:54:02.217+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.util                           : Update summary generated
+2026-08-07T13:54:02.234+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.command                        : Update command completed successfully.
+2026-08-07T13:54:02.234+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.ui                             : Liquibase: Update has been successful. Rows affected: 8
+2026-08-07T13:54:02.245+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.lockservice                    : Successfully released change log lock
+2026-08-07T13:54:02.250+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] liquibase.command                        : Command execution complete
+2026-08-07T13:54:02.376+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-08-07T13:54:02.481+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@22db974d
+2026-08-07T13:54:02.488+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-08-07T13:54:02.901+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-08-07T13:54:03.157+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.3.1.Final
+2026-08-07T13:54:03.263+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-08-07T13:54:03.751+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-07T13:54:05.598+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-08-07T13:54:05.603+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-07T13:54:06.710+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-08-07T13:54:07.078+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] r.v.e.s.c.ApacheClientFactory            : Creating Apache HTTP client. SSL enabled: false
+2026-08-07T13:54:07.703+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] r.n.s.m.o.i.s.EpaSdkSecurityProvider     : EPA SDK Service инициализирован с URL: https://epa-ig-if-lb.test.vtb.ru
+2026-08-07T13:54:08.681+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] v.o.i.s.c.RestTemplateLoggingInterceptor : RestTemplateLoggingInterceptor initialized. logRequests=false, debugEnabled=false
+2026-08-07T13:54:10.128+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] r.v.e.s.c.ApacheClientFactory            : Creating Apache HTTP client. SSL enabled: false
+2026-08-07T13:54:10.149+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] r.n.s.common.epa.impl.EpaSdkServiceImpl  : EPA SDK Service инициализирован с URL: https://epa-ig-if-lb.test.vtb.ru
+2026-08-07T13:54:10.315+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] r.v.e.s.c.ApacheClientFactory            : Creating Apache HTTP client. SSL enabled: false
+2026-08-07T13:54:10.325+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] r.n.s.c.epa.impl.EpaSdkTechServiceImpl   : EPA SDK Service инициализирован с URL: https://epa-ig-if-lb.test.vtb.ru
+2026-08-07T13:54:11.604+03:00  WARN 19660 --- [srhr-ms-osrf-integration] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-08-07T13:54:11.841+03:00  WARN 19660 --- [srhr-ms-osrf-integration] [           main] .s.s.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 1e3662ef-8e94-45ee-aae1-a15b340d709b
+
 This generated password is for development use only. Your security configuration must be updated before running your application in production.
-2026-08-07T13:50:00.344+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint(s) beneath base path '/actuator'
-2026-08-07T13:50:00.480+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@523c4a6d, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@160b010e, org.springframework.security.web.context.SecurityContextHolderFilter@3aac686f, org.springframework.security.web.header.HeaderWriterFilter@290def7d, org.springframework.web.filter.CorsFilter@742b91a5, org.springframework.security.web.authentication.logout.LogoutFilter@bff5b50, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@28a50dec, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@4c25906b, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@bc9cd27, org.springframework.security.web.access.ExceptionTranslationFilter@41cf885f, org.springframework.security.web.access.intercept.FilterSecurityInterceptor@533c62d0]
-2026-08-07T13:50:02.737+03:00  WARN 10360 --- [srhr-ms-osrf-integration] [           main] o.s.b.a.f.FreeMarkerAutoConfiguration    : Cannot find template location(s): [classpath:/templates/] (please add some templates, check your FreeMarker configuration, or set spring.freemarker.check-template-location=false)
-2026-08-07T13:50:03.427+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] r.v.o.i.s.db.service.InitDbService       : OSRF Lib Version: 2.3.0.3
-2026-08-07T13:50:03.456+03:00  WARN 10360 --- [srhr-ms-osrf-integration] [           main] o.s.w.c.s.GenericWebApplicationContext   : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'initDbService': Invocation of init method failed
-2026-08-07T13:50:03.467+03:00  WARN 10360 --- [srhr-ms-osrf-integration] [           main] o.s.b.f.support.DisposableBeanAdapter    : Invocation of close method failed on bean with name 'osrfLibLockRepository': java.lang.NullPointerException: Cannot invoke "org.springframework.transaction.support.TransactionTemplate.executeWithoutResult(java.util.function.Consumer)" because "this.defaultTransactionTemplate" is null
-2026-08-07T13:50:03.470+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
-2026-08-07T13:50:03.476+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
-2026-08-07T13:50:03.479+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
-2026-08-07T13:50:03.510+03:00  INFO 10360 --- [srhr-ms-osrf-integration] [           main] .s.b.a.l.ConditionEvaluationReportLogger : 
-Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
-2026-08-07T13:50:03.542+03:00 ERROR 10360 --- [srhr-ms-osrf-integration] [           main] o.s.boot.SpringApplication               : Application run failed
-org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'initDbService': Invocation of init method failed
-	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor.postProcessBeforeInitialization(InitDestroyAnnotationBeanPostProcessor.java:222) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsBeforeInitialization(AbstractAutowireCapableBeanFactory.java:421) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1767) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:601) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:523) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:325) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:323) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:973) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:946) ~[spring-context-6.1.1.jar:6.1.1]
-	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:616) ~[spring-context-6.1.1.jar:6.1.1]
-	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:753) ~[spring-boot-3.2.0.jar:3.2.0]
-	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:455) ~[spring-boot-3.2.0.jar:3.2.0]
-	at org.springframework.boot.SpringApplication.run(SpringApplication.java:323) ~[spring-boot-3.2.0.jar:3.2.0]
+
+2026-08-07T13:54:13.262+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint(s) beneath base path '/actuator'
+2026-08-07T13:54:13.382+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@78679286, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@5a4700ba, org.springframework.security.web.context.SecurityContextHolderFilter@3b310465, org.springframework.security.web.header.HeaderWriterFilter@2683fbab, org.springframework.web.filter.CorsFilter@63e38fc8, org.springframework.security.web.authentication.logout.LogoutFilter@674666b6, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@78999117, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@46febe84, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@523c4a6d, org.springframework.security.web.access.ExceptionTranslationFilter@778bdf42, org.springframework.security.web.access.intercept.FilterSecurityInterceptor@456d03cd]
+2026-08-07T13:54:15.911+03:00  WARN 19660 --- [srhr-ms-osrf-integration] [           main] o.s.b.a.f.FreeMarkerAutoConfiguration    : Cannot find template location(s): [classpath:/templates/] (please add some templates, check your FreeMarker configuration, or set spring.freemarker.check-template-location=false)
+2026-08-07T13:54:16.609+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] r.v.o.i.s.db.service.InitDbService       : OSRF Lib Version: 2.3.0.3
+2026-08-07T13:54:17.045+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [onPool-worker-1] .m.o.i.s.i.DictionaryImportProcessorImpl : Getting the lock...
+2026-08-07T13:54:17.060+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.s.i.endpoint.EventDrivenConsumer       : Adding {logging-channel-adapter:_org.springframework.integration.errorLogger} as a subscriber to the 'errorChannel' channel
+2026-08-07T13:54:17.062+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.s.i.channel.PublishSubscribeChannel    : Channel 'srhr-ms-osrf-integration.errorChannel' has 1 subscriber(s).
+2026-08-07T13:54:17.063+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.s.i.endpoint.EventDrivenConsumer       : started bean '_org.springframework.integration.errorLogger'
+2026-08-07T13:54:17.066+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [onPool-worker-1] .m.o.i.s.i.DictionaryImportProcessorImpl : Successfully obtained the lock!
+2026-08-07T13:54:17.069+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [onPool-worker-2] .m.o.i.s.i.DictionaryImportProcessorImpl : Starting import dictionaries
+2026-08-07T13:54:17.123+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] r.v.o.i.s.l.ApplicationEventListener     : Starting HeartbeatScheduler
+2026-08-07T13:54:17.124+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] r.v.o.i.s.l.ApplicationEventListener     : Starting DictionaryCleaningScheduler
+2026-08-07T13:54:17.126+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] r.v.o.i.s.l.ApplicationEventListener     : Starting DictionaryVersionValidationScheduler
+2026-08-07T13:54:17.127+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] .i.SrhrMsOsrfIntegrationApplicationTests : Started SrhrMsOsrfIntegrationApplicationTests in 24.393 seconds (process running for 33.421)
+2026-08-07T13:54:17.206+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [onPool-worker-2] .m.o.i.s.i.DictionaryImportProcessorImpl : Importing dictionary: ORG4
+2026-08-07T13:54:17.224+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [onPool-worker-2] r.v.o.i.s.client.OsrfClientRetryable     : Trying to get info for dictionary: ORG4
+2026-08-07T13:54:17.278+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.a.k.clients.admin.AdminClientConfig    : AdminClientConfig values: 
+	bootstrap.servers = [localhost:9092]
+	client.dns.lookup = use_all_dns_ips
+	client.id = 
+	connections.max.idle.ms = 300000
+	default.api.timeout.ms = 60000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retries = 2147483647
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = SSL
+	security.providers = null
+	send.buffer.bytes = 131072
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = [hidden]
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = \\path\to\file
+	ssl.keystore.password = [hidden]
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = \\path\to\file
+	ssl.truststore.password = [hidden]
+	ssl.truststore.type = JKS
+
+2026-08-07T13:54:17.362+03:00 ERROR 19660 --- [srhr-ms-osrf-integration] [onPool-worker-2] r.v.e.s.c.ClientCredentialsClientImpl    : IO error during getting new token. URL: https://epa-ig-if-lb.test.vtb.ru/passport/oauth2/token, Params: {grant_type=[client_credentials], client_id=[client_epa@vtb.ru], client_secret=[***]}
+
+java.net.UnknownHostException: Этот хост неизвестен (epa-ig-if-lb.test.vtb.ru)
+	at java.base/java.net.Inet6AddressImpl.lookupAllHostAddr(Native Method) ~[na:na]
+	at java.base/java.net.InetAddress$PlatformNameService.lookupAllHostAddr(InetAddress.java:934) ~[na:na]
+	at java.base/java.net.InetAddress.getAddressesFromNameService(InetAddress.java:1543) ~[na:na]
+	at java.base/java.net.InetAddress$NameServiceAddresses.get(InetAddress.java:852) ~[na:na]
+	at java.base/java.net.InetAddress.getAllByName0(InetAddress.java:1533) ~[na:na]
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1385) ~[na:na]
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1306) ~[na:na]
+	at org.apache.hc.client5.http.SystemDefaultDnsResolver.resolve(SystemDefaultDnsResolver.java:43) ~[httpclient5-5.2.1.jar:5.2.1]
+	at org.apache.hc.client5.http.impl.io.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:141) ~[httpclient5-5.2.1.jar:5.2.1]
+	at org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:447) ~[httpclient5-5.2.1.jar:5.2.1]
+	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:162) ~[httpclient5-5.2.1.jar:5.2.1]
+	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:172) ~[httpclient5-5.2.1.jar:5.2.1]
+	at org.apache.hc.client5.http.impl.classic.ConnectExec.execute(ConnectExec.java:142) ~[httpclient5-5.2.1.jar:5.2.1]
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51) ~[httpclient5-5.2.1.jar:5.2.1]
+	at org.apache.hc.client5.http.impl.classic.ProtocolExec.execute(ProtocolExec.java:192) ~[httpclient5-5.2.1.jar:5.2.1]
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51) ~[httpclient5-5.2.1.jar:5.2.1]
+	at org.apache.hc.client5.http.impl.classic.HttpRequestRetryExec.execute(HttpRequestRetryExec.java:96) ~[httpclient5-5.2.1.jar:5.2.1]
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51) ~[httpclient5-5.2.1.jar:5.2.1]
+	at org.apache.hc.client5.http.impl.classic.ContentCompressionExec.execute(ContentCompressionExec.java:152) ~[httpclient5-5.2.1.jar:5.2.1]
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51) ~[httpclient5-5.2.1.jar:5.2.1]
+	at org.apache.hc.client5.http.impl.classic.RedirectExec.execute(RedirectExec.java:115) ~[httpclient5-5.2.1.jar:5.2.1]
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51) ~[httpclient5-5.2.1.jar:5.2.1]
+	at org.apache.hc.client5.http.impl.classic.InternalHttpClient.doExecute(InternalHttpClient.java:170) ~[httpclient5-5.2.1.jar:5.2.1]
+	at org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:245) ~[httpclient5-5.2.1.jar:5.2.1]
+	at org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:188) ~[httpclient5-5.2.1.jar:5.2.1]
+	at ru.vtb.epa.sso.aal.client.HttpClientWrapper.execute(HttpClientWrapper.java:34) ~[auth-lib-rs-0.0.40.0.jar:na]
+	at ru.vtb.epa.sso.clientcredentials.ClientCredentialsClientImpl.authorizeAndGetToken(ClientCredentialsClientImpl.java:254) ~[auth-lib-rs-0.0.40.0.jar:na]
+	at ru.vtb.epa.sso.clientcredentials.ClientCredentialsClientImpl.getTokenValidating(ClientCredentialsClientImpl.java:212) ~[auth-lib-rs-0.0.40.0.jar:na]
+	at ru.vtb.epa.sso.clientcredentials.ClientCredentialsClientImpl.getToken(ClientCredentialsClientImpl.java:81) ~[auth-lib-rs-0.0.40.0.jar:na]
+	at ru.ntdev.srhr.ms.osrf.integration.security.EpaSdkSecurityProvider.accessToken(EpaSdkSecurityProvider.java:41) ~[classes/:na]
+	at ru.vtb.osrf.integration.starter.service.authorization.DefaultAuthorizationService.getAccessToken(DefaultAuthorizationService.java:15) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
+	at ru.vtb.osrf.integration.starter.client.OsrfRestClientImpl.addSecurityHeaders(OsrfRestClientImpl.java:114) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
+	at ru.vtb.osrf.integration.starter.client.OsrfRestClientImpl.getDictionaryInfo(OsrfRestClientImpl.java:39) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
+	at ru.vtb.osrf.integration.starter.client.OsrfClientRetryable.lambda$getDictionaryInfo$0(OsrfClientRetryable.java:32) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
+	at org.springframework.retry.support.RetryTemplate.doExecute(RetryTemplate.java:329) ~[spring-retry-2.0.4.jar:na]
+	at org.springframework.retry.support.RetryTemplate.execute(RetryTemplate.java:209) ~[spring-retry-2.0.4.jar:na]
+	at ru.vtb.osrf.integration.starter.client.OsrfClientRetryable.getDictionaryInfo(OsrfClientRetryable.java:31) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
+	at ru.vtb.osrf.integration.starter.db.service.importing.DbDictionaryImportService.importDictionary(DbDictionaryImportService.java:51) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:na]
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[na:na]
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569) ~[na:na]
+	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:352) ~[spring-aop-6.1.1.jar:6.1.1]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.invokeJoinpoint(ReflectiveMethodInvocation.java:196) ~[spring-aop-6.1.1.jar:6.1.1]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:163) ~[spring-aop-6.1.1.jar:6.1.1]
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:765) ~[spring-aop-6.1.1.jar:6.1.1]
+	at org.springframework.transaction.interceptor.TransactionInterceptor$1.proceedWithInvocation(TransactionInterceptor.java:123) ~[spring-tx-6.1.1.jar:6.1.1]
+	at org.springframework.transaction.interceptor.TransactionAspectSupport.invokeWithinTransaction(TransactionAspectSupport.java:385) ~[spring-tx-6.1.1.jar:6.1.1]
+	at org.springframework.transaction.interceptor.TransactionInterceptor.invoke(TransactionInterceptor.java:119) ~[spring-tx-6.1.1.jar:6.1.1]
+	at org.springframework.aop.framework.ReflectiveMethodInvocation.proceed(ReflectiveMethodInvocation.java:184) ~[spring-aop-6.1.1.jar:6.1.1]
+	at org.springframework.aop.framework.CglibAopProxy$CglibMethodInvocation.proceed(CglibAopProxy.java:765) ~[spring-aop-6.1.1.jar:6.1.1]
+	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:717) ~[spring-aop-6.1.1.jar:6.1.1]
+	at ru.vtb.osrf.integration.starter.db.service.importing.DbDictionaryImportService$$SpringCGLIB$$0.importDictionary(<generated>) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
+	at ru.ntdev.srhr.ms.osrf.integration.service.impl.DictionaryImportProcessorImpl.importDictionary(DictionaryImportProcessorImpl.java:115) ~[classes/:na]
+	at ru.ntdev.srhr.ms.osrf.integration.service.impl.DictionaryImportProcessorImpl.importDictionaryIfNeeded(DictionaryImportProcessorImpl.java:109) ~[classes/:na]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511) ~[na:na]
+	at ru.ntdev.srhr.ms.osrf.integration.service.impl.DictionaryImportProcessorImpl.importData(DictionaryImportProcessorImpl.java:92) ~[classes/:na]
+	at ru.ntdev.srhr.ms.osrf.integration.service.impl.DictionaryImportProcessorImpl.lambda$runImportDataTask$0(DictionaryImportProcessorImpl.java:69) ~[classes/:na]
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.run(CompletableFuture.java:1804) ~[na:na]
+	at java.base/java.util.concurrent.CompletableFuture$AsyncRun.exec(CompletableFuture.java:1796) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:373) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1182) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1655) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1622) ~[na:na]
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:165) ~[na:na]
+
+2026-08-07T13:54:19.745+03:00 ERROR 19660 --- [srhr-ms-osrf-integration] [           main] o.a.k.c.s.ssl.DefaultSslEngineFactory    : Modification time of key store could not be obtained: \\path\to\file
+
+java.nio.file.FileSystemException: \\path\to\file: Не найден сетевой путь
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:92) ~[na:na]
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103) ~[na:na]
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108) ~[na:na]
+	at java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(WindowsFileAttributeViews.java:53) ~[na:na]
+	at java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(WindowsFileAttributeViews.java:38) ~[na:na]
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.readAttributes(WindowsFileSystemProvider.java:199) ~[na:na]
+	at java.base/java.nio.file.Files.readAttributes(Files.java:1851) ~[na:na]
+	at java.base/java.nio.file.Files.getLastModifiedTime(Files.java:2402) ~[na:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory$FileBasedStore.lastModifiedMs(DefaultSslEngineFactory.java:383) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory$FileBasedStore.<init>(DefaultSslEngineFactory.java:348) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory.createKeystore(DefaultSslEngineFactory.java:299) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory.configure(DefaultSslEngineFactory.java:161) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.SslFactory.instantiateSslEngineFactory(SslFactory.java:140) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.SslFactory.configure(SslFactory.java:97) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.network.SslChannelBuilder.configure(SslChannelBuilder.java:73) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.network.ChannelBuilders.create(ChannelBuilders.java:192) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.network.ChannelBuilders.clientChannelBuilder(ChannelBuilders.java:81) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.clients.ClientUtils.createChannelBuilder(ClientUtils.java:105) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.clients.admin.KafkaAdminClient.createInternal(KafkaAdminClient.java:517) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.clients.admin.Admin.create(Admin.java:143) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.clients.admin.AdminClient.create(AdminClient.java:49) ~[kafka-clients-3.2.2.jar:na]
+	at org.springframework.kafka.listener.AbstractMessageListenerContainer.checkTopics(AbstractMessageListenerContainer.java:527) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.listener.ConcurrentMessageListenerContainer.doStart(ConcurrentMessageListenerContainer.java:237) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.listener.AbstractMessageListenerContainer.start(AbstractMessageListenerContainer.java:505) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at ru.vtb.osrf.integration.starter.kafka.consumer.KafkaConsumer.onStarted(KafkaConsumer.java:57) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:na]
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[na:na]
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569) ~[na:na]
+	at org.springframework.context.event.ApplicationListenerMethodAdapter.doInvoke(ApplicationListenerMethodAdapter.java:365) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.ApplicationListenerMethodAdapter.processEvent(ApplicationListenerMethodAdapter.java:237) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.ApplicationListenerMethodAdapter.onApplicationEvent(ApplicationListenerMethodAdapter.java:168) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.doInvokeListener(SimpleApplicationEventMulticaster.java:178) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.invokeListener(SimpleApplicationEventMulticaster.java:171) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.multicastEvent(SimpleApplicationEventMulticaster.java:149) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:445) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:378) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.boot.context.event.EventPublishingRunListener.started(EventPublishingRunListener.java:103) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplicationRunListeners.lambda$started$5(SpringApplicationRunListeners.java:76) ~[spring-boot-3.2.0.jar:3.2.0]
+	at java.base/java.lang.Iterable.forEach(Iterable.java:75) ~[na:na]
+	at org.springframework.boot.SpringApplicationRunListeners.doWithListeners(SpringApplicationRunListeners.java:118) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplicationRunListeners.doWithListeners(SpringApplicationRunListeners.java:112) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplicationRunListeners.started(SpringApplicationRunListeners.java:76) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:329) ~[spring-boot-3.2.0.jar:3.2.0]
 	at org.springframework.boot.test.context.SpringBootContextLoader.lambda$loadContext$3(SpringBootContextLoader.java:137) ~[spring-boot-test-3.2.0.jar:3.2.0]
 	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:58) ~[spring-core-6.1.1.jar:6.1.1]
 	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:46) ~[spring-core-6.1.1.jar:6.1.1]
@@ -266,71 +421,517 @@ org.springframework.beans.factory.BeanCreationException: Error creating bean wit
 	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:345) ~[surefire-booter-2.22.2.jar:2.22.2]
 	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:126) ~[surefire-booter-2.22.2.jar:2.22.2]
 	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:418) ~[surefire-booter-2.22.2.jar:2.22.2]
-Caused by: ru.vtb.osrf.integration.starter.db.exception.DatabaseQueryException: Error execute query
-	at ru.vtb.osrf.integration.starter.db.repository.BaseDbRepository.executeQueryMethod(BaseDbRepository.java:266) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
-	at ru.vtb.osrf.integration.starter.db.repository.BaseDbRepository.find(BaseDbRepository.java:69) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
-	at ru.vtb.osrf.integration.starter.db.repository.DbProcessStateRepository.findAllByProcessType(DbProcessStateRepository.java:50) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
+
+2026-08-07T13:54:19.749+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.apache.kafka.common.metrics.Metrics    : Metrics scheduler closed
+2026-08-07T13:54:19.749+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.apache.kafka.common.metrics.Metrics    : Closing reporter org.apache.kafka.common.metrics.JmxReporter
+2026-08-07T13:54:19.750+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.apache.kafka.common.metrics.Metrics    : Metrics reporters closed
+2026-08-07T13:54:19.750+03:00 ERROR 19660 --- [srhr-ms-osrf-integration] [           main] s.k.l.ConcurrentMessageListenerContainer : Failed to check topic existence
+
+org.apache.kafka.common.KafkaException: Failed to create new KafkaAdminClient
+	at org.apache.kafka.clients.admin.KafkaAdminClient.createInternal(KafkaAdminClient.java:546) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.clients.admin.Admin.create(Admin.java:143) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.clients.admin.AdminClient.create(AdminClient.java:49) ~[kafka-clients-3.2.2.jar:na]
+	at org.springframework.kafka.listener.AbstractMessageListenerContainer.checkTopics(AbstractMessageListenerContainer.java:527) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.listener.ConcurrentMessageListenerContainer.doStart(ConcurrentMessageListenerContainer.java:237) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.listener.AbstractMessageListenerContainer.start(AbstractMessageListenerContainer.java:505) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at ru.vtb.osrf.integration.starter.kafka.consumer.KafkaConsumer.onStarted(KafkaConsumer.java:57) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:na]
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[na:na]
 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:na]
 	at java.base/java.lang.reflect.Method.invoke(Method.java:569) ~[na:na]
-	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:352) ~[spring-aop-6.1.1.jar:6.1.1]
-	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:713) ~[spring-aop-6.1.1.jar:6.1.1]
-	at ru.vtb.osrf.integration.starter.db.repository.DbProcessStateRepository$$SpringCGLIB$$0.findAllByProcessType(<generated>) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
-	at ru.vtb.osrf.integration.starter.db.service.InitDbService.fillProcessStateTable(InitDbService.java:53) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
-	at ru.vtb.osrf.integration.starter.db.service.InitDbService.initDb(InitDbService.java:38) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
+	at org.springframework.context.event.ApplicationListenerMethodAdapter.doInvoke(ApplicationListenerMethodAdapter.java:365) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.ApplicationListenerMethodAdapter.processEvent(ApplicationListenerMethodAdapter.java:237) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.ApplicationListenerMethodAdapter.onApplicationEvent(ApplicationListenerMethodAdapter.java:168) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.doInvokeListener(SimpleApplicationEventMulticaster.java:178) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.invokeListener(SimpleApplicationEventMulticaster.java:171) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.multicastEvent(SimpleApplicationEventMulticaster.java:149) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:445) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:378) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.boot.context.event.EventPublishingRunListener.started(EventPublishingRunListener.java:103) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplicationRunListeners.lambda$started$5(SpringApplicationRunListeners.java:76) ~[spring-boot-3.2.0.jar:3.2.0]
+	at java.base/java.lang.Iterable.forEach(Iterable.java:75) ~[na:na]
+	at org.springframework.boot.SpringApplicationRunListeners.doWithListeners(SpringApplicationRunListeners.java:118) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplicationRunListeners.doWithListeners(SpringApplicationRunListeners.java:112) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplicationRunListeners.started(SpringApplicationRunListeners.java:76) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:329) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.test.context.SpringBootContextLoader.lambda$loadContext$3(SpringBootContextLoader.java:137) ~[spring-boot-test-3.2.0.jar:3.2.0]
+	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:58) ~[spring-core-6.1.1.jar:6.1.1]
+	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:46) ~[spring-core-6.1.1.jar:6.1.1]
+	at org.springframework.boot.SpringApplication.withHook(SpringApplication.java:1442) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.test.context.SpringBootContextLoader$ContextLoaderHook.run(SpringBootContextLoader.java:552) ~[spring-boot-test-3.2.0.jar:3.2.0]
+	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:137) ~[spring-boot-test-3.2.0.jar:3.2.0]
+	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:108) ~[spring-boot-test-3.2.0.jar:3.2.0]
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContextInternal(DefaultCacheAwareContextLoaderDelegate.java:225) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:152) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.support.DefaultTestContext.getApplicationContext(DefaultTestContext.java:130) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.web.ServletTestExecutionListener.setUpRequestContextIfNecessary(ServletTestExecutionListener.java:191) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.web.ServletTestExecutionListener.prepareTestInstance(ServletTestExecutionListener.java:130) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:247) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:163) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$10(ClassBasedTestDescriptor.java:378) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.executeAndMaskThrowable(ClassBasedTestDescriptor.java:383) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$11(ClassBasedTestDescriptor.java:378) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179) ~[na:na]
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1625) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499) ~[na:na]
+	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.forEachRemaining(StreamSpliterators.java:310) ~[na:na]
+	at java.base/java.util.stream.Streams$ConcatSpliterator.forEachRemaining(Streams.java:735) ~[na:na]
+	at java.base/java.util.stream.Streams$ConcatSpliterator.forEachRemaining(Streams.java:734) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:762) ~[na:na]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.invokeTestInstancePostProcessors(ClassBasedTestDescriptor.java:377) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$instantiateAndPostProcessTestInstance$6(ClassBasedTestDescriptor.java:290) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.instantiateAndPostProcessTestInstance(ClassBasedTestDescriptor.java:289) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$4(ClassBasedTestDescriptor.java:279) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at java.base/java.util.Optional.orElseGet(Optional.java:364) ~[na:na]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$5(ClassBasedTestDescriptor.java:278) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.execution.TestInstancesProvider.getTestInstances(TestInstancesProvider.java:31) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$prepare$0(TestMethodTestDescriptor.java:106) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:105) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:69) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$prepare$2(NodeTestTask.java:123) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.prepare(NodeTestTask.java:123) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:90) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:220) ~[junit-platform-launcher-1.3.1.jar:1.3.1]
+	at org.junit.platform.launcher.core.DefaultLauncher.lambda$execute$6(DefaultLauncher.java:188) ~[junit-platform-launcher-1.3.1.jar:1.3.1]
+	at org.junit.platform.launcher.core.DefaultLauncher.withInterceptedStreams(DefaultLauncher.java:202) ~[junit-platform-launcher-1.3.1.jar:1.3.1]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:181) ~[junit-platform-launcher-1.3.1.jar:1.3.1]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:128) ~[junit-platform-launcher-1.3.1.jar:1.3.1]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:150) ~[surefire-junit-platform-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:116) ~[surefire-junit-platform-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:384) ~[surefire-booter-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:345) ~[surefire-booter-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:126) ~[surefire-booter-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:418) ~[surefire-booter-2.22.2.jar:2.22.2]
+Caused by: org.apache.kafka.common.KafkaException: Failed to load SSL keystore \\path\to\file of type JKS
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory$FileBasedStore.load(DefaultSslEngineFactory.java:377) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory$FileBasedStore.<init>(DefaultSslEngineFactory.java:349) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory.createKeystore(DefaultSslEngineFactory.java:299) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory.configure(DefaultSslEngineFactory.java:161) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.SslFactory.instantiateSslEngineFactory(SslFactory.java:140) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.SslFactory.configure(SslFactory.java:97) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.network.SslChannelBuilder.configure(SslChannelBuilder.java:73) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.network.ChannelBuilders.create(ChannelBuilders.java:192) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.network.ChannelBuilders.clientChannelBuilder(ChannelBuilders.java:81) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.clients.ClientUtils.createChannelBuilder(ClientUtils.java:105) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.clients.admin.KafkaAdminClient.createInternal(KafkaAdminClient.java:517) ~[kafka-clients-3.2.2.jar:na]
+	... 101 common frames omitted
+Caused by: java.nio.file.FileSystemException: \\path\to\file: Не найден сетевой путь
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:92) ~[na:na]
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103) ~[na:na]
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108) ~[na:na]
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.newByteChannel(WindowsFileSystemProvider.java:236) ~[na:na]
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380) ~[na:na]
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432) ~[na:na]
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:422) ~[na:na]
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160) ~[na:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory$FileBasedStore.load(DefaultSslEngineFactory.java:370) ~[kafka-clients-3.2.2.jar:na]
+	... 111 common frames omitted
+
+2026-08-07T13:54:19.794+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.a.k.clients.consumer.ConsumerConfig    : ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.offset.reset = latest
+	bootstrap.servers = [localhost:9092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-2020_SRHR-1-1
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = 2020_SRHR-1
+	group.instance.id = null
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 500
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = SSL
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = [hidden]
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = \\path\to\file
+	ssl.keystore.password = [hidden]
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = \\path\to\file
+	ssl.truststore.password = [hidden]
+	ssl.truststore.type = JKS
+	value.deserializer = class org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+
+2026-08-07T13:54:19.852+03:00 ERROR 19660 --- [srhr-ms-osrf-integration] [           main] o.a.k.c.s.ssl.DefaultSslEngineFactory    : Modification time of key store could not be obtained: \\path\to\file
+
+java.nio.file.FileSystemException: \\path\to\file: Не найден сетевой путь
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:92) ~[na:na]
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103) ~[na:na]
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108) ~[na:na]
+	at java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(WindowsFileAttributeViews.java:53) ~[na:na]
+	at java.base/sun.nio.fs.WindowsFileAttributeViews$Basic.readAttributes(WindowsFileAttributeViews.java:38) ~[na:na]
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.readAttributes(WindowsFileSystemProvider.java:199) ~[na:na]
+	at java.base/java.nio.file.Files.readAttributes(Files.java:1851) ~[na:na]
+	at java.base/java.nio.file.Files.getLastModifiedTime(Files.java:2402) ~[na:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory$FileBasedStore.lastModifiedMs(DefaultSslEngineFactory.java:383) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory$FileBasedStore.<init>(DefaultSslEngineFactory.java:348) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory.createKeystore(DefaultSslEngineFactory.java:299) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory.configure(DefaultSslEngineFactory.java:161) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.SslFactory.instantiateSslEngineFactory(SslFactory.java:140) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.SslFactory.configure(SslFactory.java:97) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.network.SslChannelBuilder.configure(SslChannelBuilder.java:73) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.network.ChannelBuilders.create(ChannelBuilders.java:192) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.network.ChannelBuilders.clientChannelBuilder(ChannelBuilders.java:81) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.clients.ClientUtils.createChannelBuilder(ClientUtils.java:105) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.clients.consumer.KafkaConsumer.<init>(KafkaConsumer.java:738) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.clients.consumer.KafkaConsumer.<init>(KafkaConsumer.java:666) ~[kafka-clients-3.2.2.jar:na]
+	at org.springframework.kafka.core.DefaultKafkaConsumerFactory$ExtendedKafkaConsumer.<init>(DefaultKafkaConsumerFactory.java:484) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.core.DefaultKafkaConsumerFactory.createRawConsumer(DefaultKafkaConsumerFactory.java:468) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.core.DefaultKafkaConsumerFactory.createKafkaConsumer(DefaultKafkaConsumerFactory.java:445) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.core.DefaultKafkaConsumerFactory.createConsumerWithAdjustedProperties(DefaultKafkaConsumerFactory.java:422) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.core.DefaultKafkaConsumerFactory.createKafkaConsumer(DefaultKafkaConsumerFactory.java:389) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.core.DefaultKafkaConsumerFactory.createConsumer(DefaultKafkaConsumerFactory.java:366) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.<init>(KafkaMessageListenerContainer.java:875) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.listener.KafkaMessageListenerContainer.doStart(KafkaMessageListenerContainer.java:380) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.listener.AbstractMessageListenerContainer.start(AbstractMessageListenerContainer.java:505) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.listener.ConcurrentMessageListenerContainer.doStart(ConcurrentMessageListenerContainer.java:255) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.listener.AbstractMessageListenerContainer.start(AbstractMessageListenerContainer.java:505) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at ru.vtb.osrf.integration.starter.kafka.consumer.KafkaConsumer.onStarted(KafkaConsumer.java:57) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:na]
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[na:na]
 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:na]
 	at java.base/java.lang.reflect.Method.invoke(Method.java:569) ~[na:na]
-	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor$LifecycleMethod.invoke(InitDestroyAnnotationBeanPostProcessor.java:457) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor$LifecycleMetadata.invokeInitMethods(InitDestroyAnnotationBeanPostProcessor.java:401) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor.postProcessBeforeInitialization(InitDestroyAnnotationBeanPostProcessor.java:219) ~[spring-beans-6.1.1.jar:6.1.1]
-	... 90 common frames omitted
-Caused by: org.springframework.jdbc.BadSqlGrammarException: PreparedStatementCallback; bad SQL grammar [SELECT * FROM OSRF_LIB_PROCESS_STATE WHERE 1=1 AND PROCESS_TYPE = ?]
-	at org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:112) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:116) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1548) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:677) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:723) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:748) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:804) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate.query(NamedParameterJdbcTemplate.java:218) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at ru.vtb.osrf.integration.starter.db.repository.BaseDbRepository.lambda$find$0(BaseDbRepository.java:70) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
-	at ru.vtb.osrf.integration.starter.db.repository.BaseDbRepository.executeQueryMethod(BaseDbRepository.java:264) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
+	at org.springframework.context.event.ApplicationListenerMethodAdapter.doInvoke(ApplicationListenerMethodAdapter.java:365) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.ApplicationListenerMethodAdapter.processEvent(ApplicationListenerMethodAdapter.java:237) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.ApplicationListenerMethodAdapter.onApplicationEvent(ApplicationListenerMethodAdapter.java:168) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.doInvokeListener(SimpleApplicationEventMulticaster.java:178) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.invokeListener(SimpleApplicationEventMulticaster.java:171) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.multicastEvent(SimpleApplicationEventMulticaster.java:149) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:445) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:378) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.boot.context.event.EventPublishingRunListener.started(EventPublishingRunListener.java:103) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplicationRunListeners.lambda$started$5(SpringApplicationRunListeners.java:76) ~[spring-boot-3.2.0.jar:3.2.0]
+	at java.base/java.lang.Iterable.forEach(Iterable.java:75) ~[na:na]
+	at org.springframework.boot.SpringApplicationRunListeners.doWithListeners(SpringApplicationRunListeners.java:118) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplicationRunListeners.doWithListeners(SpringApplicationRunListeners.java:112) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplicationRunListeners.started(SpringApplicationRunListeners.java:76) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:329) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.test.context.SpringBootContextLoader.lambda$loadContext$3(SpringBootContextLoader.java:137) ~[spring-boot-test-3.2.0.jar:3.2.0]
+	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:58) ~[spring-core-6.1.1.jar:6.1.1]
+	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:46) ~[spring-core-6.1.1.jar:6.1.1]
+	at org.springframework.boot.SpringApplication.withHook(SpringApplication.java:1442) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.test.context.SpringBootContextLoader$ContextLoaderHook.run(SpringBootContextLoader.java:552) ~[spring-boot-test-3.2.0.jar:3.2.0]
+	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:137) ~[spring-boot-test-3.2.0.jar:3.2.0]
+	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:108) ~[spring-boot-test-3.2.0.jar:3.2.0]
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContextInternal(DefaultCacheAwareContextLoaderDelegate.java:225) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:152) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.support.DefaultTestContext.getApplicationContext(DefaultTestContext.java:130) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.web.ServletTestExecutionListener.setUpRequestContextIfNecessary(ServletTestExecutionListener.java:191) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.web.ServletTestExecutionListener.prepareTestInstance(ServletTestExecutionListener.java:130) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:247) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:163) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$10(ClassBasedTestDescriptor.java:378) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.executeAndMaskThrowable(ClassBasedTestDescriptor.java:383) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$11(ClassBasedTestDescriptor.java:378) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179) ~[na:na]
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1625) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499) ~[na:na]
+	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.forEachRemaining(StreamSpliterators.java:310) ~[na:na]
+	at java.base/java.util.stream.Streams$ConcatSpliterator.forEachRemaining(Streams.java:735) ~[na:na]
+	at java.base/java.util.stream.Streams$ConcatSpliterator.forEachRemaining(Streams.java:734) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:762) ~[na:na]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.invokeTestInstancePostProcessors(ClassBasedTestDescriptor.java:377) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$instantiateAndPostProcessTestInstance$6(ClassBasedTestDescriptor.java:290) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.instantiateAndPostProcessTestInstance(ClassBasedTestDescriptor.java:289) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$4(ClassBasedTestDescriptor.java:279) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at java.base/java.util.Optional.orElseGet(Optional.java:364) ~[na:na]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$5(ClassBasedTestDescriptor.java:278) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.execution.TestInstancesProvider.getTestInstances(TestInstancesProvider.java:31) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$prepare$0(TestMethodTestDescriptor.java:106) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:105) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:69) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$prepare$2(NodeTestTask.java:123) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.prepare(NodeTestTask.java:123) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:90) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:220) ~[junit-platform-launcher-1.3.1.jar:1.3.1]
+	at org.junit.platform.launcher.core.DefaultLauncher.lambda$execute$6(DefaultLauncher.java:188) ~[junit-platform-launcher-1.3.1.jar:1.3.1]
+	at org.junit.platform.launcher.core.DefaultLauncher.withInterceptedStreams(DefaultLauncher.java:202) ~[junit-platform-launcher-1.3.1.jar:1.3.1]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:181) ~[junit-platform-launcher-1.3.1.jar:1.3.1]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:128) ~[junit-platform-launcher-1.3.1.jar:1.3.1]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:150) ~[surefire-junit-platform-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:116) ~[surefire-junit-platform-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:384) ~[surefire-booter-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:345) ~[surefire-booter-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:126) ~[surefire-booter-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:418) ~[surefire-booter-2.22.2.jar:2.22.2]
+
+2026-08-07T13:54:19.854+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.apache.kafka.common.metrics.Metrics    : Metrics scheduler closed
+2026-08-07T13:54:19.854+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.apache.kafka.common.metrics.Metrics    : Closing reporter org.apache.kafka.common.metrics.JmxReporter
+2026-08-07T13:54:19.854+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.apache.kafka.common.metrics.Metrics    : Metrics reporters closed
+2026-08-07T13:54:19.857+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.a.kafka.common.utils.AppInfoParser     : App info kafka.consumer for consumer-2020_SRHR-1-1 unregistered
+2026-08-07T13:54:19.859+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-08-07T13:54:19.876+03:00 ERROR 19660 --- [srhr-ms-osrf-integration] [           main] o.s.boot.SpringApplication               : Application run failed
+
+org.apache.kafka.common.KafkaException: Failed to construct kafka consumer
+	at org.apache.kafka.clients.consumer.KafkaConsumer.<init>(KafkaConsumer.java:825) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.clients.consumer.KafkaConsumer.<init>(KafkaConsumer.java:666) ~[kafka-clients-3.2.2.jar:na]
+	at org.springframework.kafka.core.DefaultKafkaConsumerFactory$ExtendedKafkaConsumer.<init>(DefaultKafkaConsumerFactory.java:484) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.core.DefaultKafkaConsumerFactory.createRawConsumer(DefaultKafkaConsumerFactory.java:468) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.core.DefaultKafkaConsumerFactory.createKafkaConsumer(DefaultKafkaConsumerFactory.java:445) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.core.DefaultKafkaConsumerFactory.createConsumerWithAdjustedProperties(DefaultKafkaConsumerFactory.java:422) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.core.DefaultKafkaConsumerFactory.createKafkaConsumer(DefaultKafkaConsumerFactory.java:389) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.core.DefaultKafkaConsumerFactory.createConsumer(DefaultKafkaConsumerFactory.java:366) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.<init>(KafkaMessageListenerContainer.java:875) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.listener.KafkaMessageListenerContainer.doStart(KafkaMessageListenerContainer.java:380) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.listener.AbstractMessageListenerContainer.start(AbstractMessageListenerContainer.java:505) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.listener.ConcurrentMessageListenerContainer.doStart(ConcurrentMessageListenerContainer.java:255) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.listener.AbstractMessageListenerContainer.start(AbstractMessageListenerContainer.java:505) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at ru.vtb.osrf.integration.starter.kafka.consumer.KafkaConsumer.onStarted(KafkaConsumer.java:57) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:na]
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[na:na]
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569) ~[na:na]
+	at org.springframework.context.event.ApplicationListenerMethodAdapter.doInvoke(ApplicationListenerMethodAdapter.java:365) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.ApplicationListenerMethodAdapter.processEvent(ApplicationListenerMethodAdapter.java:237) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.ApplicationListenerMethodAdapter.onApplicationEvent(ApplicationListenerMethodAdapter.java:168) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.doInvokeListener(SimpleApplicationEventMulticaster.java:178) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.invokeListener(SimpleApplicationEventMulticaster.java:171) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.multicastEvent(SimpleApplicationEventMulticaster.java:149) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:445) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:378) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.boot.context.event.EventPublishingRunListener.started(EventPublishingRunListener.java:103) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplicationRunListeners.lambda$started$5(SpringApplicationRunListeners.java:76) ~[spring-boot-3.2.0.jar:3.2.0]
+	at java.base/java.lang.Iterable.forEach(Iterable.java:75) ~[na:na]
+	at org.springframework.boot.SpringApplicationRunListeners.doWithListeners(SpringApplicationRunListeners.java:118) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplicationRunListeners.doWithListeners(SpringApplicationRunListeners.java:112) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplicationRunListeners.started(SpringApplicationRunListeners.java:76) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:329) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.test.context.SpringBootContextLoader.lambda$loadContext$3(SpringBootContextLoader.java:137) ~[spring-boot-test-3.2.0.jar:3.2.0]
+	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:58) ~[spring-core-6.1.1.jar:6.1.1]
+	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:46) ~[spring-core-6.1.1.jar:6.1.1]
+	at org.springframework.boot.SpringApplication.withHook(SpringApplication.java:1442) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.test.context.SpringBootContextLoader$ContextLoaderHook.run(SpringBootContextLoader.java:552) ~[spring-boot-test-3.2.0.jar:3.2.0]
+	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:137) ~[spring-boot-test-3.2.0.jar:3.2.0]
+	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:108) ~[spring-boot-test-3.2.0.jar:3.2.0]
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContextInternal(DefaultCacheAwareContextLoaderDelegate.java:225) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:152) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.support.DefaultTestContext.getApplicationContext(DefaultTestContext.java:130) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.web.ServletTestExecutionListener.setUpRequestContextIfNecessary(ServletTestExecutionListener.java:191) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.web.ServletTestExecutionListener.prepareTestInstance(ServletTestExecutionListener.java:130) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:247) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:163) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$10(ClassBasedTestDescriptor.java:378) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.executeAndMaskThrowable(ClassBasedTestDescriptor.java:383) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$11(ClassBasedTestDescriptor.java:378) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179) ~[na:na]
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1625) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499) ~[na:na]
+	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.forEachRemaining(StreamSpliterators.java:310) ~[na:na]
+	at java.base/java.util.stream.Streams$ConcatSpliterator.forEachRemaining(Streams.java:735) ~[na:na]
+	at java.base/java.util.stream.Streams$ConcatSpliterator.forEachRemaining(Streams.java:734) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:762) ~[na:na]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.invokeTestInstancePostProcessors(ClassBasedTestDescriptor.java:377) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$instantiateAndPostProcessTestInstance$6(ClassBasedTestDescriptor.java:290) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.instantiateAndPostProcessTestInstance(ClassBasedTestDescriptor.java:289) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$4(ClassBasedTestDescriptor.java:279) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at java.base/java.util.Optional.orElseGet(Optional.java:364) ~[na:na]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$5(ClassBasedTestDescriptor.java:278) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.execution.TestInstancesProvider.getTestInstances(TestInstancesProvider.java:31) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$prepare$0(TestMethodTestDescriptor.java:106) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:105) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:69) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$prepare$2(NodeTestTask.java:123) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.prepare(NodeTestTask.java:123) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:90) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:220) ~[junit-platform-launcher-1.3.1.jar:1.3.1]
+	at org.junit.platform.launcher.core.DefaultLauncher.lambda$execute$6(DefaultLauncher.java:188) ~[junit-platform-launcher-1.3.1.jar:1.3.1]
+	at org.junit.platform.launcher.core.DefaultLauncher.withInterceptedStreams(DefaultLauncher.java:202) ~[junit-platform-launcher-1.3.1.jar:1.3.1]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:181) ~[junit-platform-launcher-1.3.1.jar:1.3.1]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:128) ~[junit-platform-launcher-1.3.1.jar:1.3.1]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:150) ~[surefire-junit-platform-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:116) ~[surefire-junit-platform-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:384) ~[surefire-booter-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:345) ~[surefire-booter-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:126) ~[surefire-booter-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:418) ~[surefire-booter-2.22.2.jar:2.22.2]
+Caused by: org.apache.kafka.common.KafkaException: Failed to load SSL keystore \\path\to\file of type JKS
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory$FileBasedStore.load(DefaultSslEngineFactory.java:377) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory$FileBasedStore.<init>(DefaultSslEngineFactory.java:349) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory.createKeystore(DefaultSslEngineFactory.java:299) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory.configure(DefaultSslEngineFactory.java:161) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.SslFactory.instantiateSslEngineFactory(SslFactory.java:140) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.SslFactory.configure(SslFactory.java:97) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.network.SslChannelBuilder.configure(SslChannelBuilder.java:73) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.network.ChannelBuilders.create(ChannelBuilders.java:192) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.network.ChannelBuilders.clientChannelBuilder(ChannelBuilders.java:81) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.clients.ClientUtils.createChannelBuilder(ClientUtils.java:105) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.clients.consumer.KafkaConsumer.<init>(KafkaConsumer.java:738) ~[kafka-clients-3.2.2.jar:na]
 	... 108 common frames omitted
-Caused by: org.postgresql.util.PSQLException: ERROR: relation "osrf_lib_process_state" does not exist
-  Позиция: 15
-	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2713) ~[postgresql-42.6.0.jar:42.6.0]
-	at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2401) ~[postgresql-42.6.0.jar:42.6.0]
-	at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:368) ~[postgresql-42.6.0.jar:42.6.0]
-	at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:498) ~[postgresql-42.6.0.jar:42.6.0]
-	at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:415) ~[postgresql-42.6.0.jar:42.6.0]
-	at org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:190) ~[postgresql-42.6.0.jar:42.6.0]
-	at org.postgresql.jdbc.PgPreparedStatement.executeQuery(PgPreparedStatement.java:134) ~[postgresql-42.6.0.jar:42.6.0]
-	at com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52) ~[HikariCP-5.0.1.jar:na]
-	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeQuery(HikariProxyPreparedStatement.java) ~[HikariCP-5.0.1.jar:na]
-	at org.springframework.jdbc.core.JdbcTemplate$1.doInPreparedStatement(JdbcTemplate.java:732) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:658) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	... 114 common frames omitted
-============================
-CONDITIONS EVALUATION REPORT
-============================
-Positive matches:
------------------
-    None
-Negative matches:
------------------
-    None
-Exclusions:
------------
-    None
-Unconditional classes:
-----------------------
-    None
-2026-08-07T13:50:03.569+03:00 ERROR 10360 --- [srhr-ms-osrf-integration] [           main] o.s.test.context.TestContextManager      : Caught exception while allowing TestExecutionListener [org.springframework.test.context.web.ServletTestExecutionListener] to prepare test instance [ru.ntdev.srhr.ms.osrf.integration.SrhrMsOsrfIntegrationApplicationTests@318d491]
-java.lang.IllegalStateException: Failed to load ApplicationContext for [WebMergedContextConfiguration@3dfe5b80 testClass = ru.ntdev.srhr.ms.osrf.integration.SrhrMsOsrfIntegrationApplicationTests, locations = [], classes = [ru.ntdev.srhr.ms.osrf.integration.SrhrMsOsrfIntegrationApplication], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true"], contextCustomizers = [org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@b86de0d, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@4808bc9b, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@928763c, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@0, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@44be0077, org.springframework.boot.testcontainers.service.connection.ServiceConnectionContextCustomizer@c625f639, org.springframework.boot.test.context.SpringBootTestAnnotation@321892a6], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+Caused by: java.nio.file.FileSystemException: \\path\to\file: Не найден сетевой путь
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:92) ~[na:na]
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103) ~[na:na]
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108) ~[na:na]
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.newByteChannel(WindowsFileSystemProvider.java:236) ~[na:na]
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380) ~[na:na]
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432) ~[na:na]
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:422) ~[na:na]
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160) ~[na:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory$FileBasedStore.load(DefaultSslEngineFactory.java:370) ~[kafka-clients-3.2.2.jar:na]
+	... 118 common frames omitted
+
+2026-08-07T13:54:19.884+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.s.i.endpoint.EventDrivenConsumer       : Removing {logging-channel-adapter:_org.springframework.integration.errorLogger} as a subscriber to the 'errorChannel' channel
+2026-08-07T13:54:19.884+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.s.i.channel.PublishSubscribeChannel    : Channel 'srhr-ms-osrf-integration.errorChannel' has 0 subscriber(s).
+2026-08-07T13:54:19.884+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] o.s.i.endpoint.EventDrivenConsumer       : stopped bean '_org.springframework.integration.errorLogger'
+2026-08-07T13:54:19.898+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-08-07T13:54:19.901+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-08-07T13:54:19.902+03:00  INFO 19660 --- [srhr-ms-osrf-integration] [           main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-07T13:54:19.911+03:00 ERROR 19660 --- [srhr-ms-osrf-integration] [           main] o.s.test.context.TestContextManager      : Caught exception while allowing TestExecutionListener [org.springframework.test.context.web.ServletTestExecutionListener] to prepare test instance [ru.ntdev.srhr.ms.osrf.integration.SrhrMsOsrfIntegrationApplicationTests@230e5de9]
+
+java.lang.IllegalStateException: Failed to load ApplicationContext for [WebMergedContextConfiguration@d50bdc8 testClass = ru.ntdev.srhr.ms.osrf.integration.SrhrMsOsrfIntegrationApplicationTests, locations = [], classes = [ru.ntdev.srhr.ms.osrf.integration.SrhrMsOsrfIntegrationApplication], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true"], contextCustomizers = [org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@b86de0d, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@4808bc9b, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@928763c, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@0, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@44be0077, org.springframework.boot.testcontainers.service.connection.ServiceConnectionContextCustomizer@c625f639, org.springframework.boot.test.context.SpringBootTestAnnotation@321892a6], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
 	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:180) ~[spring-test-6.1.1.jar:6.1.1]
 	at org.springframework.test.context.support.DefaultTestContext.getApplicationContext(DefaultTestContext.java:130) ~[spring-test-6.1.1.jar:6.1.1]
 	at org.springframework.test.context.web.ServletTestExecutionListener.setUpRequestContextIfNecessary(ServletTestExecutionListener.java:191) ~[spring-test-6.1.1.jar:6.1.1]
@@ -375,6 +976,39 @@ java.lang.IllegalStateException: Failed to load ApplicationContext for [WebMerge
 	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
 	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138) ~[junit-platform-engine-1.10.1.jar:1.10.1]
 	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+
+
+
+============================
+CONDITIONS EVALUATION REPORT
+============================
+
+
+Positive matches:
+-----------------
+
+    None
+
+
+Negative matches:
+-----------------
+
+    None
+
+
+Exclusions:
+-----------
+
+    None
+
+
+Unconditional classes:
+----------------------
+
+    None
+
+
+
 	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511) ~[na:na]
 	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.10.1.jar:1.10.1]
 	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155) ~[junit-platform-engine-1.10.1.jar:1.10.1]
@@ -399,22 +1033,40 @@ java.lang.IllegalStateException: Failed to load ApplicationContext for [WebMerge
 	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:345) ~[surefire-booter-2.22.2.jar:2.22.2]
 	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:126) ~[surefire-booter-2.22.2.jar:2.22.2]
 	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:418) ~[surefire-booter-2.22.2.jar:2.22.2]
-Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'initDbService': Invocation of init method failed
-	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor.postProcessBeforeInitialization(InitDestroyAnnotationBeanPostProcessor.java:222) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.applyBeanPostProcessorsBeforeInitialization(AbstractAutowireCapableBeanFactory.java:421) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.initializeBean(AbstractAutowireCapableBeanFactory.java:1767) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:601) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:523) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:325) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:323) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:973) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:946) ~[spring-context-6.1.1.jar:6.1.1]
-	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:616) ~[spring-context-6.1.1.jar:6.1.1]
-	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:753) ~[spring-boot-3.2.0.jar:3.2.0]
-	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:455) ~[spring-boot-3.2.0.jar:3.2.0]
-	at org.springframework.boot.SpringApplication.run(SpringApplication.java:323) ~[spring-boot-3.2.0.jar:3.2.0]
+Caused by: org.apache.kafka.common.KafkaException: Failed to construct kafka consumer
+	at org.apache.kafka.clients.consumer.KafkaConsumer.<init>(KafkaConsumer.java:825) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.clients.consumer.KafkaConsumer.<init>(KafkaConsumer.java:666) ~[kafka-clients-3.2.2.jar:na]
+	at org.springframework.kafka.core.DefaultKafkaConsumerFactory$ExtendedKafkaConsumer.<init>(DefaultKafkaConsumerFactory.java:484) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.core.DefaultKafkaConsumerFactory.createRawConsumer(DefaultKafkaConsumerFactory.java:468) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.core.DefaultKafkaConsumerFactory.createKafkaConsumer(DefaultKafkaConsumerFactory.java:445) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.core.DefaultKafkaConsumerFactory.createConsumerWithAdjustedProperties(DefaultKafkaConsumerFactory.java:422) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.core.DefaultKafkaConsumerFactory.createKafkaConsumer(DefaultKafkaConsumerFactory.java:389) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.core.DefaultKafkaConsumerFactory.createConsumer(DefaultKafkaConsumerFactory.java:366) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.<init>(KafkaMessageListenerContainer.java:875) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.listener.KafkaMessageListenerContainer.doStart(KafkaMessageListenerContainer.java:380) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.listener.AbstractMessageListenerContainer.start(AbstractMessageListenerContainer.java:505) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.listener.ConcurrentMessageListenerContainer.doStart(ConcurrentMessageListenerContainer.java:255) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at org.springframework.kafka.listener.AbstractMessageListenerContainer.start(AbstractMessageListenerContainer.java:505) ~[spring-kafka-3.1.0.jar:3.1.0]
+	at ru.vtb.osrf.integration.starter.kafka.consumer.KafkaConsumer.onStarted(KafkaConsumer.java:57) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:na]
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[na:na]
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569) ~[na:na]
+	at org.springframework.context.event.ApplicationListenerMethodAdapter.doInvoke(ApplicationListenerMethodAdapter.java:365) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.ApplicationListenerMethodAdapter.processEvent(ApplicationListenerMethodAdapter.java:237) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.ApplicationListenerMethodAdapter.onApplicationEvent(ApplicationListenerMethodAdapter.java:168) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.doInvokeListener(SimpleApplicationEventMulticaster.java:178) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.invokeListener(SimpleApplicationEventMulticaster.java:171) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.event.SimpleApplicationEventMulticaster.multicastEvent(SimpleApplicationEventMulticaster.java:149) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:445) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.support.AbstractApplicationContext.publishEvent(AbstractApplicationContext.java:378) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.boot.context.event.EventPublishingRunListener.started(EventPublishingRunListener.java:103) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplicationRunListeners.lambda$started$5(SpringApplicationRunListeners.java:76) ~[spring-boot-3.2.0.jar:3.2.0]
+	at java.base/java.lang.Iterable.forEach(Iterable.java:75) ~[na:na]
+	at org.springframework.boot.SpringApplicationRunListeners.doWithListeners(SpringApplicationRunListeners.java:118) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplicationRunListeners.doWithListeners(SpringApplicationRunListeners.java:112) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplicationRunListeners.started(SpringApplicationRunListeners.java:76) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:329) ~[spring-boot-3.2.0.jar:3.2.0]
 	at org.springframework.boot.test.context.SpringBootContextLoader.lambda$loadContext$3(SpringBootContextLoader.java:137) ~[spring-boot-test-3.2.0.jar:3.2.0]
 	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:58) ~[spring-core-6.1.1.jar:6.1.1]
 	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:46) ~[spring-core-6.1.1.jar:6.1.1]
@@ -425,63 +1077,38 @@ Caused by: org.springframework.beans.factory.BeanCreationException: Error creati
 	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContextInternal(DefaultCacheAwareContextLoaderDelegate.java:225) ~[spring-test-6.1.1.jar:6.1.1]
 	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:152) ~[spring-test-6.1.1.jar:6.1.1]
 	... 67 common frames omitted
-Caused by: ru.vtb.osrf.integration.starter.db.exception.DatabaseQueryException: Error execute query
-	at ru.vtb.osrf.integration.starter.db.repository.BaseDbRepository.executeQueryMethod(BaseDbRepository.java:266) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
-	at ru.vtb.osrf.integration.starter.db.repository.BaseDbRepository.find(BaseDbRepository.java:69) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
-	at ru.vtb.osrf.integration.starter.db.repository.DbProcessStateRepository.findAllByProcessType(DbProcessStateRepository.java:50) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:na]
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[na:na]
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:na]
-	at java.base/java.lang.reflect.Method.invoke(Method.java:569) ~[na:na]
-	at org.springframework.aop.support.AopUtils.invokeJoinpointUsingReflection(AopUtils.java:352) ~[spring-aop-6.1.1.jar:6.1.1]
-	at org.springframework.aop.framework.CglibAopProxy$DynamicAdvisedInterceptor.intercept(CglibAopProxy.java:713) ~[spring-aop-6.1.1.jar:6.1.1]
-	at ru.vtb.osrf.integration.starter.db.repository.DbProcessStateRepository$$SpringCGLIB$$0.findAllByProcessType(<generated>) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
-	at ru.vtb.osrf.integration.starter.db.service.InitDbService.fillProcessStateTable(InitDbService.java:53) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
-	at ru.vtb.osrf.integration.starter.db.service.InitDbService.initDb(InitDbService.java:38) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[na:na]
-	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77) ~[na:na]
-	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43) ~[na:na]
-	at java.base/java.lang.reflect.Method.invoke(Method.java:569) ~[na:na]
-	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor$LifecycleMethod.invoke(InitDestroyAnnotationBeanPostProcessor.java:457) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor$LifecycleMetadata.invokeInitMethods(InitDestroyAnnotationBeanPostProcessor.java:401) ~[spring-beans-6.1.1.jar:6.1.1]
-	at org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor.postProcessBeforeInitialization(InitDestroyAnnotationBeanPostProcessor.java:219) ~[spring-beans-6.1.1.jar:6.1.1]
-	... 90 common frames omitted
-Caused by: org.springframework.jdbc.BadSqlGrammarException: PreparedStatementCallback; bad SQL grammar [SELECT * FROM OSRF_LIB_PROCESS_STATE WHERE 1=1 AND PROCESS_TYPE = ?]
-	at org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:112) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:107) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:116) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1548) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:677) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:723) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:748) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:804) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate.query(NamedParameterJdbcTemplate.java:218) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at ru.vtb.osrf.integration.starter.db.repository.BaseDbRepository.lambda$find$0(BaseDbRepository.java:70) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
-	at ru.vtb.osrf.integration.starter.db.repository.BaseDbRepository.executeQueryMethod(BaseDbRepository.java:264) ~[osrf-integration-lib-starter-2.3.0.3.jar:2.3.0.3]
+Caused by: org.apache.kafka.common.KafkaException: Failed to load SSL keystore \\path\to\file of type JKS
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory$FileBasedStore.load(DefaultSslEngineFactory.java:377) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory$FileBasedStore.<init>(DefaultSslEngineFactory.java:349) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory.createKeystore(DefaultSslEngineFactory.java:299) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory.configure(DefaultSslEngineFactory.java:161) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.SslFactory.instantiateSslEngineFactory(SslFactory.java:140) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.security.ssl.SslFactory.configure(SslFactory.java:97) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.network.SslChannelBuilder.configure(SslChannelBuilder.java:73) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.network.ChannelBuilders.create(ChannelBuilders.java:192) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.common.network.ChannelBuilders.clientChannelBuilder(ChannelBuilders.java:81) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.clients.ClientUtils.createChannelBuilder(ClientUtils.java:105) ~[kafka-clients-3.2.2.jar:na]
+	at org.apache.kafka.clients.consumer.KafkaConsumer.<init>(KafkaConsumer.java:738) ~[kafka-clients-3.2.2.jar:na]
 	... 108 common frames omitted
-Caused by: org.postgresql.util.PSQLException: ERROR: relation "osrf_lib_process_state" does not exist
-  Позиция: 15
-	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2713) ~[postgresql-42.6.0.jar:42.6.0]
-	at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2401) ~[postgresql-42.6.0.jar:42.6.0]
-	at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:368) ~[postgresql-42.6.0.jar:42.6.0]
-	at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:498) ~[postgresql-42.6.0.jar:42.6.0]
-	at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:415) ~[postgresql-42.6.0.jar:42.6.0]
-	at org.postgresql.jdbc.PgPreparedStatement.executeWithFlags(PgPreparedStatement.java:190) ~[postgresql-42.6.0.jar:42.6.0]
-	at org.postgresql.jdbc.PgPreparedStatement.executeQuery(PgPreparedStatement.java:134) ~[postgresql-42.6.0.jar:42.6.0]
-	at com.zaxxer.hikari.pool.ProxyPreparedStatement.executeQuery(ProxyPreparedStatement.java:52) ~[HikariCP-5.0.1.jar:na]
-	at com.zaxxer.hikari.pool.HikariProxyPreparedStatement.executeQuery(HikariProxyPreparedStatement.java) ~[HikariCP-5.0.1.jar:na]
-	at org.springframework.jdbc.core.JdbcTemplate$1.doInPreparedStatement(JdbcTemplate.java:732) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:658) ~[spring-jdbc-6.1.1.jar:6.1.1]
-	... 114 common frames omitted
-[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 31.851 s <<< FAILURE! - in ru.ntdev.srhr.ms.osrf.integration.SrhrMsOsrfIntegrationApplicationTests
-[ERROR] contextLoads  Time elapsed: 0.013 s  <<< ERROR!
-java.lang.IllegalStateException: Failed to load ApplicationContext for [WebMergedContextConfiguration@3dfe5b80 testClass = ru.ntdev.srhr.ms.osrf.integration.SrhrMsOsrfIntegrationApplicationTests, locations = [], classes = [ru.ntdev.srhr.ms.osrf.integration.SrhrMsOsrfIntegrationApplication], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true"], contextCustomizers = [org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@b86de0d, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@4808bc9b, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@928763c, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@0, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@44be0077, org.springframework.boot.testcontainers.service.connection.ServiceConnectionContextCustomizer@c625f639, org.springframework.boot.test.context.SpringBootTestAnnotation@321892a6], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
-Caused by: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'initDbService': Invocation of init method failed
-Caused by: ru.vtb.osrf.integration.starter.db.exception.DatabaseQueryException: Error execute query
-Caused by: org.springframework.jdbc.BadSqlGrammarException: PreparedStatementCallback; bad SQL grammar [SELECT * FROM OSRF_LIB_PROCESS_STATE WHERE 1=1 AND PROCESS_TYPE = ?]
-Caused by: org.postgresql.util.PSQLException: 
-ERROR: relation "osrf_lib_process_state" does not exist
-  Позиция: 15
+Caused by: java.nio.file.FileSystemException: \\path\to\file: Не найден сетевой путь
+	at java.base/sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:92) ~[na:na]
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103) ~[na:na]
+	at java.base/sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108) ~[na:na]
+	at java.base/sun.nio.fs.WindowsFileSystemProvider.newByteChannel(WindowsFileSystemProvider.java:236) ~[na:na]
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:380) ~[na:na]
+	at java.base/java.nio.file.Files.newByteChannel(Files.java:432) ~[na:na]
+	at java.base/java.nio.file.spi.FileSystemProvider.newInputStream(FileSystemProvider.java:422) ~[na:na]
+	at java.base/java.nio.file.Files.newInputStream(Files.java:160) ~[na:na]
+	at org.apache.kafka.common.security.ssl.DefaultSslEngineFactory$FileBasedStore.load(DefaultSslEngineFactory.java:370) ~[kafka-clients-3.2.2.jar:na]
+	... 118 common frames omitted
+
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 34.808 s <<< FAILURE! - in ru.ntdev.srhr.ms.osrf.integration.SrhrMsOsrfIntegrationApplicationTests
+[ERROR] contextLoads  Time elapsed: 0.008 s  <<< ERROR!
+java.lang.IllegalStateException: Failed to load ApplicationContext for [WebMergedContextConfiguration@d50bdc8 testClass = ru.ntdev.srhr.ms.osrf.integration.SrhrMsOsrfIntegrationApplicationTests, locations = [], classes = [ru.ntdev.srhr.ms.osrf.integration.SrhrMsOsrfIntegrationApplication], contextInitializerClasses = [], activeProfiles = [], propertySourceDescriptors = [], propertySourceProperties = ["org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true"], contextCustomizers = [org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@b86de0d, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@4808bc9b, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@928763c, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@0, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@44be0077, org.springframework.boot.testcontainers.service.connection.ServiceConnectionContextCustomizer@c625f639, org.springframework.boot.test.context.SpringBootTestAnnotation@321892a6], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+Caused by: org.apache.kafka.common.KafkaException: Failed to construct kafka consumer
+Caused by: org.apache.kafka.common.KafkaException: Failed to load SSL keystore \\path\to\file of type JKS
+Caused by: java.nio.file.FileSystemException: \\path\to\file: Не найден сетевой путь
+
 [INFO] 
 [INFO] Results:
 [INFO] 
@@ -490,3 +1117,22 @@ ERROR: relation "osrf_lib_process_state" does not exist
 [INFO] 
 [ERROR] Tests run: 3, Failures: 0, Errors: 1, Skipped: 0
 [INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  46.671 s
+[INFO] Finished at: 2026-08-07T13:54:20+03:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.22.2:test (default-test) on project srhr-ms-osrf-integration: There are test failures.
+[ERROR] 
+[ERROR] Please refer to C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-osrf-integration\target\surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+
+Process finished with exit code 1
