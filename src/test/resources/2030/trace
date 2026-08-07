@@ -1,4 +1,33 @@
 databaseChangeLog:
+
+  - changeSet:
+      id: 2026-08-07-fix-pending-candidates-events-fk
+      author: n-pushkaryov
+      changes:
+
+        - dropForeignKeyConstraint:
+            baseTableSchemaName: schr_requisition
+            baseTableName: pending_candidates_events
+            constraintName: fk_pending_candidates_events_candidate
+
+        - modifyDataType:
+            schemaName: schr_requisition
+            tableName: pending_candidates_events
+            columnName: pending_candidate_id
+            newDataType: integer
+
+        - addForeignKeyConstraint:
+            baseTableSchemaName: schr_requisition
+            baseTableName: pending_candidates_events
+            baseColumnNames: pending_candidate_id
+            referencedTableSchemaName: schr_requisition
+            referencedTableName: pending_candidates
+            referencedColumnNames: id
+            constraintName: fk_pending_candidates_events_candidate
+            onDelete: CASCADE
+
+
+databaseChangeLog:
   - changeSet:
       id: 2026-07-27-13-45-create-pending-candidates
       author: n-pushkaryov
