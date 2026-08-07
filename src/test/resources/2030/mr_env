@@ -1,0 +1,14 @@
+  # Добавлять сообщение исключения в oper_description
+  fill-error: ${AUDIT_FILL_ERROR:true}
+
+  default-resolver:
+    sub: ${AUDIT_DEFAULT_SUB:sub_system}
+    channel: ${AUDIT_DEFAULT_CHANNEL:channel_system}
+
+
+В сервисе
+
+logging:
+  level:
+    ru.vtb.omni.audit: ${LOGGING_AUDIT_LEVEL:DEBUG}
+    
