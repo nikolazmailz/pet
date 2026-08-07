@@ -106,6 +106,19 @@ databaseChangeLog:
 
 
 
+databaseChangeLog:
+  - changeSet:
+      id: 2026-08-06-12-00-change-vacancy-id-to-string
+      author: n-pushkaryov
+      changes:
+        - dropForeignKeyConstraint:
+            baseTableName: pending_candidates
+            constraintName: fk_pending_candidates_vacancy
+        - modifyDataType:
+            tableName: pending_candidates
+            columnName: vacancy_id
+            newDataType: VARCHAR(255)
+
 
 package ru.ntdev.srhr.ms.requisition.entity;
 
