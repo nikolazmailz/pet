@@ -1,15 +1,8 @@
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-mod-commons/pulls/2563440
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition/pulls/2563443
+AUDIT_CTX_DEFAULT_ADLOGIN=requisition_integration
 
-@Getter
-@Setter
-@ConfigurationProperties(prefix = "srhr-audit")
-public class SrhrAuditProperties {
-    private String adLogin;
-    private String channel;
-}
-
+-----
 
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition/pulls/2562578
 
