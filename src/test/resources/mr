@@ -1,3 +1,16 @@
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@Getter
+@Setter
+@ConfigurationProperties(prefix = "srhr-audit")
+public class SrhrAuditProperties {
+    private String adLogin;
+    private String channel;
+}
+
+
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition/pulls/2562578
 
 docker compose -f docker-compose-audit-v2.yml up -d 
