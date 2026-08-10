@@ -1,8 +1,0 @@
-      em.createNativeQuery("""
-                            INSERT INTO srhr_requisition.vacancy
-                                (id, integration_id, requisition_guid, vacancy_id, last_status_change_date, last_update, candidates_last_update)
-                            VALUES
-                            (200, 200, 'guid-200', '7643745243748976137', now(), now(), now()),
-                            (201, 201, 'guid-201', '7643745243748976138', now(), now(), now())
-                            """)
-                    .executeUpdate();
