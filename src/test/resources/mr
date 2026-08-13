@@ -1,3 +1,14 @@
+srhr-ms-payavg-rest
+srhr-ms-paystub-rest
+srhr-ms-salarychange-rest
+srhr-ms-schedule-holiday-rest
+srhr-ms-team-calendar-rest
+srhr-ms-timesheet-rest
+srhr-ms-userinfo-rest
+srhr-ms-userphoto-rest
+srhr-ms-vacationreq-rest
+srhr-ms-yearbonus-rest
+
 
 Отправка события: SRHR_JWT_VALIDATE
 srhr-ms-paystub
