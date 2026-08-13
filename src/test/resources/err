@@ -1,3 +1,98 @@
+
+        CandidateRecommendationRequest request = new CandidateRecommendationRequest(CandidateRecommendationReq.from(vacancyId, systemParams.getTabNumber(), email));
+
+
+
+package ru.ntdev.srhr.common.dto.api.request.spo.objects;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Schema(description = "Корневой объект параметров запроса", name = "CandidateRecommendationReq")
+public class CandidateRecommendationReq {
+
+    @Schema(description = "Идентификатор вакансии", maximum = "99999999999999", minimum = "-99999999999999", required = true, nullable = false)
+    private Long vacancyId;
+
+    @Schema(description = "Табельный номер Пользователя ЛКР", maxLength = 8, required = true, nullable = false)
+    private String pernr;
+
+    @Schema(description = "Почта Пользователя ЛКР", maxLength = 36, required = true, nullable = false)
+    private String email;
+
+    public static CandidateRecommendationReq from(String vacancyId, String pernr, String email) {
+        CandidateRecommendationReq res = new CandidateRecommendationReq();
+        res.setVacancyId(Long.valueOf(vacancyId));
+        res.setPernr(pernr);
+        res.setEmail(email);
+        return res;
+    }
+}
+
+
+
+
+"C:\Users\NPushkaryov\AppData\Local\Programs\Eclipse Adoptium\jdk-17.0.14.7-hotspot\bin\java.exe" -Dmaven.multiModuleProjectDirectory=C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-requisition -Djansi.passthrough=true "-Dmaven.home=C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven3" "-Dclassworlds.conf=C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven3\bin\m2.conf" "-Dmaven.ext.class.path=C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven-event-listener.jar" "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\lib\idea_rt.jar=55045:C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\bin" -Dfile.encoding=UTF-8 -classpath "C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven3\boot\plexus-classworlds-2.7.0.jar;C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven3\boot\plexus-classworlds.license" org.codehaus.classworlds.Launcher -Didea.version=2024.1.3 install
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -----------------< ru.ntdev.srhr:srhr-ms-requisition >------------------
+[INFO] Building srhr-ms-requisition 8.1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- jacoco:0.8.7:prepare-agent (prepare-agent) @ srhr-ms-requisition ---
+[INFO] argLine set to -javaagent:C:\\Users\\NPushkaryov\\.m2\\repository\\org\\jacoco\\org.jacoco.agent\\0.8.7\\org.jacoco.agent-0.8.7-runtime.jar=destfile=C:\\Users\\NPushkaryov\\IdeaProjects\\srhr-backend\\srhr-ms-requisition\\target\\jacoco.exec
+[INFO] 
+[INFO] --- spring-boot:3.2.0:build-info (default) @ srhr-ms-requisition ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ srhr-ms-requisition ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 85 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.9.0:compile (default-compile) @ srhr-ms-requisition ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 160 source files to C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-requisition\target\classes
+[INFO] /C:/Users/NPushkaryov/IdeaProjects/srhr-backend/srhr-ms-requisition/src/main/java/ru/ntdev/srhr/ms/requisition/config/SecurityConfig.java: C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-requisition\src\main\java\ru\ntdev\srhr\ms\requisition\config\SecurityConfig.java uses or overrides a deprecated API that is marked for removal.
+[INFO] /C:/Users/NPushkaryov/IdeaProjects/srhr-backend/srhr-ms-requisition/src/main/java/ru/ntdev/srhr/ms/requisition/config/SecurityConfig.java: Recompile with -Xlint:removal for details.
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /C:/Users/NPushkaryov/IdeaProjects/srhr-backend/srhr-ms-requisition/src/main/java/ru/ntdev/srhr/ms/requisition/service/impl/CandidateServiceImpl.java:[172,111] cannot find symbol
+  symbol:   method from(java.lang.String,java.lang.String,java.lang.String)
+  location: class ru.ntdev.srhr.common.dto.api.request.spo.objects.CandidateRecommendationReq
+[INFO] 1 error
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  10.626 s
+[INFO] Finished at: 2026-08-13T14:43:22+03:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.9.0:compile (default-compile) on project srhr-ms-requisition: Compilation failure
+[ERROR] /C:/Users/NPushkaryov/IdeaProjects/srhr-backend/srhr-ms-requisition/src/main/java/ru/ntdev/srhr/ms/requisition/service/impl/CandidateServiceImpl.java:[172,111] cannot find symbol
+[ERROR]   symbol:   method from(java.lang.String,java.lang.String,java.lang.String)
+[ERROR]   location: class ru.ntdev.srhr.common.dto.api.request.spo.objects.CandidateRecommendationReq
+[ERROR] 
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+
+Process finished with exit code 1
+
+
+
+
+-----------------------
+
+
+
 https://dm.snest.fvds.ru/s/2020/p/srhr-2030-vnedrenie-audita-2-0-vn-k1Hi3xgid0
 
 AUDIT_KAFKA_BOOTSTRAP_SERVERS=localhost:39091
