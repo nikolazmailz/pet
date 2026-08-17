@@ -1,0 +1,78 @@
+@Component
+@RequiredArgsConstructor
+public class RequisitionRequestPreprocessor {
+
+    public PreparedRequest<JsonNode> prepare(
+            RequestEnvelope<JsonNode> envelope,
+            String originalMessage
+    ) throws Exception {
+
+        long start = System.currentTimeMillis();
+
+        RequestEnvelope<JsonNode> request =
+                restoreFromFilestorageIfNeeded(envelope);
+
+        SapSystemParamsDto systemParams =
+                createSystemParams(request);
+
+        setRequestContext(systemParams);
+
+        logIncomingMessage(systemParams);
+
+        RequisitionRequestEntity requestEntity =
+                saveRequest(
+                        systemParams,
+                        originalMessage
+                );
+
+        enrichRoles(
+                systemParams,
+                requestEntity
+        );
+
+        enrichTabNumber(
+                systemParams,
+                requestEntity
+        );
+
+        return new PreparedRequest<>(
+                request,
+                systemParams,
+                requestEntity,
+                start
+        );
+    }
+}
+
+
+public String processMessage(String messageIncoming) throws Exception {
+
+    RequestEnvelope<JsonNode> envelope =
+            deserialize(messageIncoming);
+
+    PreparedRequest<JsonNode> prepared =
+            requestPreprocessor.prepare(
+                    envelope,
+                    messageIncoming
+            );
+
+    ResponseEnvelope<?> response =
+            requestHandlerExecutor.execute(prepared);
+
+    return objectMapper.writeValueAsString(response);
+}
+
+private RequestEnvelope<JsonNode> deserialize(String messageIncoming)
+        throws JsonProcessingException {
+
+    JavaType envelopeType = mapper.getTypeFactory()
+            .constructParametricType(
+                    RequestEnvelope.class,
+                    JsonNode.class
+            );
+
+    return mapper.readValue(
+            messageIncoming,
+            envelopeType
+    );
+}
