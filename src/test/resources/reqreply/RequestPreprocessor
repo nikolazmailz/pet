@@ -244,3 +244,23 @@ private void enrichTabNumber(
             tabNumber
     );
 }
+
+
+
+private RequestEnvelope<JsonNode> restoreFromFilestorageIfNeeded(
+        RequestEnvelope<JsonNode> envelope
+) throws JsonProcessingException {
+
+    if (envelope.fileUuid() == null || envelope.fileUuid().isBlank()) {
+        return envelope;
+    }
+
+    String storedMessage = getOutStoredMessage(
+            envelope.adLogin(),
+            envelope.sessionId(),
+            envelope.traceId(),
+            envelope.fileUuid()
+    );
+
+    return deserialize(storedMessage);
+}
