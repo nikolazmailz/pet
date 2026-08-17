@@ -76,3 +76,171 @@ private RequestEnvelope<JsonNode> deserialize(String messageIncoming)
             envelopeType
     );
 }
+
+
+
+public record PreparedRequest<T>(
+        RequestEnvelope<T> request,
+        SapSystemParamsDto systemParams,
+        RequisitionRequestEntity requestEntity,
+        long startedAt
+) {
+}
+
+
+private SapSystemParamsDto createSystemParams(
+        RequestEnvelope<?> request
+) {
+
+    SapSystemParamsDto systemParams = new SapSystemParamsDto();
+
+    systemParams.setRequestType(request.requestType());
+    systemParams.setAdLogin(request.adLogin());
+    systemParams.setChannel(request.channel());
+    systemParams.setSessionId(request.sessionId());
+    systemParams.setTraceId(request.traceId());
+    systemParams.setUuid(request.correlationId());
+    systemParams.setRealm(request.realm());
+
+    return systemParams;
+}
+
+private void setRequestContext(
+        SapSystemParamsDto systemParams
+) {
+
+    RequestContextHolder.set(
+            new RequestContext(
+                    systemParams.getAdLogin(),
+                    systemParams.getSessionId(),
+                    systemParams.getChannel()
+            )
+    );
+}
+
+private void logIncomingMessage(
+        SapSystemParamsDto systemParams
+) {
+
+    LogUtil.logKafkaMessageGot(
+            systemParams.getAdLogin(),
+            systemParams.getSessionId(),
+            systemParams.getRequestType(),
+            kafkaTopicNameToEasup,
+            systemParams.getTraceId()
+    );
+}
+
+
+private RequisitionRequestEntity saveRequest(
+        SapSystemParamsDto systemParams,
+        String originalMessage
+) {
+
+    try {
+        return entityService.saveAndReturnRequest(
+                systemParams.getUuid(),
+                null,
+                systemParams.getSessionId(),
+                originalMessage,
+                null,
+                RequestStatusConstant.SENT
+        );
+
+    } catch (Exception e) {
+        log.warn(
+                "Ошибка записи запроса в базу: [{}]",
+                e.getMessage()
+        );
+
+        return null;
+    }
+}
+
+
+private RequisitionRequestEntity saveRequest(
+        SapSystemParamsDto systemParams,
+        String originalMessage
+) {
+
+    return entityService.saveAndReturnRequest(
+            systemParams.getUuid(),
+            null,
+            systemParams.getSessionId(),
+            originalMessage,
+            null,
+            RequestStatusConstant.SENT
+    );
+}
+
+
+private void enrichRoles(
+        SapSystemParamsDto systemParams,
+        RequisitionRequestEntity requestEntity
+) throws JsonProcessingException {
+
+    RoleListDto roles = tsrmIntegrationService.getRole(
+            systemParams.getAdLogin(),
+            systemParams.getChannel(),
+            systemParams.getSessionId(),
+            systemParams.getTraceId()
+    );
+
+    if (roles == null || roles.getRoles() == null || roles.getRoles().isEmpty()) {
+        throw new IllegalStateException(
+                "Роль для пользователя "
+                        + systemParams.getAdLogin()
+                        + " не найдена"
+        );
+    }
+
+    String role = chooseHighestPriorityRole(
+            roles.getRoles()
+    );
+
+    systemParams.setRolesHeader(
+            mapper.writeValueAsString(roles)
+    );
+
+    systemParams.setRole(role);
+
+    requestEntity.setFunctionalRole(role);
+
+    entityService.updateRequestRole(
+            systemParams.getUuid(),
+            role
+    );
+}
+
+
+private void enrichTabNumber(
+        SapSystemParamsDto systemParams,
+        RequisitionRequestEntity requestEntity
+) {
+
+    BscsEmployeeDto employee =
+            bscsIntegrationService.getStaffByLogin(
+                    systemParams.getAdLogin(),
+                    systemParams.getSessionId(),
+                    systemParams.getTraceId()
+            );
+
+    if (employee == null || employee.getId() == null) {
+        throw new IllegalStateException(
+                "Табельный номер пользователя "
+                        + systemParams.getAdLogin()
+                        + " не найден"
+        );
+    }
+
+    String tabNumber = employee.getId();
+
+    systemParams.setTabNumber(tabNumber);
+
+    requestEntity.setTabNumber(tabNumber);
+
+    entityService.updateRequestTabnum(
+            systemParams.getUuid(),
+            tabNumber
+    );
+}
