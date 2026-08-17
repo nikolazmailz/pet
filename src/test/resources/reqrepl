@@ -1,0 +1,92 @@
+public String getResponse(RequisitionRequestDto dto, String json) throws InterruptedException, JsonProcessingException {
+        //Проверяем размер сообщения, не превышает ли лимиты кафки
+        String checkedJson = checkMessageSize(dto, json);
+
+        redisAdapter.putToQueue(RequisitionRequestQueue, checkedJson);
+        final int giveUp = timeoutLimit;
+        int noRecordsCount = 0;
+        RedisResponse redisResponse;
+        String message = null;
+        while (noRecordsCount != giveUp) {
+            try {
+                redisResponse = redisAdapter.getObjectFromDb(dto.getUuid(), RedisResponse.class);
+                if (redisResponse != null) {
+                    message = redisResponse.getBody();
+                    break;
+                } else {
+                    noRecordsCount++;
+                    Thread.sleep(50);
+                }
+            } catch (Exception e) {
+                noRecordsCount++;
+                Thread.sleep(50);
+            }
+        }
+        return message;
+    }
+
+
+
+
+
+ @Scheduled(fixedDelay = 1000)
+    @Async(value = "ProducerExecutor")
+    public void produce() throws JsonProcessingException {
+        int count = 100;
+        for (int i = 0; i < count; i++) {
+            String request = redisAdapter.getFromQueue(PaystubRequestQueue);
+            if (request!=null) {
+                try {
+                    kafkaProducerService.produce(kafkaTopicNameToEasup, request);
+                    Map<String, String> requestValues = StringUtil.convertStringToMap(request);
+                    String requestType = requestValues.get("requestType");
+                    String sessionId = requestValues.get("sessionId");
+                    String adLogin = requestValues.get("adLogin");
+                    String traceId = requestValues.get("traceId");
+                    LogUtil.logKafkaMessageSent(adLogin,sessionId, requestType, kafkaTopicNameToEasup, traceId);
+                } catch (Exception e) {
+                    ObjectMapper mapper = jacksonConfig.objectMapper();
+                    Map<String, String> requestValues = StringUtil.convertStringToMap(request);
+                    SapResponseDto errorResponse = new SapResponseDto();
+                    errorResponse.setUuid(requestValues.get("uuid"));
+                    errorResponse.setRequestType(requestValues.get("requestType"));
+                    errorResponse.setSessionId(requestValues.get("sessionId"));
+                    errorResponse.setAdLogin(requestValues.get("adlogin"));
+                    errorResponse.setTraceId(requestValues.get("traceId"));
+                    errorResponse.setResponseCode("500");
+                    errorResponse.setErrorMessage("Произошла ошибка в работе таски [requisition]: [{}]"+e.getMessage());
+                    String errorMessage = mapper.writeValueAsString(errorResponse);
+                    kafkaProducerService.produce(kafkaTopicNameFromEasup, errorMessage);
+                }
+            }
+        }
+    }
+
+
+
+ @org.springframework.kafka.annotation.KafkaListener(
+            id = "${spring.kafka.listener.id}",
+            topics = "${spring.kafka.topic.name.from-easup}",
+            groupId = "${spring.kafka.listener.group-id}",
+            concurrency = "${spring.kafka.listener.partition.number}",
+            autoStartup = "true",
+            containerFactory = "kafkaListenerContainerFactory"
+    ) public void listen(String data, Acknowledgment ack) {
+                try {
+                    RedisResponse redisResponse = new RedisResponse();
+                    Map<String, String> requestValues = StringUtil.convertStringToMap(data);
+                    String uuid = requestValues.get("uuid");
+                    String requestType = requestValues.get("requestType");
+                    String sessionId = requestValues.get("sessionId");
+                    String adlogin = requestValues.get("adlogin");
+                    String traceId = requestValues.get("traceId");
+                    redisResponse.setUid(uuid);
+                    redisResponse.setBody(data);
+                    redisAdapter.putObjectToDb(uuid, redisResponse, 1000);
+                    LogUtil.logKafkaMessageGot(adlogin, sessionId, requestType, kafkaTopicNameFromEasup, traceId);
+                    ack.acknowledge();
+                } catch (Exception e) {
+                    log.warn("Ошибка в листенере [requisition_rest_listener]: [{}]", e.getMessage());
+                    ack.acknowledge();
+                }
+    }
