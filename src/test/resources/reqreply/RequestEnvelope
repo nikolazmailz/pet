@@ -391,3 +391,34 @@ public class RequestHandlerExecutor {
          return null;
      }
  }
+
+
+
+private String checkMessageSize(RequisitionRequestDto dto, String message) throws JsonProcessingException {
+        int messageSize = ((2 * message.length()) + 32) / 1000;
+        if (messageSize < kafkaProducerMaxInnerMessageSizeKb) {
+            return message;
+        } else {
+            ObjectMapper mapper = new ObjectMapper();
+            SapRequestDto storagedDto = new SapRequestDto();
+
+            storagedDto.setRequestType(dto.getRequestType());
+            storagedDto.setUuid(dto.getUuid());
+            storagedDto.setAdLogin(dto.getAdLogin());
+            storagedDto.setErrorMessage(dto.getErrorMessage());
+            storagedDto.setChannel(dto.getChannel());
+            storagedDto.setTraceId(dto.getRequestType());
+            storagedDto.setSessionId(dto.getSessionId());
+            storagedDto.setRealm(dto.getRealm());
+
+            String messageUuid = storeMessageContent(
+                    dto.getAdLogin(),
+                    dto.getSessionId(),
+                    dto.getTraceId(),
+                    dto.getAdLogin() + '_' + dto.getRequestType(),
+                    message,
+                    dto.getUuid());
+            storagedDto.setFileUuid(messageUuid);
+            return mapper.writeValueAsString(storagedDto);
+        }
+    }
