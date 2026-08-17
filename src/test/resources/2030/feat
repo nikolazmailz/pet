@@ -1,3 +1,16 @@
+
+ auditSenderResolver.resolve(requestType).sendUnexpectedErrorEvent(sessionId, sessionCreatedAt);
+        switch (requestType) {
+            case "requisition_delegations":
+                log.warn("Неуспешное выполнение эндпоинта [SRHR_REQUISITION_GET_DELEGATIONS]: [{}]",errorText);
+                try {
+                    auditEventSender.sendRequisitionDelegationsError(sessionId, sessionCreatedAt);
+                } catch (Exception ex) {
+                    log.error("Ошибка отправки события [SRHR_REQUISITION_UNEXPECTED_ERROR_GET_DELEGATIONS] в аудит: [{}]", ex.getMessage());
+                }
+                break;
+
+
 public interface AuditSender {
 
     String SESSION_ID = "sessionId";
