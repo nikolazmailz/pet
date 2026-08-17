@@ -54,3 +54,171 @@ public class HandlerNotFoundException extends RuntimeException {
         super("Handler not found for requestType: " + requestType);
     }
 }
+
+
+
+import org.springframework.stereotype.Component;
+import ru.example.requestreply.exception.HandlerNotFoundException;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+@Component
+public class RequestHandlerResolver {
+
+    private final Map<String, RequestHandler<?, ?>> handlers;
+
+    public RequestHandlerResolver(List<RequestHandler<?, ?>> handlers) {
+        this.handlers = handlers.stream()
+                .collect(Collectors.toMap(
+                        RequestHandler::requestType,
+                        Function.identity()
+                ));
+    }
+
+    public RequestHandler<?, ?> resolve(String requestType) {
+        RequestHandler<?, ?> handler = handlers.get(requestType);
+
+        if (handler == null) {
+            throw new HandlerNotFoundException(requestType);
+        }
+
+        return handler;
+    }
+}
+
+
+
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import ru.example.requestreply.model.RequestEnvelope;
+import ru.example.requestreply.model.ResponseEnvelope;
+
+@Component
+@RequiredArgsConstructor
+public class RequestHandlerExecutor {
+
+    private final ObjectMapper objectMapper;
+
+    public ResponseEnvelope<?> execute(
+            RequestEnvelope<JsonNode> envelope,
+            RequestHandler<?, ?> handler
+    ) throws JsonProcessingException {
+
+        return executeTyped(envelope, handler);
+    }
+
+    private <T, R> ResponseEnvelope<R> executeTyped(
+            RequestEnvelope<JsonNode> envelope,
+            RequestHandler<T, R> handler
+    ) throws JsonProcessingException {
+
+        T request = objectMapper.treeToValue(
+                envelope.payload(),
+                handler.requestClass()
+        );
+
+        R response = handler.handle(request);
+
+        return ResponseEnvelope.success(
+                envelope.correlationId(),
+                envelope.requestType(),
+                response
+        );
+    }
+}
+
+
+ package ru.example.kafka;
+
+ import com.fasterxml.jackson.databind.JavaType;
+ import com.fasterxml.jackson.databind.JsonNode;
+ import com.fasterxml.jackson.databind.ObjectMapper;
+ import lombok.RequiredArgsConstructor;
+ import org.springframework.kafka.annotation.KafkaListener;
+ import org.springframework.stereotype.Component;
+ import ru.example.requestreply.handler.RequestHandler;
+ import ru.example.requestreply.handler.RequestHandlerExecutor;
+ import ru.example.requestreply.handler.RequestHandlerResolver;
+ import ru.example.requestreply.model.RequestEnvelope;
+ import ru.example.requestreply.model.ResponseEnvelope;
+
+ @Component
+ @RequiredArgsConstructor
+ public class RequestKafkaListener {
+
+     private final ObjectMapper objectMapper;
+     private final RequestHandlerResolver handlerResolver;
+     private final RequestHandlerExecutor handlerExecutor;
+     private final KafkaProducerService kafkaProducerService;
+
+     @KafkaListener(
+             topics = "${spring.kafka.topic.request}",
+             groupId = "${spring.kafka.listener.group-id}"
+     )
+     public void listen(String data) {
+         RequestEnvelope<JsonNode> envelope = null;
+
+         try {
+             JavaType envelopeType = objectMapper.getTypeFactory()
+                     .constructParametricType(
+                             RequestEnvelope.class,
+                             JsonNode.class
+                     );
+
+             envelope = objectMapper.readValue(
+                     data,
+                     envelopeType
+             );
+
+             RequestHandler<?, ?> handler =
+                     handlerResolver.resolve(
+                             envelope.requestType()
+                     );
+
+             ResponseEnvelope<?> response =
+                     handlerExecutor.execute(
+                             envelope,
+                             handler
+                     );
+
+             kafkaProducerService.produce(
+                     objectMapper.writeValueAsString(response)
+             );
+
+         } catch (Exception e) {
+
+             if (envelope == null) {
+                 throw new IllegalStateException(
+                         "Failed to deserialize request envelope",
+                         e
+                 );
+             }
+
+             ResponseEnvelope<?> response =
+                     ResponseEnvelope.error(
+                             envelope.correlationId(),
+                             envelope.requestType(),
+                             "500",
+                             e.getMessage()
+                     );
+
+             try {
+                 kafkaProducerService.produce(
+                         objectMapper.writeValueAsString(response)
+                 );
+             } catch (Exception ex) {
+                 throw new IllegalStateException(
+                         "Failed to send error response",
+                         ex
+                 );
+             }
+         }
+     }
+ }
