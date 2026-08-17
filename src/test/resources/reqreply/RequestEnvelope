@@ -222,3 +222,172 @@ public class RequestHandlerExecutor {
          }
      }
  }
+
+
+ import com.fasterxml.jackson.core.JsonProcessingException;
+ import com.fasterxml.jackson.databind.ObjectMapper;
+ import lombok.RequiredArgsConstructor;
+ import org.springframework.stereotype.Service;
+ import ru.example.requestreply.model.RequestEnvelope;
+
+ @Service
+ @RequiredArgsConstructor
+ public class RequestSender {
+
+     private final ObjectMapper objectMapper;
+     private final RedisAdapter redisAdapter;
+
+     public <T> void send(RequestEnvelope<T> request)
+             throws JsonProcessingException {
+
+         String json = objectMapper.writeValueAsString(request);
+
+         redisAdapter.putToQueue(
+                 "request-queue",
+                 json
+         );
+     }
+ }
+
+
+ import com.fasterxml.jackson.databind.JavaType;
+ import com.fasterxml.jackson.databind.JsonNode;
+ import com.fasterxml.jackson.databind.ObjectMapper;
+ import lombok.RequiredArgsConstructor;
+ import org.springframework.kafka.annotation.KafkaListener;
+ import org.springframework.kafka.support.Acknowledgment;
+ import org.springframework.stereotype.Component;
+ import ru.example.requestreply.model.ResponseEnvelope;
+
+ @Component
+ @RequiredArgsConstructor
+ public class ResponseKafkaListener {
+
+     private final ObjectMapper objectMapper;
+     private final RedisAdapter redisAdapter;
+
+     @KafkaListener(
+             topics = "${spring.kafka.topic.response}",
+             groupId = "${spring.kafka.response-listener.group-id}"
+     )
+     public void listen(
+             String data,
+             Acknowledgment acknowledgment
+     ) {
+         try {
+
+             JavaType envelopeType = objectMapper.getTypeFactory()
+                     .constructParametricType(
+                             ResponseEnvelope.class,
+                             JsonNode.class
+                     );
+
+             ResponseEnvelope<JsonNode> response =
+                     objectMapper.readValue(
+                             data,
+                             envelopeType
+                     );
+
+             redisAdapter.putObjectToDb(
+                     response.correlationId(),
+                     response,
+                     1000
+             );
+
+             acknowledgment.acknowledge();
+
+         } catch (Exception e) {
+             acknowledgment.acknowledge();
+
+             throw new IllegalStateException(
+                     "Failed to process response from Kafka",
+                     e
+             );
+         }
+     }
+ }
+
+
+
+ import com.fasterxml.jackson.databind.JsonNode;
+ import com.fasterxml.jackson.databind.ObjectMapper;
+ import lombok.RequiredArgsConstructor;
+ import org.springframework.stereotype.Service;
+ import ru.example.requestreply.model.RequestEnvelope;
+ import ru.example.requestreply.model.ResponseEnvelope;
+
+ @Service
+ @RequiredArgsConstructor
+ public class RequestReplyService {
+
+     private final RequestSender requestSender;
+     private final RedisAdapter redisAdapter;
+     private final ObjectMapper objectMapper;
+
+     private final int timeoutLimit = 200;
+
+     public <T, R> ResponseEnvelope<R> getResponse(
+             RequestEnvelope<T> request,
+             Class<R> responseClass
+     ) throws Exception {
+
+         requestSender.send(request);
+
+         return awaitResponse(
+                 request.correlationId(),
+                 responseClass
+         );
+     }
+
+     private <R> ResponseEnvelope<R> awaitResponse(
+             String correlationId,
+             Class<R> responseClass
+     ) throws InterruptedException {
+
+         int attempts = 0;
+
+         while (attempts < timeoutLimit) {
+
+             try {
+                 ResponseEnvelope<?> storedResponse =
+                         redisAdapter.getObjectFromDb(
+                                 correlationId,
+                                 ResponseEnvelope.class
+                         );
+
+                 if (storedResponse != null) {
+
+                     JsonNode payload = objectMapper.valueToTree(
+                             storedResponse.payload()
+                     );
+
+                     R responsePayload = null;
+
+                     if (payload != null && !payload.isNull()) {
+                         responsePayload = objectMapper.treeToValue(
+                                 payload,
+                                 responseClass
+                         );
+                     }
+
+                     return new ResponseEnvelope<>(
+                             storedResponse.correlationId(),
+                             storedResponse.requestType(),
+                             responsePayload,
+                             storedResponse.responseCode(),
+                             storedResponse.errorMessage()
+                     );
+                 }
+
+             } catch (Exception e) {
+                 // логируем, но продолжаем polling
+             }
+
+             attempts++;
+
+             Thread.sleep(50);
+         }
+
+         return null;
+     }
+ }
