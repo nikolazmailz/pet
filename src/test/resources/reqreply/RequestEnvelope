@@ -1,10 +1,3 @@
-public record RequestEnvelope<T>(
-        String correlationId,
-        String requestType,
-        T payload
-) {
-}
-
 public record ResponseEnvelope<T>(
         String correlationId,
         String requestType,
@@ -12,135 +5,52 @@ public record ResponseEnvelope<T>(
         String responseCode,
         String errorMessage
 ) {
-}
 
-public <T> void send(RequestEnvelope<T> request) throws JsonProcessingException {
-    String json = objectMapper.writeValueAsString(request);
-
-    String checkedJson = checkMessageSize(request, json);
-
-    redisAdapter.putToQueue(RequisitionRequestQueue, checkedJson);
-}
-
-
-private <T> String checkMessageSize(RequestEnvelope<T> request, String json) {
-    // текущая логика проверки размера
-    return json;
-}
-
-
-public <T> String getResponse(RequestEnvelope<T> request)
-        throws InterruptedException, JsonProcessingException {
-
-    send(request);
-
-    // пока оставляем старый polling
-    ...
-}
-
-
-
-RequestEnvelope<RequisitionRequestDto> request =
-        new RequestEnvelope<>(
-                UUID.randomUUID().toString(),
-                "requisition",
-                dto
+    public static <T> ResponseEnvelope<T> success(
+            String correlationId,
+            String requestType,
+            T payload
+    ) {
+        return new ResponseEnvelope<>(
+                correlationId,
+                requestType,
+                payload,
+                "200",
+                null
         );
-
-String response = getResponse(request);
-
-
-
-public <T> String getResponse(RequestEnvelope<T> request)
-        throws InterruptedException, JsonProcessingException {
-
-    send(request);
-
-    return awaitResponse(request.correlationId());
-}
-
-
-private String awaitResponse(String correlationId) throws InterruptedException {
-    int attempts = 0;
-
-    while (attempts < timeoutLimit) {
-        try {
-            RedisResponse response =
-                    redisAdapter.getObjectFromDb(correlationId, RedisResponse.class);
-
-            if (response != null) {
-                return response.getBody();
-            }
-        } catch (Exception e) {
-            // пока сохраняем текущее поведение
-        }
-
-        attempts++;
-        Thread.sleep(50);
     }
 
-    return null;
-}
-
-
-public <T, R> ResponseEnvelope<R> getResponse(
-        RequestEnvelope<T> request,
-        Class<R> responseType
-)
-
-
-ResponseEnvelope<RequisitionResponse> response =
-        getResponse(request, RequisitionResponse.class);
-
-
-
-public <T, R> ResponseEnvelope<R> getResponse(
-        RequestEnvelope<T> request,
-        Class<R> responseType
-) throws InterruptedException, JsonProcessingException {
-
-    send(request);
-
-    return awaitResponse(request.correlationId(), responseType);
-}
-
-
-private <R> ResponseEnvelope<R> awaitResponse(
-        String correlationId,
-        Class<R> responseType
-) throws InterruptedException, JsonProcessingException {
-
-    int attempts = 0;
-
-    while (attempts < timeoutLimit) {
-        try {
-            RedisResponse redisResponse =
-                    redisAdapter.getObjectFromDb(correlationId, RedisResponse.class);
-
-            if (redisResponse != null) {
-                JavaType type = objectMapper.getTypeFactory()
-                        .constructParametricType(ResponseEnvelope.class, responseType);
-
-                return objectMapper.readValue(redisResponse.getBody(), type);
-            }
-        } catch (Exception e) {
-            // пока сохраняем текущее поведение
-        }
-
-        attempts++;
-        Thread.sleep(50);
-    }
-
-    return null;
-}
-
-
-RequestEnvelope<RequisitionRequestDto> request =
-        new RequestEnvelope<>(
-                UUID.randomUUID().toString(),
-                "requisition",
-                dto
+    public static <T> ResponseEnvelope<T> error(
+            String correlationId,
+            String requestType,
+            String responseCode,
+            String errorMessage
+    ) {
+        return new ResponseEnvelope<>(
+                correlationId,
+                requestType,
+                null,
+                responseCode,
+                errorMessage
         );
+    }
+}
 
-ResponseEnvelope<RequisitionResponseDto> response =
-        getResponse(request, RequisitionResponseDto.class);
+
+
+public interface RequestHandler<T, R> {
+
+    String requestType();
+
+    Class<T> requestClass();
+
+    R handle(T request);
+}
+
+
+public class HandlerNotFoundException extends RuntimeException {
+
+    public HandlerNotFoundException(String requestType) {
+        super("Handler not found for requestType: " + requestType);
+    }
+}
