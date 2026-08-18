@@ -1,45 +1,69 @@
-package ru.ntdev.srhr.common.reqreply.dto;
+package ru.ntdev.srhr.common.reqreply.req;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import ru.ntdev.srhr.common.dto.api.request.SapRequestDto;
+import ru.ntdev.srhr.common.dto.api.response.filestorage.MessagePostDto;
+import ru.ntdev.srhr.common.redis.RedisAdapter;
+import ru.ntdev.srhr.common.reqreply.dto.RequestEnvelope;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public class ResponseEnvelope<T> extends SapRequestDto {
-    private T payload;
+public class RequestSender {
 
-    public <T> ResponseEnvelope(String uuid, String requestType, T responsePayload, String responseCode, String errorMessage) {
-        this.setUuid(uuid);
-        this.setRequestType(requestType);
-        this.setPayload(responsePayload);
-        this.setResponseCode(responseCode);
-        this.setErrorMessage(errorMessage);
+    private final ObjectMapper objectMapper;
+    private final RedisAdapter redisAdapter;
+    private final Integer kafkaProducerMaxInnerMessageSizeKb;
+    private final FilestorageService filestorageService;
+
+    public RequestSender(ObjectMapper objectMapper, RedisAdapter redisAdapter, Integer kafkaProducerMaxInnerMessageSizeKb) {
+        this.objectMapper = objectMapper;
+        this.redisAdapter = redisAdapter;
+        this.kafkaProducerMaxInnerMessageSizeKb = kafkaProducerMaxInnerMessageSizeKb;
     }
 
-    public static <T> ResponseEnvelope<T> success(
-            T payload
-    ) {
-        ResponseEnvelope<T> responseEnvelope = new ResponseEnvelope<>(
-                payload
+    public <T> void send(RequestEnvelope<T> request, String queue)
+            throws JsonProcessingException {
+
+        String json = objectMapper.writeValueAsString(request);
+
+        String checkedJson = checkMessageSize(request, json);
+
+        redisAdapter.putToQueue(
+                queue,
+                checkedJson
         );
-        responseEnvelope.setResponseCode("200");
-        return responseEnvelope;
     }
 
-    public static <T> ResponseEnvelope<T> error(
-            String requestType,
-            String responseCode,
-            String errorMessage
-    ) {
-        ResponseEnvelope<T> responseEnvelope = new ResponseEnvelope<>();
-        responseEnvelope.setRequestType(requestType);
-        responseEnvelope.setResponseCode(responseCode);
-        responseEnvelope.setErrorMessage(errorMessage);
-        return responseEnvelope;
+    private <T> String checkMessageSize(RequestEnvelope<T> dto, String message) throws JsonProcessingException {
+        int messageSize = ((2 * message.length()) + 32) / 1000;
+        if (messageSize < kafkaProducerMaxInnerMessageSizeKb) {
+            return message;
+        } else {
+            ObjectMapper mapper = new ObjectMapper();
+            SapRequestDto storagedDto = new SapRequestDto();
+
+            storagedDto.setRequestType(dto.getRequestType());
+            storagedDto.setUuid(dto.getUuid());
+            storagedDto.setAdLogin(dto.getAdLogin());
+            storagedDto.setErrorMessage(dto.getErrorMessage());
+            storagedDto.setChannel(dto.getChannel());
+            storagedDto.setTraceId(dto.getRequestType());
+            storagedDto.setSessionId(dto.getSessionId());
+            storagedDto.setRealm(dto.getRealm());
+
+            String messageUuid = storeMessageContent(
+                    dto.getAdLogin(),
+                    dto.getSessionId(),
+                    dto.getTraceId(),
+                    dto.getAdLogin() + '_' + dto.getRequestType(),
+                    message,
+                    dto.getUuid());
+            storagedDto.setFileUuid(messageUuid);
+            return mapper.writeValueAsString(storagedDto);
+        }
+    }
+
+    private String storeMessageContent(String adlogin, String sessionId, String traceId, String messageName, String messageContent, String requestUid) {
+        MessagePostDto messagePostDto = filestorageService.putMessageToDb(adlogin, sessionId, traceId, requestUid, messageName, messageContent);
+        return messagePostDto.getMessageUID();
     }
 }
