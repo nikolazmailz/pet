@@ -1,21 +1,45 @@
+package ru.ntdev.srhr.common.reqreply.dto;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
+import ru.ntdev.srhr.common.dto.api.request.SapRequestDto;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-@SuperBuilder
-public class SapRequestDto {
-    private String uuid;
-    private String responseCode;
-    private String errorMessage;
-    private String requestType;
-    private String adLogin;
-    private String sessionId;
-    private String channel;
-    private String traceId;
-    private String realm;
-    private String fileUuid;
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+public class ResponseEnvelope<T> extends SapRequestDto {
+    private T payload;
+
+    public <T> ResponseEnvelope(String uuid, String requestType, T responsePayload, String responseCode, String errorMessage) {
+        this.setUuid(uuid);
+        this.setRequestType(requestType);
+        this.setPayload(responsePayload);
+        this.setResponseCode(responseCode);
+        this.setErrorMessage(errorMessage);
+    }
+
+    public static <T> ResponseEnvelope<T> success(
+            T payload
+    ) {
+        ResponseEnvelope<T> responseEnvelope = new ResponseEnvelope<>(
+                payload
+        );
+        responseEnvelope.setResponseCode("200");
+        return responseEnvelope;
+    }
+
+    public static <T> ResponseEnvelope<T> error(
+            String requestType,
+            String responseCode,
+            String errorMessage
+    ) {
+        ResponseEnvelope<T> responseEnvelope = new ResponseEnvelope<>();
+        responseEnvelope.setRequestType(requestType);
+        responseEnvelope.setResponseCode(responseCode);
+        responseEnvelope.setErrorMessage(errorMessage);
+        return responseEnvelope;
+    }
 }
