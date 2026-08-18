@@ -1,3 +1,21 @@
-reference to builder is ambiguous
-incompatible types: capture#1 of ? cannot be converted to ru.ntdev.srhr.common.reqreply.dto.ResponseEnvelope<T>
-name clash: <T>builder() in ru.ntdev.srhr.common.reqreply.dto.ResponseEnvelope and builder() in ru.ntdev.srhr.common.dto.api.request.SapRequestDto have the same erasure, yet neither hides the other
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@SuperBuilder
+public class SapRequestDto {
+    private String uuid;
+    private String responseCode;
+    private String errorMessage;
+    private String requestType;
+    private String adLogin;
+    private String sessionId;
+    private String channel;
+    private String traceId;
+    private String realm;
+    private String fileUuid;
+}
