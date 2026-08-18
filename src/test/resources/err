@@ -1,116 +1,179 @@
+2026-08-18T11:40:28.596+03:00  INFO 20292 --- [srhr-ms-requisition] [           main] r.n.s.m.r.a.u.PendingCandidatesUseCase   : pendingCandidatesResponse: PendingCandidatesResponse(data=PendingCandidatesResponse.CandidateInfoData(candidates=[PendingCandidatesResponse.Candidate(candidateId=1, vacancyId=7643745243748976137, fullName=John Doe, events=[PendingCandidatesResponse.Event(eventCode=HIRE, statusDate=0, days=30, expirationZone=1)]), PendingCandidatesResponse.Candidate(candidateId=2, vacancyId=7643745243748976138, fullName=Jane Smith, events=[PendingCandidatesResponse.Event(eventCode=REJECT, statusDate=0, days=5, expirationZone=0)]), PendingCandidatesResponse.Candidate(candidateId=3, vacancyId=7643745243748976137, fullName=Bob Johnson, events=[PendingCandidatesResponse.Event(eventCode=HIRE, statusDate=0, days=45, expirationZone=1)]), PendingCandidatesResponse.Candidate(candidateId=3, vacancyId=7643745243748976138, fullName=Bob Johnson, events=[PendingCandidatesResponse.Event(eventCode=INTERVIEW, statusDate=0, days=20, expirationZone=1)])]))
+2026-08-18T11:40:28.663+03:00  INFO 20292 --- [srhr-ms-requisition] [           main] r.n.s.m.r.entity.PendingCandidateEntity  : event.getDays() 30
+2026-08-18T11:40:28.664+03:00  INFO 20292 --- [srhr-ms-requisition] [           main] r.n.s.m.r.entity.PendingCandidateEntity  : event.getDays() 5
+2026-08-18T11:40:28.664+03:00  INFO 20292 --- [srhr-ms-requisition] [           main] r.n.s.m.r.entity.PendingCandidateEntity  : event.getDays() 45
+2026-08-18T11:40:28.664+03:00  INFO 20292 --- [srhr-ms-requisition] [           main] r.n.s.m.r.entity.PendingCandidateEntity  : event.getDays() 20
+2026-08-18T11:40:28.815+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:28.816+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:28.816+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:28.815+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:28.817+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:28.817+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:28.817+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:28.817+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:28.911+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:28.912+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:28.912+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:28.912+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:28.913+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:28.913+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:28.913+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:28.913+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:29.022+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:29.022+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:29.022+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:29.023+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:29.026+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:29.027+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:29.083+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:29.084+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:29.256+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:29.256+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:29.257+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:29.257+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:29.317+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:29.317+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:29.318+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:29.318+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:29.318+03:00  INFO 20292 --- [srhr-ms-requisition] [           main] r.n.s.m.r.a.u.PendingCandidatesUseCase   : RequisitionEnrichmentRow [org.springframework.data.jpa.repository.query.AbstractJpaQuery$TupleConverter$TupleBackedMap@26e0a411, org.springframework.data.jpa.repository.query.AbstractJpaQuery$TupleConverter$TupleBackedMap@46e4d3b] 
+2026-08-18T11:40:29.349+03:00  INFO 20292 --- [srhr-ms-requisition] [           main] r.n.s.m.r.a.u.PendingCandidatesUseCase   : enrichRequisitionByVacancyId {7643745243748976137=RequisitionEnrichment[vacancyId=7643745243748976137, guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPositionId=SP-001, staffPositionName=Manager, structUnitId=SU-001, structUnitName=HR, path=[StructUnitPathNode[id=SU-001, typeDesc=DEPARTMENT, name=HR]]], 7643745243748976138=RequisitionEnrichment[vacancyId=7643745243748976138, guid=guid-201, number=REQ-002, positionType=TYPE_B, staffPositionId=SP-002, staffPositionName=Analyst, structUnitId=SU-002, structUnitName=Finance, path=[StructUnitPathNode[id=SU-002, typeDesc=DEPARTMENT, name=Finance]]]} 
+2026-08-18T11:40:29.417+03:00  INFO 20292 --- [srhr-ms-requisition] [           main] r.n.s.m.r.a.u.PendingCandidatesUseCase   : pendingCandidatesResponse out: PendingCandidatesApiInnerResponse(super=SapResponseDtoExtended(uuid=null, responseCode=null, errorMessage=null, tabNumber=null, adLogin=null, sessionId=null, channel=null, rolesList=null, traceId=null, requestType=null, requestTs=null, responseTs=null, realm=null, fileUuid=null), data=PendingCandidatesPage[page=1, pageSize=10, count=4, eventCode=[EventCodeView[codeValue=HIRE], EventCodeView[codeValue=INTERVIEW], EventCodeView[codeValue=REJECT]], candidates=[PendingCandidateView[candidateId=3, vacancyId=7643745243748976137, fullName=Bob Johnson, requisition=RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=StaffPositionView[id=SP-001, name=Manager], structUnitName=HR, structUnitId=SU-001, structUnitPathList=[StructUnitPathView[id=SU-001, typeDesc=DEPARTMENT, name=HR]]], events=[PendingCandidateEventView[code=HIRE, days=45, expirationZone=1]]], PendingCandidateView[candidateId=3, vacancyId=7643745243748976138, fullName=Bob Johnson, requisition=RequisitionView[guid=guid-201, number=REQ-002, positionType=TYPE_B, staffPosition=StaffPositionView[id=SP-002, name=Analyst], structUnitName=Finance, structUnitId=SU-002, structUnitPathList=[StructUnitPathView[id=SU-002, typeDesc=DEPARTMENT, name=Finance]]], events=[PendingCandidateEventView[code=INTERVIEW, days=20, expirationZone=1]]], PendingCandidateView[candidateId=2, vacancyId=7643745243748976138, fullName=Jane Smith, requisition=RequisitionView[guid=guid-201, number=REQ-002, positionType=TYPE_B, staffPosition=StaffPositionView[id=SP-002, name=Analyst], structUnitName=Finance, structUnitId=SU-002, structUnitPathList=[StructUnitPathView[id=SU-002, typeDesc=DEPARTMENT, name=Finance]]], events=[PendingCandidateEventView[code=REJECT, days=5, expirationZone=0]]], PendingCandidateView[candidateId=1, vacancyId=7643745243748976137, fullName=John Doe, requisition=RequisitionView[guid=guid-200, number=REQ-001, positionType=TYPE_A, staffPosition=StaffPositionView[id=SP-001, name=Manager], structUnitName=HR, structUnitId=SU-001, structUnitPathList=[StructUnitPathView[id=SU-001, typeDesc=DEPARTMENT, name=HR]]], events=[PendingCandidateEventView[code=HIRE, days=30, expirationZone=1]]]]])
+2026-08-18T11:40:29.612+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:29.612+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:29.612+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:29.612+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:29.737+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:29.737+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:29.737+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:29.737+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:59.940+03:00  WARN 20292 --- [srhr-ms-requisition] [l-1 housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=51s850ms172µs600ns).
+2026-08-18T11:40:59.975+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:59.975+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-1-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-2, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:59.975+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:59.975+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-3-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-4, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:59.975+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:59.975+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-0-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-1, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:59.976+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:59.976+03:00  WARN 20292 --- [srhr-ms-requisition] [_listener-2-C-1] org.apache.kafka.clients.NetworkClient   : [Consumer clientId=consumer-staff_info_listener-3, groupId=staff_info_listener] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:59.976+03:00  WARN 20292 --- [srhr-ms-requisition] [c-producer-ex-1] org.apache.kafka.clients.NetworkClient   : [Consumer instanceId=mc_bbd92ca9-43b4-4cc0-a77c-7b8e09ae9858, clientId=mc_bbd92ca9-43b4-4cc0-a77c-7b8e09ae9858, groupId=requisition_consumer] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:59.976+03:00  WARN 20292 --- [srhr-ms-requisition] [c-producer-ex-1] org.apache.kafka.clients.NetworkClient   : [Consumer instanceId=mc_bbd92ca9-43b4-4cc0-a77c-7b8e09ae9858, clientId=mc_bbd92ca9-43b4-4cc0-a77c-7b8e09ae9858, groupId=requisition_consumer] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
+2026-08-18T11:40:59.977+03:00  WARN 20292 --- [srhr-ms-requisition] [  producer-ex-1] org.apache.kafka.clients.NetworkClient   : [Consumer instanceId=pt_dd8e8029-ccf3-4a74-a964-7ac1aba8cbb5, clientId=pt_dd8e8029-ccf3-4a74-a964-7ac1aba8cbb5, groupId=requisition_consumer] Connection to node -1 (localhost/127.0.0.1:9092) could not be established. Broker may not be available.
+2026-08-18T11:40:59.977+03:00  WARN 20292 --- [srhr-ms-requisition] [  producer-ex-1] org.apache.kafka.clients.NetworkClient   : [Consumer instanceId=pt_dd8e8029-ccf3-4a74-a964-7ac1aba8cbb5, clientId=pt_dd8e8029-ccf3-4a74-a964-7ac1aba8cbb5, groupId=requisition_consumer] Bootstrap broker localhost:9092 (id: -1 rack: null) disconnected
 
-        CandidateRecommendationRequest request = new CandidateRecommendationRequest(CandidateRecommendationReq.from(vacancyId, systemParams.getTabNumber(), email));
+java.lang.AssertionError: 
+Expecting actual:
+  ["Bob Johnson", "Bob Johnson", "Jane Smith", "John Doe"]
+to contain exactly in any order:
+  ["John Doe", "Jane Smith", "Bob Johnson"]
+but the following elements were unexpected:
+  ["Bob Johnson"]
+
+
+	at ru.ntdev.srhr.ms.requisition.application.usecase.PendingCandidatesUseCaseIntegrationTest.execute_shouldHandleCandidateOnMultipleVacancies(PendingCandidatesUseCaseIntegrationTest.java:438)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
 
 
 
-package ru.ntdev.srhr.common.dto.api.request.spo.objects;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.*;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Schema(description = "Корневой объект параметров запроса", name = "CandidateRecommendationReq")
-public class CandidateRecommendationReq {
 
-    @Schema(description = "Идентификатор вакансии", maximum = "99999999999999", minimum = "-99999999999999", required = true, nullable = false)
-    private Long vacancyId;
+    @Test
+    void execute_shouldHandleCandidateOnMultipleVacancies() throws Exception {
+        RequisitionRequestEntity requestEntity = mock(RequisitionRequestEntity.class);
+        RequisitionRequestDto requestValues = new RequisitionRequestDto();
+        requestValues.setAdLogin(adLogin);
+        requestValues.setSessionId(sessionId);
+        requestValues.setTraceId(traceId);
 
-    @Schema(description = "Табельный номер Пользователя ЛКР", maxLength = 8, required = true, nullable = false)
-    private String pernr;
+        JsonNode jsonNode = objectMapper.readTree("""
+        {
+          "page": 1,
+          "pageSize": 10,
+          "filter": {
+            "search": "",
+            "eventCodeList": []
+          }
+        }
+    """);
+        requestValues.setPayload(jsonNode);
 
-    @Schema(description = "Почта Пользователя ЛКР", maxLength = 36, required = true, nullable = false)
-    private String email;
+        SapSystemParamsDto systemParams = mock(SapSystemParamsDto.class);
+        BscsEmployeeDto bscsEmployeeDto = mock(BscsEmployeeDto.class);
+        when(bscsEmployeeDto.getId()).thenReturn(pernr);
+        when(bscsIntegrationService.getStaffByLogin(any(), any(), any()))
+                .thenReturn(bscsEmployeeDto);
 
-    public static CandidateRecommendationReq from(String vacancyId, String pernr, String email) {
-        CandidateRecommendationReq res = new CandidateRecommendationReq();
-        res.setVacancyId(Long.valueOf(vacancyId));
-        res.setPernr(pernr);
-        res.setEmail(email);
-        return res;
+        when(masterDataIntegrationService.getPendingCandidates(any(), any()))
+                .thenReturn(ResponseEntity.ok(definePendingCandidatesResponseWithSharedCandidate()));
+
+        // when
+        FinishProcessingMessageDto out = pendingCandidatesUseCase.execute(requestEntity, systemParams, requestValues);
+
+        PendingCandidatesApiInnerResponse response = (PendingCandidatesApiInnerResponse) out.getDto();
+        PendingCandidatesPage page = response.getData();
+
+        assertThat(page.page()).isEqualTo(1);
+        assertThat(page.pageSize()).isEqualTo(10);
+        assertThat(page.count()).isEqualTo(4); // Все кандидаты, включая дубль
+
+        assertThat(page.candidates())
+                .extracting(PendingCandidateView::fullName)
+                .containsExactlyInAnyOrder("John Doe", "Jane Smith", "Bob Johnson");
+
+        // Проверяем, что Bob Johnson присутствует дважды с разными vacancy_id
+        List<PendingCandidateView> bobCandidates = page.candidates().stream()
+                .filter(c -> c.fullName().equals("Bob Johnson"))
+                .toList();
+
+        assertThat(bobCandidates).hasSize(2);
+        assertThat(bobCandidates.get(0).vacancyId()).isEqualTo("7643745243748976137");
+        assertThat(bobCandidates.get(1).vacancyId()).isEqualTo("7643745243748976138");
+
+        // Убеждаемся, что в БД сохранены все 3 кандидата
+        assertThat(pendingCandidateEntityRepository.count()).isEqualTo(3);
+
+        assertThat(out.getCode()).isEqualTo("200");
     }
-}
 
-
-
-
-"C:\Users\NPushkaryov\AppData\Local\Programs\Eclipse Adoptium\jdk-17.0.14.7-hotspot\bin\java.exe" -Dmaven.multiModuleProjectDirectory=C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-requisition -Djansi.passthrough=true "-Dmaven.home=C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven3" "-Dclassworlds.conf=C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven3\bin\m2.conf" "-Dmaven.ext.class.path=C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven-event-listener.jar" "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\lib\idea_rt.jar=55045:C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\bin" -Dfile.encoding=UTF-8 -classpath "C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven3\boot\plexus-classworlds-2.7.0.jar;C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven3\boot\plexus-classworlds.license" org.codehaus.classworlds.Launcher -Didea.version=2024.1.3 install
-[INFO] Scanning for projects...
-[INFO] 
-[INFO] -----------------< ru.ntdev.srhr:srhr-ms-requisition >------------------
-[INFO] Building srhr-ms-requisition 8.1.0
-[INFO]   from pom.xml
-[INFO] --------------------------------[ jar ]---------------------------------
-[INFO] 
-[INFO] --- jacoco:0.8.7:prepare-agent (prepare-agent) @ srhr-ms-requisition ---
-[INFO] argLine set to -javaagent:C:\\Users\\NPushkaryov\\.m2\\repository\\org\\jacoco\\org.jacoco.agent\\0.8.7\\org.jacoco.agent-0.8.7-runtime.jar=destfile=C:\\Users\\NPushkaryov\\IdeaProjects\\srhr-backend\\srhr-ms-requisition\\target\\jacoco.exec
-[INFO] 
-[INFO] --- spring-boot:3.2.0:build-info (default) @ srhr-ms-requisition ---
-[INFO] 
-[INFO] --- resources:3.3.1:resources (default-resources) @ srhr-ms-requisition ---
-[INFO] Copying 1 resource from src\main\resources to target\classes
-[INFO] Copying 85 resources from src\main\resources to target\classes
-[INFO] 
-[INFO] --- compiler:3.9.0:compile (default-compile) @ srhr-ms-requisition ---
-[INFO] Changes detected - recompiling the module!
-[INFO] Compiling 160 source files to C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-requisition\target\classes
-[INFO] /C:/Users/NPushkaryov/IdeaProjects/srhr-backend/srhr-ms-requisition/src/main/java/ru/ntdev/srhr/ms/requisition/config/SecurityConfig.java: C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-requisition\src\main\java\ru\ntdev\srhr\ms\requisition\config\SecurityConfig.java uses or overrides a deprecated API that is marked for removal.
-[INFO] /C:/Users/NPushkaryov/IdeaProjects/srhr-backend/srhr-ms-requisition/src/main/java/ru/ntdev/srhr/ms/requisition/config/SecurityConfig.java: Recompile with -Xlint:removal for details.
-[INFO] -------------------------------------------------------------
-[ERROR] COMPILATION ERROR : 
-[INFO] -------------------------------------------------------------
-[ERROR] /C:/Users/NPushkaryov/IdeaProjects/srhr-backend/srhr-ms-requisition/src/main/java/ru/ntdev/srhr/ms/requisition/service/impl/CandidateServiceImpl.java:[172,111] cannot find symbol
-  symbol:   method from(java.lang.String,java.lang.String,java.lang.String)
-  location: class ru.ntdev.srhr.common.dto.api.request.spo.objects.CandidateRecommendationReq
-[INFO] 1 error
-[INFO] -------------------------------------------------------------
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD FAILURE
-[INFO] ------------------------------------------------------------------------
-[INFO] Total time:  10.626 s
-[INFO] Finished at: 2026-08-13T14:43:22+03:00
-[INFO] ------------------------------------------------------------------------
-[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.9.0:compile (default-compile) on project srhr-ms-requisition: Compilation failure
-[ERROR] /C:/Users/NPushkaryov/IdeaProjects/srhr-backend/srhr-ms-requisition/src/main/java/ru/ntdev/srhr/ms/requisition/service/impl/CandidateServiceImpl.java:[172,111] cannot find symbol
-[ERROR]   symbol:   method from(java.lang.String,java.lang.String,java.lang.String)
-[ERROR]   location: class ru.ntdev.srhr.common.dto.api.request.spo.objects.CandidateRecommendationReq
-[ERROR] 
-[ERROR] -> [Help 1]
-[ERROR] 
-[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
-[ERROR] Re-run Maven using the -X switch to enable full debug logging.
-[ERROR] 
-[ERROR] For more information about the errors and possible solutions, please read the following articles:
-[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
-
-Process finished with exit code 1
-
-
-
-
------------------------
-
-
-
-https://dm.snest.fvds.ru/s/2020/p/srhr-2030-vnedrenie-audita-2-0-vn-k1Hi3xgid0
-
-AUDIT_KAFKA_BOOTSTRAP_SERVERS=localhost:39091
-AUDIT_STANDIN_KAFKA_BOOTSTRAP_SERVERS=localhost:49091
-
-
-   @Query(value = """
-            select v.vacancy_id   as "vacancyId",
-                   r.guid          as "guid",
-                   r.number        as "number",
-                   r.position_type as "positionType",
-                   r.staff_position_id   as "staffPositionId",
-                   r.staff_position_name as "staffPositionName",
-                   r.struct_unit_id      as "structUnitId",
-                   r.struct_unit_name    as "structUnitName"
-            from srhr_requisition.vacancy v
-            join srhr_requisition.requisitions r on r.guid = v.requisition_guid
-            where v.vacancy_id = any(:vacancyIds)
-            """, nativeQuery = true)
-    List<RequisitionEnrichmentRow> findEnrichmentByVacancyIds(String[] vacancyIds);
-
+    private PendingCandidatesResponse definePendingCandidatesResponseWithSharedCandidate() {
+        return new PendingCandidatesResponse(
+                new PendingCandidatesResponse.CandidateInfoData(
+                        List.of(
+                                new PendingCandidatesResponse.Candidate(
+                                        1L,
+                                        7643745243748976137L, // V1
+                                        "John Doe",
+                                        List.of(
+                                                new PendingCandidatesResponse.Event("HIRE", 0L, 30, 1)
+                                        )
+                                ),
+                                new PendingCandidatesResponse.Candidate(
+                                        2L,
+                                        7643745243748976138L, // V2
+                                        "Jane Smith",
+                                        List.of(
+                                                new PendingCandidatesResponse.Event("REJECT", 0L, 5, 0)
+                                        )
+                                ),
+                                new PendingCandidatesResponse.Candidate(
+                                        3L,
+                                        7643745243748976137L, // V1
+                                        "Bob Johnson",
+                                        List.of(
+                                                new PendingCandidatesResponse.Event("HIRE", 0L, 45, 1)
+                                        )
+                                ),
+                                new PendingCandidatesResponse.Candidate(
+                                        3L, // тот же candidateId, но другая вакансия
+                                        7643745243748976138L, // V2
+                                        "Bob Johnson",
+                                        List.of(
+                                                new PendingCandidatesResponse.Event("INTERVIEW", 0L, 20, 1)
+                                        )
+                                )
+                        )
+                )
+        );
+    }
