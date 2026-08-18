@@ -1,69 +1,163 @@
-package ru.ntdev.srhr.common.reqreply.req;
+putMessageToDb
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import ru.ntdev.srhr.common.dto.api.request.SapRequestDto;
-import ru.ntdev.srhr.common.dto.api.response.filestorage.MessagePostDto;
-import ru.ntdev.srhr.common.redis.RedisAdapter;
-import ru.ntdev.srhr.common.reqreply.dto.RequestEnvelope;
 
-public class RequestSender {
 
-    private final ObjectMapper objectMapper;
-    private final RedisAdapter redisAdapter;
-    private final Integer kafkaProducerMaxInnerMessageSizeKb;
-    private final FilestorageService filestorageService;
 
-    public RequestSender(ObjectMapper objectMapper, RedisAdapter redisAdapter, Integer kafkaProducerMaxInnerMessageSizeKb) {
-        this.objectMapper = objectMapper;
-        this.redisAdapter = redisAdapter;
-        this.kafkaProducerMaxInnerMessageSizeKb = kafkaProducerMaxInnerMessageSizeKb;
-    }
+@Slf4j
+@Service
+@RequiredArgsConstructor
 
-    public <T> void send(RequestEnvelope<T> request, String queue)
-            throws JsonProcessingException {
+public class FilestorageServiceImpl implements FilestorageService {
 
-        String json = objectMapper.writeValueAsString(request);
+    private final FilestorageRestClient filestorageRestClient;
 
-        String checkedJson = checkMessageSize(request, json);
+    @Value("${filestorage.rest.service.url}")
+    String filestorageRestServiceUrl;
 
-        redisAdapter.putToQueue(
-                queue,
-                checkedJson
-        );
-    }
+    private final static String integrationUrlPutFile = "/filestorage/file";
+    private final static String integrationUrlGetFileById = "/filestorage/file/%s?nodel=%s";
+    private final static String integrationUrlPutMessage = "/filestorage/message";
+    private final static String integrationUrlGetMessageById = "/filestorage/message/%s?nodel=%s";
 
-    private <T> String checkMessageSize(RequestEnvelope<T> dto, String message) throws JsonProcessingException {
-        int messageSize = ((2 * message.length()) + 32) / 1000;
-        if (messageSize < kafkaProducerMaxInnerMessageSizeKb) {
-            return message;
+
+    @Override
+    public FilePostDto putFileToDb(String adlogin, String sessionId, String traceId, String requestUID, String filename, String content) {
+        RestTemplate restTemplate = filestorageRestClient.buildRestTemplate(adlogin, sessionId, traceId);
+        String uri = String.format(integrationUrlPutFile);
+        uri = filestorageRestServiceUrl+uri;
+        ResponseEntity<FilePostDto> filestorageResponse;
+        FilePostRequestDto requestDto = new FilePostRequestDto(requestUID, filename, content);
+        filestorageResponse = restTemplate.postForEntity(uri, requestDto, FilePostDto.class);
+        if (filestorageResponse.hasBody()) {
+                return filestorageResponse.getBody();
         } else {
-            ObjectMapper mapper = new ObjectMapper();
-            SapRequestDto storagedDto = new SapRequestDto();
-
-            storagedDto.setRequestType(dto.getRequestType());
-            storagedDto.setUuid(dto.getUuid());
-            storagedDto.setAdLogin(dto.getAdLogin());
-            storagedDto.setErrorMessage(dto.getErrorMessage());
-            storagedDto.setChannel(dto.getChannel());
-            storagedDto.setTraceId(dto.getRequestType());
-            storagedDto.setSessionId(dto.getSessionId());
-            storagedDto.setRealm(dto.getRealm());
-
-            String messageUuid = storeMessageContent(
-                    dto.getAdLogin(),
-                    dto.getSessionId(),
-                    dto.getTraceId(),
-                    dto.getAdLogin() + '_' + dto.getRequestType(),
-                    message,
-                    dto.getUuid());
-            storagedDto.setFileUuid(messageUuid);
-            return mapper.writeValueAsString(storagedDto);
+            return null;
         }
     }
 
-    private String storeMessageContent(String adlogin, String sessionId, String traceId, String messageName, String messageContent, String requestUid) {
-        MessagePostDto messagePostDto = filestorageService.putMessageToDb(adlogin, sessionId, traceId, requestUid, messageName, messageContent);
-        return messagePostDto.getMessageUID();
+    @Override
+    public FileGetByIdDto getFileById(String adlogin, String sessionId, String traceId, String fileUID) {
+        RestTemplate restTemplate = filestorageRestClient.buildRestTemplate(adlogin, sessionId, traceId);
+        Integer nodel = 1;
+        String uri = String.format(integrationUrlGetFileById, fileUID, nodel);
+        uri = filestorageRestServiceUrl+uri;
+        ResponseEntity<FileGetByIdDto> filestorageResponse;
+        filestorageResponse = restTemplate.getForEntity(uri, FileGetByIdDto.class);
+        if (filestorageResponse.hasBody()) {
+            return filestorageResponse.getBody();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public MessagePostDto putMessageToDb(String adlogin, String sessionId, String traceId, String requestUID, String messageName, String messageContent) {
+        RestTemplate restTemplate = filestorageRestClient.buildRestTemplate(adlogin, sessionId, traceId);
+        String uri = String.format(integrationUrlPutMessage);
+        uri = filestorageRestServiceUrl+uri;
+        ResponseEntity<MessagePostDto> filestorageResponse;
+        MessagePostRequestDto requestDto = new MessagePostRequestDto(requestUID, messageName, messageContent);
+        filestorageResponse = restTemplate.postForEntity(uri, requestDto, MessagePostDto.class);
+        if (filestorageResponse.hasBody()) {
+            return filestorageResponse.getBody();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public MessageGetByIdDto getMessageById(String adlogin, String sessionId, String traceId, String messageUID) {
+        RestTemplate restTemplate = filestorageRestClient.buildRestTemplate(adlogin, sessionId, traceId);
+        Integer nodel = 1;
+        String uri = String.format(integrationUrlGetMessageById, messageUID, nodel);
+        uri = filestorageRestServiceUrl+uri;
+        ResponseEntity<MessageGetByIdDto> filestorageResponse;
+        filestorageResponse = restTemplate.getForEntity(uri, MessageGetByIdDto.class);
+        if (filestorageResponse.hasBody()) {
+            return filestorageResponse.getBody();
+        } else {
+            return null;
+        }
+    }
+}     
+
+
+
+
+@Component
+public class FilestorageRestClient {
+
+    private final JacksonConfig jacksonConfig;
+
+    @Autowired
+    public FilestorageRestClient(JacksonConfig jacksonConfig) {
+        this.jacksonConfig = jacksonConfig;
+    }
+
+    public RestTemplate buildRestTemplate(String pernr, String sessionId, String traceId) {
+
+        Header headerPernr = new BasicHeader("pernr", pernr);
+        Header headerSessionId = new BasicHeader("sessionId", sessionId);
+        Header traceHeader = new BasicHeader("logId", traceId);
+        List<Header> headers = new ArrayList<>(Arrays.asList(headerPernr, headerSessionId, traceHeader));
+
+
+        HttpClient client = HttpClients
+                .custom()
+                .setDefaultHeaders(headers)
+                .build();
+
+        Map<String,String> headersValue = new HashMap<>(headers.size());
+        for (Header header : headers ) {
+            headersValue.put(header.getName(),header.getValue());
+        }
+
+        ObjectMapper customObjectMapper = jacksonConfig.objectMapper();
+        MappingJackson2HttpMessageConverter customConverter = jacksonConfig.createCustomConverter(customObjectMapper);
+
+        RestTemplate restTemplate = new RestTemplateBuilder()
+                .defaultHeader(HttpHeaders.CONTENT_TYPE,"application/json;charset=UTF-8")
+                .defaultHeader("pernr", headersValue.get("pernr"))
+                .defaultHeader("sessionId", headersValue.get("sessionId"))
+                .defaultHeader("logId", headersValue.get("logId"))
+                .messageConverters(customConverter)
+                .build();
+
+        restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(client));
+        List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
+        if (CollectionUtils.isEmpty(interceptors)) {
+            interceptors = new ArrayList<>();
+        }
+        interceptors.add(new IntegrationRequestInterceptor());
+        restTemplate.setInterceptors(interceptors);
+        return restTemplate;
+    }
+}
+
+
+
+@Configuration
+public class JacksonConfig {
+
+    @Value("${jackson.max-string-value}")
+    Integer jacksonMaxStringValue;
+
+    @Bean
+    @Primary
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper(
+                new JsonFactoryBuilder()
+                        .streamReadConstraints(
+                                StreamReadConstraints.builder()
+                                        .maxStringLength(jacksonMaxStringValue)
+                                        .build()
+                        ).build()
+        );
+    }
+
+    public MappingJackson2HttpMessageConverter createCustomConverter(ObjectMapper objectMapper) {
+        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+        converter.setObjectMapper(objectMapper);
+        return converter;
     }
 }
