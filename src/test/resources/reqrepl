@@ -1,27 +1,22 @@
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import ru.ntdev.srhr.common.dto.api.request.SapRequestDto;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
+@AllArgsConstructor
 public class ResponseEnvelope<T> extends SapRequestDto {
-    private String requestType;
     private T payload;
-    
+
     public static <T> ResponseEnvelope<T> success(
-            String requestType,
             T payload
     ) {
         return new ResponseEnvelope<>(
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                requestType,
                 payload
         );
     }
@@ -32,19 +27,17 @@ public class ResponseEnvelope<T> extends SapRequestDto {
             String responseCode,
             String errorMessage
     ) {
-        return new ResponseEnvelope<>(
-                requestType,
-                null,
-                responseCode,
-                errorMessage
-        );
+        return ResponseEnvelope.<T>builder()
+                .uuid()
+                .build();
+        
     }
 }
-
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 public class SapRequestDto {
     private String uuid;
     private String responseCode;
