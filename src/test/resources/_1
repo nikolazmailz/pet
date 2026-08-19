@@ -3,3 +3,20 @@ SRHR_FORBIDDEN_INVALID_JWT
 SRHR_JWT_VALIDATE_UNEXPECTED_ERROR
 
 https://dm.snest.fvds.ru/s/2020/p/kontrollery-peredacha-sistemnykh-parametrov-Lb8GcChC0N
+
+
+ public static RequestEnvelope<JsonNode> deserialize(String messageIncoming)
+            throws JsonProcessingException {
+
+
+        JavaType envelopeType = objectMapper.getTypeFactory()
+                .constructParametricType(
+                        RequestEnvelope.class,
+                        JsonNode.class
+                );
+
+        return objectMapper.readValue(
+                messageIncoming,
+                envelopeType
+        );
+    }
