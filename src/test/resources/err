@@ -1,110 +1,61 @@
-package ru.ntdev.srhr.ms.consent.person.information.service.impl;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import ru.ntdev.srhr.common.dto.api.request.filestorage.FilePostRequestDto;
-import ru.ntdev.srhr.common.dto.api.request.filestorage.MessagePostRequestDto;
-import ru.ntdev.srhr.common.dto.api.response.filestorage.*;
-import ru.ntdev.srhr.ms.consent.person.information.client.FilestorageRestClient;
-import ru.ntdev.srhr.ms.consent.person.information.service.FilestorageService;
-
-@Slf4j
-@Service
-@RequiredArgsConstructor
-
-public class FilestorageServiceImpl implements FilestorageService {
-
-    private final static String integrationUrlPutFile = "/filestorage/file";
-    private final static String integrationUrlGetFileById = "/filestorage/file/%s?nodel=%s";
-    private final static String integrationUrlPutMessage = "/filestorage/message";
-    private final static String integrationUrlGetMessageById = "/filestorage/message/%s?nodel=%s";
-    private final FilestorageRestClient filestorageRestClient;
-    @Value("${filestorage.rest.service.url}")
-    String filestorageRestServiceUrl;
-
-    @Override
-    public FilePostDto putFileToDb(String adlogin, String sessionId, String traceId, String requestUID, String filename, String content) {
-        RestTemplate restTemplate = filestorageRestClient.buildRestTemplate(adlogin, sessionId, traceId);
-        String uri = String.format(integrationUrlPutFile);
-        uri = filestorageRestServiceUrl + uri;
-        ResponseEntity<FilePostDto> filestorageResponse;
-        FilePostRequestDto requestDto = new FilePostRequestDto(requestUID, filename, content);
-        filestorageResponse = restTemplate.postForEntity(uri, requestDto, FilePostDto.class);
-        if (filestorageResponse.hasBody()) {
-            return filestorageResponse.getBody();
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    public FileGetByIdDto getFileById(String adlogin, String sessionId, String traceId, String fileUID) {
-        RestTemplate restTemplate = filestorageRestClient.buildRestTemplate(adlogin, sessionId, traceId);
-        Integer nodel = 1;
-        String uri = String.format(integrationUrlGetFileById, fileUID, nodel);
-        uri = filestorageRestServiceUrl + uri;
-        ResponseEntity<FileGetByIdDto> filestorageResponse;
-        filestorageResponse = restTemplate.getForEntity(uri, FileGetByIdDto.class);
-        if (filestorageResponse.hasBody()) {
-            return filestorageResponse.getBody();
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    public MessagePostDto putMessageToDb(String adlogin, String sessionId, String traceId, String requestUID, String messageName, String messageContent) {
-        RestTemplate restTemplate = filestorageRestClient.buildRestTemplate(adlogin, sessionId, traceId);
-        String uri = String.format(integrationUrlPutMessage);
-        uri = filestorageRestServiceUrl + uri;
-        ResponseEntity<MessagePostDto> filestorageResponse;
-        MessagePostRequestDto requestDto = new MessagePostRequestDto(requestUID, messageName, messageContent);
-        filestorageResponse = restTemplate.postForEntity(uri, requestDto, MessagePostDto.class);
-        if (filestorageResponse.hasBody()) {
-            return filestorageResponse.getBody();
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    public MessageGetByIdDto getMessageById(String adlogin, String sessionId, String traceId, String messageUID) {
-        RestTemplate restTemplate = filestorageRestClient.buildRestTemplate(adlogin, sessionId, traceId);
-        Integer nodel = 1;
-        String uri = String.format(integrationUrlGetMessageById, messageUID, nodel);
-        uri = filestorageRestServiceUrl + uri;
-        ResponseEntity<MessageGetByIdDto> filestorageResponse;
-        filestorageResponse = restTemplate.getForEntity(uri, MessageGetByIdDto.class);
-        if (filestorageResponse.hasBody()) {
-            return filestorageResponse.getBody();
-        } else {
-            return null;
-        }
-    }
-}
-
-
-
-
-
-
 package ru.ntdev.srhr.common.filestorage;
 
+import ru.ntdev.srhr.common.dto.api.request.filestorage.FilePostRequestDto;
 import ru.ntdev.srhr.common.dto.api.request.filestorage.MessagePostRequestDto;
+import ru.ntdev.srhr.common.dto.api.response.filestorage.FileGetByIdDto;
+import ru.ntdev.srhr.common.dto.api.response.filestorage.FilePostDto;
+import ru.ntdev.srhr.common.dto.api.response.filestorage.MessageGetByIdDto;
 import ru.ntdev.srhr.common.dto.api.response.filestorage.MessagePostDto;
 
 public class FileStorageServiceImpl implements FileStorageService {
 
+    private static final String URL_PUT_FILE = "/filestorage/file";
+    private static final String URL_GET_FILE_BY_ID = "/filestorage/file/%s?nodel=%s";
     private static final String URL_PUT_MESSAGE = "/filestorage/message";
+    private static final String URL_GET_MESSAGE_BY_ID = "/filestorage/message/%s?nodel=%s";
+
+    /** Признак «не удалять после чтения»; в исходном коде всегда 1. */
+    private static final int NODEL = 1;
 
     private final FileStorageRestClient restClient;
 
     public FileStorageServiceImpl(FileStorageRestClient restClient) {
         this.restClient = restClient;
+    }
+
+    @Override
+    public FilePostDto putFileToDb(String adLogin, String sessionId, String traceId,
+                                   String requestUid, String filename, String content) {
+        FilePostDto result = restClient.post(
+                URL_PUT_FILE,
+                new FilePostRequestDto(requestUid, filename, content),
+                FilePostDto.class,
+                adLogin,
+                sessionId,
+                traceId);
+
+        if (result == null || result.getFileUID() == null) {
+            throw new IllegalStateException(
+                    "FileStorage returned empty response for requestUid=" + requestUid);
+        }
+        return result;
+    }
+
+    @Override
+    public FileGetByIdDto getFileById(String adLogin, String sessionId, String traceId,
+                                      String fileUid) {
+        FileGetByIdDto result = restClient.get(
+                String.format(URL_GET_FILE_BY_ID, fileUid, NODEL),
+                FileGetByIdDto.class,
+                adLogin,
+                sessionId,
+                traceId);
+
+        if (result == null) {
+            throw new IllegalStateException(
+                    "FileStorage returned empty response for fileUid=" + fileUid);
+        }
+        return result;
     }
 
     @Override
@@ -121,6 +72,23 @@ public class FileStorageServiceImpl implements FileStorageService {
         if (result == null || result.getMessageUID() == null) {
             throw new IllegalStateException(
                     "FileStorage returned empty response for requestUid=" + requestUid);
+        }
+        return result;
+    }
+
+    @Override
+    public MessageGetByIdDto getMessageById(String adLogin, String sessionId, String traceId,
+                                            String messageUid) {
+        MessageGetByIdDto result = restClient.get(
+                String.format(URL_GET_MESSAGE_BY_ID, messageUid, NODEL),
+                MessageGetByIdDto.class,
+                adLogin,
+                sessionId,
+                traceId);
+
+        if (result == null) {
+            throw new IllegalStateException(
+                    "FileStorage returned empty response for messageUid=" + messageUid);
         }
         return result;
     }
