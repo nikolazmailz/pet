@@ -15,7 +15,7 @@ public class JacksonMessageCodecAdapter implements MessageCodecPort {
         JsonNode root = mapper.readTree(message);
         JsonNode p = root.get("payload");
         RawPayload payload = (p == null || p.isNull()) ? null : new RawPayload(mapper.writeValueAsString(p));
-        return new RequestEnvelope<>(text(root, "correlationId"), text(root, "requestType"), text(root, "sessionId"), text(root, "adLogin"), text(root, "traceId"), text(root, "channel"), text(root, "realm"), text(root, "fileUuid"), payload);
+        return new RequestEnvelope<>(text(root, "uuid"), text(root, "requestType"), text(root, "sessionId"), text(root, "adLogin"), text(root, "traceId"), text(root, "channel"), text(root, "realm"), text(root, "fileUuid"), payload);
     }
 
     public <T> T deserializePayload(RawPayload payload, Class<T> targetClass) throws Exception {

@@ -483,7 +483,7 @@ public ResponseEntity<ApiErrorResponse> handleExternalSystemException(
             exception.getErrorCode(),
             exception.getMessage(),
             request.getRequestURI(),
-            MDC.get("correlationId"),
+            MDC.get("uuid"),
             LocalDateTime.now()
     );
 
@@ -508,7 +508,7 @@ public ResponseEntity<ApiErrorResponse> handleUnexpectedException(
             "INTERNAL_SERVER_ERROR",
             "Произошла внутренняя ошибка сервиса",
             request.getRequestURI(),
-            MDC.get("correlationId"),
+            MDC.get("uuid"),
             LocalDateTime.now()
     );
 

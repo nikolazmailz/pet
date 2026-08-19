@@ -1,6 +1,7 @@
 package com.pet.requisition.application.model;
+
 public record RequestEnvelope<T>(
-        String correlationId,
+        String uuid,
         String requestType,
         String sessionId,
         String adLogin,
@@ -9,4 +10,20 @@ public record RequestEnvelope<T>(
         String realm,
         String fileUuid,
         T payload
-) {}
+) {
+    public RequestEnvelope(RequestEnvelope<?> envelope, T payload) {
+        this(
+                envelope.uuid(),
+                envelope.requestType(),
+                envelope.sessionId(),
+                envelope.adLogin(),
+                envelope.traceId(),
+                envelope.channel(),
+                envelope.realm(),
+                envelope.fileUuid(),
+                payload
+        );
+    }
+
+
+}

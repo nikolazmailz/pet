@@ -52,7 +52,7 @@ public class PreparedRequestService {
 
     private SystemParams createSystemParams(RequestEnvelope<?> r) {
         SystemParams p = new SystemParams();
-        p.setCorrelationId(r.correlationId());
+        p.setCorrelationId(r.uuid());
         p.setRequestType(r.requestType());
         p.setSessionId(r.sessionId());
         p.setAdLogin(r.adLogin());

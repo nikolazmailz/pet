@@ -39,12 +39,12 @@ public class PendingCandidatesKafkaListener {
             PendingCandidatesPage data = useCase.execute(request.pernr(), request.request());
             response = PendingCandidatesKafkaResponse.success(request.correlationId(), data);
         } catch (DomainException ex) {
-            log.warn("Pending candidates request failed, correlationId={}, code={}",
+            log.warn("Pending candidates request failed, uuid={}, code={}",
                     request.correlationId(), ex.getCode(), ex);
             response = PendingCandidatesKafkaResponse.failure(request.correlationId(),
                     new KafkaError(ex.getCode(), ex.getMessage(), request.traceId()));
         } catch (Exception ex) {
-            log.error("Unexpected pending candidates error, correlationId={}", request.correlationId(), ex);
+            log.error("Unexpected pending candidates error, uuid={}", request.correlationId(), ex);
             response = PendingCandidatesKafkaResponse.failure(request.correlationId(),
                     new KafkaError("PENDING_CANDIDATES_UNEXPECTED_ERROR",
                             "Непредвиденная ошибка получения кандидатов", request.traceId()));
