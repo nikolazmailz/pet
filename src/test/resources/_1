@@ -20,3 +20,19 @@ https://dm.snest.fvds.ru/s/2020/p/kontrollery-peredacha-sistemnykh-parametrov-Lb
                 envelopeType
         );
     }
+
+
+
+    @Component
+    @RequiredArgsConstructor
+    public class RequestEnvelopeDeserializer {
+
+        private final ObjectMapper objectMapper;
+
+        public <T> RequestEnvelope<T> deserialize(String json, Class<T> payloadType)
+                throws JsonProcessingException {
+            JavaType envelopeType = objectMapper.getTypeFactory()
+                    .constructParametricType(RequestEnvelope.class, payloadType);
+            return objectMapper.readValue(json, envelopeType);
+        }
+    }
