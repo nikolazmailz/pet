@@ -139,3 +139,35 @@ private PendingCandidateView toView(
                     .toList()
     );
 }
+
+private RequisitionView toRequisitionView(
+        RequisitionEnrichment enrichment
+) {
+
+    if (enrichment == null) {
+        return null;
+    }
+
+    return new RequisitionView(
+            enrichment.guid(),
+            enrichment.number(),
+            enrichment.positionType(),
+
+            new StaffPositionView(
+                    enrichment.staffPositionId(),
+                    enrichment.staffPositionName()
+            ),
+
+            enrichment.structUnitName(),
+            enrichment.structUnitId(),
+
+            enrichment.path()
+                    .stream()
+                    .map(node -> new StructUnitPathView(
+                            node.id(),
+                            node.typeDesc(),
+                            node.name()
+                    ))
+                    .toList()
+    );
+}
