@@ -1,0 +1,109 @@
+    /**
+     * Фаза 1: Вначале находим id кандидатов, которые попадут на страницу
+     */
+    @Query(value = """
+            select pc.id from srhr_requisition.pending_candidates pc
+            where pc.approver_pernr = :pernr
+              and (cast(:search as text) is null or lower(pc.full_name) like '%' || lower(cast(:search as text)) || '%')
+              and (:eventCodesEmpty = true or exists (
+                  select 1 from srhr_requisition.pending_candidates_events e
+                  where e.pending_candidate_id = pc.id and e.event_code in (:eventCodes)))
+            order by pc.full_name, pc.id
+            limit :limit offset :offset
+            """, nativeQuery = true)
+    List<Integer> findPageIds(String pernr, String search,
+                              List<String> eventCodes, boolean eventCodesEmpty,
+                              int limit, int offset);
+
+
+
+    /**
+     * делаем count без limit и offset
+     */
+    @Query(value = """
+            select count(*) from srhr_requisition.pending_candidates pc
+            where pc.approver_pernr = :pernr
+              and (cast(:search as text) is null or lower(pc.full_name) like '%' || lower(cast(:search as text)) || '%')
+              and (:eventCodesEmpty = true or exists (
+                  select 1 from srhr_requisition.pending_candidates_events e
+                  where e.pending_candidate_id = pc.id and e.event_code in (:eventCodes)))
+            """, nativeQuery = true)
+    long countByFilter(String pernr, String search,
+                       List<String> eventCodes, boolean eventCodesEmpty);
+
+
+
+    // уникальные коды по отфильтрованным кандидатам
+    @Query(value = """
+            select distinct e.event_code
+            from srhr_requisition.pending_candidates_events e
+            join srhr_requisition.pending_candidates pc on pc.id = e.pending_candidate_id
+            where pc.approver_pernr = :pernr
+              and (cast(:search as text) is null or lower(pc.full_name) like '%' || lower(cast(:search as text)) || '%')
+              and (:eventCodesEmpty = true or exists (
+                  select 1 from srhr_requisition.pending_candidates_events e2
+                  where e2.pending_candidate_id = pc.id and e2.event_code in (:eventCodes)))
+            order by e.event_code
+            """, nativeQuery = true)
+    List<String> findDistinctEventCodes(String pernr, String search,
+                                        List<String> eventCodes, boolean eventCodesEmpty);
+
+
+
+
+    // Фаза 2а: кандидаты страницы (порядок сохраняем сразу в SQL)
+    @Query(value = """
+            select pc.id as "id",
+            pc.vacancy_id as "vacancyId",
+            pc.candidate_id as "candidateId",
+            pc.full_name as "fullName"
+            from srhr_requisition.pending_candidates pc
+            join unnest(:ids) with ordinality as t(id, ord) on t.id = pc.id
+            order by t.ord
+            """, nativeQuery = true)
+    List<PendingCandidateRow> findRowsByIds(Integer[] ids);
+
+    // Фаза 2б: события для этих кандидатов, уже отсортированные
+    @Query(value = """
+            select e.pending_candidate_id as "pendingCandidateId",
+            e.event_code as "eventCode",
+            e.status_date as "statusDate",
+            e.days as "days",
+            e.expiration_zone as "expirationZone"
+            from srhr_requisition.pending_candidates_events e
+            where e.pending_candidate_id in (:ids)
+            order by e.pending_candidate_id, e.status_date
+            """, nativeQuery = true)
+    List<PendingCandidateEventRow> findEventRowsByCandidateIds(List<Integer> ids);
+
+
+    @Query(value = """
+            select v.vacancy_id   as "vacancyId",
+                   r.guid          as "guid",
+                   r.number        as "number",
+                   r.position_type as "positionType",
+                   r.staff_position_id   as "staffPositionId",
+                   r.staff_position_name as "staffPositionName",
+                   r.struct_unit_id      as "structUnitId",
+                   r.struct_unit_name    as "structUnitName"
+            from srhr_requisition.vacancy v
+            join srhr_requisition.requisitions r on r.guid = v.requisition_guid
+            where v.vacancy_id = any(:vacancyIds)
+            """, nativeQuery = true)
+    List<RequisitionEnrichmentRow> findEnrichmentByVacancyIds(String[] vacancyIds);
+
+
+
+    @Query(value = """
+            select su.requisition_uuid as "requisitionGuid",
+                   su.path_id   as "id",
+                   su.type_desc as "typeDesc",
+                   su.path_name as "name"
+            from srhr_requisition.structure_unit su
+            where su.requisition_uuid in (:guids)
+            order by su.requisition_uuid, su.order_number nulls last, su.id
+            """, nativeQuery = true)
+    List<StructUnitPathRow> findPathsByRequisitionGuids(Collection<String> guids);
+
+
+                              
