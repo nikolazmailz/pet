@@ -1,0 +1,34 @@
+@Query(value = """
+        select distinct e.event_code
+        from srhr_requisition.pending_candidates_events e
+
+        join srhr_requisition.pending_candidates pc
+          on pc.id = e.pending_candidate_id
+
+        where pc.approver_pernr = :pernr
+
+          and (
+              cast(:search as text) is null
+              or pc.search_text like
+                 '%' || lower(trim(cast(:search as text))) || '%'
+          )
+
+          and (
+              :eventCodesEmpty = true
+              or exists (
+                  select 1
+                  from srhr_requisition.pending_candidates_events e2
+                  where e2.pending_candidate_id = pc.id
+                    and e2.event_code = any(:eventCodes)
+              )
+          )
+
+        order by e.event_code
+        """,
+        nativeQuery = true)
+List<String> findDistinctEventCodes(
+        @Param("pernr") String pernr,
+        @Param("search") String search,
+        @Param("eventCodes") String[] eventCodes,
+        @Param("eventCodesEmpty") boolean eventCodesEmpty
+);

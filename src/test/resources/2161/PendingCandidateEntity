@@ -1,0 +1,63 @@
+@Entity
+@Table(
+        name = "pending_candidates",
+        schema = "srhr_requisition"
+)
+@Getter
+@Setter
+@NoArgsConstructor
+public class PendingCandidateEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(name = "vacancy_id", nullable = false)
+    private String vacancyId;
+
+    @Column(name = "candidate_id", nullable = false)
+    private String candidateId;
+
+    @Column(name = "full_name")
+    private String fullName;
+
+    @Column(name = "approver_pernr", nullable = false)
+    private String approverPernr;
+
+    @Column(name = "requisition_number")
+    private String requisitionNumber;
+
+    @Column(name = "position_type")
+    private String positionType;
+
+    @Column(name = "staff_position_id")
+    private String staffPositionId;
+
+    @Column(name = "staff_position_name")
+    private String staffPositionName;
+
+    @Column(name = "struct_unit_id")
+    private String structUnitId;
+
+    @Column(name = "struct_unit_name")
+    private String structUnitName;
+
+    @Column(
+            name = "search_text",
+            insertable = false,
+            updatable = false
+    )
+    private String searchText;
+
+    @OneToMany(
+            mappedBy = "pendingCandidate",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<PendingCandidateEventEntity> events = new ArrayList<>();
+
+    public void addEvent(PendingCandidateEventEntity event) {
+        events.add(event);
+        event.setPendingCandidate(this);
+    }
+}

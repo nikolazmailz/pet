@@ -1,0 +1,7 @@
+@Modifying
+@Query(value = """
+        delete
+        from srhr_requisition.pending_candidates
+        where approver_pernr = :pernr
+        """, nativeQuery = true)
+int deleteByApproverPernr(@Param("pernr") String pernr);

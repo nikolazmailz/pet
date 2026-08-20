@@ -1,0 +1,18 @@
+package ru.ntdev.srhr.ms.requisition.entity.projection;
+
+public interface PendingCandidateSearchEnrichmentRow {
+
+    String getVacancyId();
+
+    String getRequisitionNumber();
+
+    String getPositionType();
+
+    String getStaffPositionId();
+
+    String getStaffPositionName();
+
+    String getStructUnitId();
+
+    String getStructUnitName();
+}

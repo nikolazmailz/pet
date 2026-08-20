@@ -1,0 +1,97 @@
+@Override
+@Transactional
+public void replaceForApprover(
+        String approverPernr,
+        PendingCandidatesResponse response
+) {
+
+    pendingCandidateEntityRepository.deleteByApproverPernr(approverPernr);
+
+    List<PendingCandidatesResponse.Candidate> candidates =
+            response != null
+                    && response.getData() != null
+                    && response.getData().getCandidates() != null
+                    ? response.getData().getCandidates()
+                    : List.of();
+
+    if (candidates.isEmpty()) {
+        return;
+    }
+
+    Set<String> vacancyIds = candidates.stream()
+            .map(PendingCandidatesResponse.Candidate::getVacancyId)
+            .filter(Objects::nonNull)
+            .map(String::valueOf)
+            .collect(Collectors.toSet());
+
+    Map<String, PendingCandidateSearchEnrichment> enrichmentByVacancyId =
+            requisitionRepository
+                    .findPendingCandidatesEnrichment(
+                            vacancyIds.toArray(String[]::new)
+                    )
+                    .stream()
+                    .collect(Collectors.toMap(
+                            PendingCandidateSearchEnrichmentRow::getVacancyId,
+                            PendingCandidateSearchEnrichment::from
+                    ));
+
+    List<PendingCandidateEntity> entities =
+            PendingCandidateEntity.toEntities(
+                    approverPernr,
+                    response,
+                    enrichmentByVacancyId
+            );
+
+    pendingCandidateEntityRepository.saveAll(entities);
+}
+
+
+public static List<PendingCandidateEntity> toEntities(
+        String approverPernr,
+        PendingCandidatesResponse response,
+        Map<String, PendingCandidateSearchEnrichment> enrichmentByVacancyId
+) {
+
+    if (response == null
+            || response.getData() == null
+            || response.getData().getCandidates() == null) {
+        return List.of();
+    }
+
+    return response.getData().getCandidates().stream()
+            .map(candidate -> {
+
+                String vacancyId = String.valueOf(candidate.getVacancyId());
+
+                PendingCandidateSearchEnrichment enrichment =
+                        enrichmentByVacancyId.get(vacancyId);
+
+                PendingCandidateEntity entity = new PendingCandidateEntity();
+
+                entity.setApproverPernr(approverPernr);
+                entity.setVacancyId(vacancyId);
+                entity.setCandidateId(String.valueOf(candidate.getCandidateId()));
+                entity.setFullName(candidate.getFullName());
+
+                if (enrichment != null) {
+                    entity.setRequisitionNumber(enrichment.requisitionNumber());
+                    entity.setPositionType(enrichment.positionType());
+                    entity.setStaffPositionId(enrichment.staffPositionId());
+                    entity.setStaffPositionName(enrichment.staffPositionName());
+                    entity.setStructUnitId(enrichment.structUnitId());
+                    entity.setStructUnitName(enrichment.structUnitName());
+                }
+
+                if (candidate.getEvents() != null) {
+                    candidate.getEvents().forEach(event -> {
+                        PendingCandidateEventEntity eventEntity =
+                                PendingCandidateEventEntity.from(event);
+
+                        entity.addEvent(eventEntity);
+                    });
+                }
+
+                return entity;
+            })
+            .toList();
+}

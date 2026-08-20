@@ -1,0 +1,22 @@
+public record PendingCandidateSearchEnrichment(
+        String requisitionNumber,
+        String positionType,
+        String staffPositionId,
+        String staffPositionName,
+        String structUnitId,
+        String structUnitName
+) {
+
+    public static PendingCandidateSearchEnrichment from(
+            PendingCandidateSearchEnrichmentRow row
+    ) {
+        return new PendingCandidateSearchEnrichment(
+                row.getRequisitionNumber(),
+                row.getPositionType(),
+                row.getStaffPositionId(),
+                row.getStaffPositionName(),
+                row.getStructUnitId(),
+                row.getStructUnitName()
+        );
+    }
+}

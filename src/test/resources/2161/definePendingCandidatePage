@@ -1,0 +1,117 @@
+private PendingCandidatesApiInnerResponse definePendingCandidatePage(
+        String pernr,
+        PendingCandidatesApiRequest request
+) {
+
+    String search = normalizeSearch(
+            request.filter() != null
+                    ? request.filter().search()
+                    : null
+    );
+
+    String[] eventCodes =
+            request.filter() != null
+                    && request.filter().eventCodeList() != null
+                    ? request.filter()
+                            .eventCodeList()
+                            .stream()
+                            .filter(Objects::nonNull)
+                            .filter(code -> !code.isBlank())
+                            .distinct()
+                            .toArray(String[]::new)
+                    : new String[0];
+
+    boolean eventCodesEmpty = eventCodes.length == 0;
+
+    int offset = (request.page() - 1) * request.pageSize();
+
+    List<Integer> candidateIds =
+            pendingCandidateEntityRepository.findPageIds(
+                    pernr,
+                    search,
+                    eventCodes,
+                    eventCodesEmpty,
+                    request.pageSize(),
+                    offset
+            );
+
+    long count =
+            pendingCandidateEntityRepository.countByFilter(
+                    pernr,
+                    search,
+                    eventCodes,
+                    eventCodesEmpty
+            );
+
+    List<String> allEventCodes =
+            pendingCandidateEntityRepository.findDistinctEventCodes(
+                    pernr,
+                    search,
+                    eventCodes,
+                    eventCodesEmpty
+            );
+
+    if (candidateIds.isEmpty()) {
+        return new PendingCandidatesApiInnerResponse(
+                new PendingCandidatesPage(
+                        request.page(),
+                        request.pageSize(),
+                        count,
+                        allEventCodes.stream()
+                                .map(EventCodeView::new)
+                                .toList(),
+                        List.of()
+                )
+        );
+    }
+
+    List<PendingCandidateRow> candidates =
+            pendingCandidateEntityRepository.findRowsByIds(
+                    candidateIds.toArray(Integer[]::new)
+            );
+
+    Map<Integer, List<PendingCandidateEventRow>> eventsByCandidateId =
+            pendingCandidateEntityRepository
+                    .findEventRowsByCandidateIds(candidateIds)
+                    .stream()
+                    .collect(Collectors.groupingBy(
+                            PendingCandidateEventRow::getPendingCandidateId,
+                            LinkedHashMap::new,
+                            Collectors.toList()
+                    ));
+
+    Map<String, RequisitionEnrichment> enrichmentByVacancyId =
+            loadEnrichment(candidates);
+
+    List<PendingCandidateView> candidateViews =
+            candidates.stream()
+                    .map(candidate -> toView(
+                            candidate,
+                            enrichmentByVacancyId.get(candidate.getVacancyId()),
+                            eventsByCandidateId.getOrDefault(
+                                    candidate.getId(),
+                                    List.of()
+                            )
+                    ))
+                    .toList();
+
+    return new PendingCandidatesApiInnerResponse(
+            new PendingCandidatesPage(
+                    request.page(),
+                    request.pageSize(),
+                    count,
+                    allEventCodes.stream()
+                            .map(EventCodeView::new)
+                            .toList(),
+                    candidateViews
+            )
+    );
+}
+
+private String normalizeSearch(String search) {
+    if (search == null || search.isBlank()) {
+        return null;
+    }
+
+    return search.trim();
+}

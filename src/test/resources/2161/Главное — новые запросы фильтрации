@@ -1,0 +1,35 @@
+@Query(value = """
+        select pc.id
+        from srhr_requisition.pending_candidates pc
+        where pc.approver_pernr = :pernr
+
+          and (
+              cast(:search as text) is null
+              or pc.search_text like
+                 '%' || lower(trim(cast(:search as text))) || '%'
+          )
+
+          and (
+              :eventCodesEmpty = true
+              or exists (
+                  select 1
+                  from srhr_requisition.pending_candidates_events e
+                  where e.pending_candidate_id = pc.id
+                    and e.event_code = any(:eventCodes)
+              )
+          )
+
+        order by pc.full_name, pc.id
+
+        limit :limit
+        offset :offset
+        """,
+        nativeQuery = true)
+List<Integer> findPageIds(
+        @Param("pernr") String pernr,
+        @Param("search") String search,
+        @Param("eventCodes") String[] eventCodes,
+        @Param("eventCodesEmpty") boolean eventCodesEmpty,
+        @Param("limit") int limit,
+        @Param("offset") int offset
+);
