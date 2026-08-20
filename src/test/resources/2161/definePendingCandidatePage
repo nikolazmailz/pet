@@ -115,3 +115,27 @@ private String normalizeSearch(String search) {
 
     return search.trim();
 }
+
+
+private PendingCandidateView toView(
+        PendingCandidateRow candidate,
+        RequisitionEnrichment enrichment,
+        List<PendingCandidateEventRow> events
+) {
+
+    return new PendingCandidateView(
+            candidate.getCandidateId(),
+            candidate.getVacancyId(),
+            candidate.getFullName(),
+
+            toRequisitionView(enrichment),
+
+            events.stream()
+                    .map(event -> new PendingCandidateEventView(
+                            event.getEventCode(),
+                            event.getDays(),
+                            event.getExpirationZone()
+                    ))
+                    .toList()
+    );
+}
