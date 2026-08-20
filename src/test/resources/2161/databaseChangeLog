@@ -1,0 +1,52 @@
+databaseChangeLog:
+
+  - changeSet:
+      id: 2026-08-20-add-pending-candidates-search-fields
+      author: n-pushkaryov
+
+      changes:
+
+        - addColumn:
+            schemaName: srhr_requisition
+            tableName: pending_candidates
+            columns:
+              - column:
+                  name: requisition_number
+                  type: varchar(255)
+
+              - column:
+                  name: position_type
+                  type: varchar(255)
+
+              - column:
+                  name: staff_position_id
+                  type: varchar(255)
+
+              - column:
+                  name: staff_position_name
+                  type: varchar(255)
+
+              - column:
+                  name: struct_unit_id
+                  type: varchar(255)
+
+              - column:
+                  name: struct_unit_name
+                  type: varchar(255)
+
+        - sql:
+            splitStatements: false
+            sql: |
+              alter table srhr_requisition.pending_candidates
+              add column search_text text
+              generated always as (
+                  lower(
+                      coalesce(full_name, '') || ' ' ||
+                      coalesce(requisition_number, '') || ' ' ||
+                      coalesce(position_type, '') || ' ' ||
+                      coalesce(staff_position_id, '') || ' ' ||
+                      coalesce(staff_position_name, '') || ' ' ||
+                      coalesce(struct_unit_id, '') || ' ' ||
+                      coalesce(struct_unit_name, '')
+                  )
+              ) stored;
