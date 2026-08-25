@@ -1,0 +1,28 @@
+    public static HttpHeaders sap(SapSystemParamsDto p) {
+        HttpHeaders h = new HttpHeaders();
+        h.setContentType(MediaType.APPLICATION_JSON);
+        h.set("pernr", p.getTabNumber());
+        h.set("sessionId", p.getSessionId());
+        h.set("role", p.getRole());
+        h.set("X-user-login", p.getAdLogin());
+        h.set("Roles", p.getRolesHeader());
+        h.set("logId", p.getTraceId());
+        h.set("realm", p.getRealm());
+        return h;
+    }
+
+
+   Header headerPernr = new BasicHeader("pernr", systemParams.getTabNumber());
+        Header headerSessionId = new BasicHeader("sessionId", systemParams.getSessionId());
+        Header headerRole = new BasicHeader("role", systemParams.getRole());
+        Header headerLogin = new BasicHeader("X-user-login", systemParams.getAdLogin());
+        Header headerRoles = new BasicHeader("Roles", systemParams.getRolesHeader());
+        Header traceHeader = new BasicHeader("logId", systemParams.getTraceId());
+        Header realmHeader = new BasicHeader("realm", systemParams.getRealm());
+        List<Header> headers = new ArrayList<>(Arrays.asList(headerPernr, headerSessionId, headerRole, headerLogin, traceHeader, headerRoles, realmHeader));
+
+
+        HttpClient client = HttpClients
+                .custom()
+                .setDefaultHeaders(headers)
+                .build();
