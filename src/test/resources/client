@@ -1,6 +1,11 @@
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-mod-commons/pulls/2618186
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-consent-personal-information/pulls/2618188
 
+`srhr-ms-consent-personal-information`
+FILESTORAGE_DTO_STORAGE=true
+LOGGING_LEVEL_ROOT=warn
+LOGGING_LEVEL_KAFKA_METRICS=error
+
 public static HttpHeaders sap(SapSystemParamsDto p) {
         HttpHeaders h = new HttpHeaders();
         h.setContentType(MediaType.APPLICATION_JSON);
