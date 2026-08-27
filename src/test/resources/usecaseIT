@@ -10,4 +10,28 @@
       "Content-Type": "application/json"
     }
   }
-}
+
+
+
+
+
+
+
+            ResponseEntity<CPIUserinfoDto> dtoResponseEntity = easupIntegrationService.getCPIUserinfo(
+                    preparedRequest.systemParams(), cpiRequestDto.getExpand(), cpiRequestDto.getEmployeeId());
+
+            out = (CPIUserinfoDto) setDtoIfResponseEntityNotNull(
+                    dtoResponseEntity, out, preparedRequest.systemParams());
+
+ if (dtoResponseEntity != null) {
+            dto = dtoResponseEntity.getBody();
+            dto.setResponseCode(dtoResponseEntity.getStatusCode().toString());
+            entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.REPLY);
+        }
+
+    @Override
+    public ResponseEntity<CPIUserinfoDto> getCPIUserinfo(SapSystemParamsDto systemParams, String expand, String employeeId) throws Exception {
+        String uri = createUri(integrationUrlCPIUserInfoRequest, systemParams, expand, employeeId);
+        HttpEntity<Void> request = new HttpEntity<>(ClientHttpHeaders.sap(systemParams));
+        return loggingRestTemplate.exchange(uri, HttpMethod.GET, request, CPIUserinfoDto.class);
+    }
