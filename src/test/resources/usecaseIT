@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/files"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "filestorage/put-file-response.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
