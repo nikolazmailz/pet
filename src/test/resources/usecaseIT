@@ -35,3 +35,22 @@
         HttpEntity<Void> request = new HttpEntity<>(ClientHttpHeaders.sap(systemParams));
         return loggingRestTemplate.exchange(uri, HttpMethod.GET, request, CPIUserinfoDto.class);
     }
+
+
+
+
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/cpi/userinfo?&exp=%s&empId=%s"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "userinfo/get-cpi-userinfo-response.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
+
+private static final String integrationUrlCPIUserInfoRequest = "/cpi/userinfo?&exp=%s&empId=%s";
