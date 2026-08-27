@@ -54,3 +54,26 @@
 }
 
 private static final String integrationUrlCPIUserInfoRequest = "/cpi/userinfo?&exp=%s&empId=%s";
+
+
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/cpi/userinfo",
+    "queryParameters": {
+      "exp": {
+        "matches": ".*"
+      },
+      "empId": {
+        "matches": ".*"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "userinfo/get-cpi-userinfo-response.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
