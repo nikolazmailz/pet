@@ -1,0 +1,4 @@
+ @Query(value = "select * from srhr_requisition.requisitions p where p.guid in :guids", nativeQuery = true)
+    List<RequisitionEntity> findAllRequisitionEntitiesByGuids(
+            @Param("guids") List<String> guids
+    );
