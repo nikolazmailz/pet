@@ -1,115 +1,83 @@
 package ru.ntdev.srhr.ms.paystub.service.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.ntdev.srhr.common.context.RequestContext;
-import ru.ntdev.srhr.common.context.RequestContextHolder;
 import ru.ntdev.srhr.common.dto.SapSystemParamsDto;
-import ru.ntdev.srhr.common.dto.api.response.filestorage.MessageGetByIdDto;
 import ru.ntdev.srhr.common.filestorage.FileStorage;
-import ru.ntdev.srhr.common.reqreply.dto.RequestEnvelope;
-import ru.ntdev.srhr.common.reqreply.exception.ProcessingException;
+import ru.ntdev.srhr.common.reqreply.dto.ResponseEnvelope;
 import ru.ntdev.srhr.common.reqreply.reply.PreparedRequest;
-import ru.ntdev.srhr.common.reqreply.reply.RequestEnvelopeDeserializer;
-import ru.ntdev.srhr.common.util.LogUtil;
+import ru.ntdev.srhr.common.reqreply.reply.PreparedResponse;
 import ru.ntdev.srhr.ms.paystub.entity.PaystubRequestEntity;
-import ru.ntdev.srhr.ms.paystub.application.exception.PreparationException;
 import ru.ntdev.srhr.ms.paystub.service.EntityService;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class PreparedRequestService {
-
-    public static final String STATUS_SENT = "SENT";
+public class ResponseProcessingService {
+    public static final String STATUS_REPLY = "REPLY";
+    public static final String STATUS_ERROR_REPLY = "ERROR_REPLY";
+    private final ObjectMapper mapper;
     private final FileStorage fileStorage;
-    private final EnrichEntityService enrichEntityService;
-    private final RequestEnvelopeDeserializer requestEnvelopeDeserializer;
     private final EntityService entityService;
+    @Value("${spring.kafka.producer.max-inner-message-size-kb}")
+    private final int maxInnerMessageSizeKb;
 
-    @Value("${spring.kafka.topic.name.to-easup}")
-    String kafkaTopicNameToEasup;
-
-    public PreparedRequest<JsonNode, ?> prepare(String originalMessage) throws Exception {
-        long startedAt = System.currentTimeMillis();
-        RequestEnvelope<JsonNode> requestEnvelope = requestEnvelopeDeserializer.deserialize(originalMessage, JsonNode.class);
-        SapSystemParamsDto systemParamsDto = null;
-        PaystubRequestEntity paystubRequestEntity = null;
-        try {
-            RequestEnvelope<JsonNode> restored = restoreFromFileStorageIfNeeded(requestEnvelope);
-            systemParamsDto = createSystemParams(restored);
-
-            RequestContextHolder.set(
-                    new RequestContext(
-                            systemParamsDto.getAdLogin(),
-                            systemParamsDto.getSessionId(),
-                            systemParamsDto.getChannel()
-                    )
-            );
-
-            logIncomingMessage(systemParamsDto);
-            paystubRequestEntity = entityService.saveAndReturnRequest(systemParamsDto.getUuid(), null, systemParamsDto.getSessionId(), originalMessage, null, STATUS_SENT);
-            enrichEntityService.enrichRoles(systemParamsDto, paystubRequestEntity);
-            enrichEntityService.enrichTabNumber(systemParamsDto, paystubRequestEntity);
-            return new PreparedRequest<>(restored, systemParamsDto, paystubRequestEntity, startedAt);
-        } catch (Exception e) {
-            String code = e instanceof ProcessingException pe ? pe.getCode() : "500";
-            throw new PreparationException(code, e.getMessage(), e, paystubRequestEntity, systemParamsDto, startedAt);
-        }
+    public String success(PreparedRequest<?, ?> prepared, PreparedResponse<?, ?> preparedResponse) throws Exception {
+        // todo статус меняется в EnrichResponseService, может перенести сюда?
+//        entityService.updateRequestStatus(prepared.requestEnvelope().getUuid(), STATUS_REPLY);
+        ResponseEnvelope<?> response = ResponseEnvelope.success(
+                preparedResponse.systemParams(),
+                preparedResponse.payload()
+        );
+        return finish(preparedResponse.start(), preparedResponse.systemParams(), response, (PaystubRequestEntity) preparedResponse.requestEntity(), preparedResponse.code());
     }
 
-    private RequestEnvelope<JsonNode> restoreFromFileStorageIfNeeded(
-            RequestEnvelope<JsonNode> envelope
-    ) throws Exception {
+    public String error(SapSystemParamsDto systemParams, PaystubRequestEntity requestEntity, long startedAt, String code, String message) throws Exception {
+        if (systemParams == null) {
+            systemParams = new SapSystemParamsDto();
+            systemParams.setUuid("unknown");
+            systemParams.setRequestType("unknown");
+        }
+        if (requestEntity != null && systemParams.getUuid() != null)
+            entityService.updateRequestStatus(systemParams.getUuid(), STATUS_ERROR_REPLY);
 
-        if (envelope.getFileUuid() == null || envelope.getFileUuid().isBlank()) {
-            return envelope;
+        ResponseEnvelope<Void> response = ResponseEnvelope.error(systemParams, code, message);
+        return finish(startedAt, systemParams, response, requestEntity, code);
+    }
+
+    private String finish(Long start, SapSystemParamsDto systemParams, ResponseEnvelope<?> response, PaystubRequestEntity requestEntity, String code) throws Exception {
+        long processingTime = System.currentTimeMillis() - start;
+        String fullMessage = mapper.writeValueAsString(response);
+
+        if (requestEntity != null) {
+            entityService.saveResponse(systemParams.getUuid(), requestEntity, fullMessage, processingTime, code);
         }
 
-        String storedMessage = getOutStoredMessage(
-                envelope.getAdLogin(),
-                envelope.getSessionId(),
-                envelope.getTraceId(),
-                envelope.getFileUuid()
-        );
+        if ("200".equals(code)) {
+            entityService.deleteResponseByUid(systemParams.getUuid());
+            entityService.deleteRequestByUid(systemParams.getUuid());
+        }
 
-        return requestEnvelopeDeserializer.deserialize(storedMessage, JsonNode.class);
+        return checkMessageSize(systemParams, response, fullMessage);
     }
 
-    private SapSystemParamsDto createSystemParams(RequestEnvelope<?> r) {
-        SapSystemParamsDto systemParams = new SapSystemParamsDto();
-        systemParams.setRequestType(r.getRequestType());
-        systemParams.setAdLogin(r.getAdLogin());
-        systemParams.setChannel(r.getChannel());
-        systemParams.setSessionId(r.getSessionId());
-        systemParams.setTraceId(r.getTraceId());
-        systemParams.setUuid(r.getUuid());
-        systemParams.setRealm(r.getRealm());
-        return systemParams;
-    }
-
-    private void logIncomingMessage(
-            SapSystemParamsDto systemParams
-    ) {
-        LogUtil.logKafkaMessageGot(
-                systemParams.getAdLogin(),
-                systemParams.getSessionId(),
-                systemParams.getRequestType(),
-                kafkaTopicNameToEasup,
-                systemParams.getTraceId()
-        );
-    }
-
-    private String getOutStoredMessage(String adlogin, String sessionId, String traceId, String id) {
-        MessageGetByIdDto messageGetByIdDto = fileStorage.getMessageById(adlogin, sessionId, traceId, id);
-        return messageGetByIdDto.getMessageContent();
+    private String checkMessageSize(SapSystemParamsDto params, ResponseEnvelope<?> response, String message) throws Exception {
+        int messageSizeKb = ((2 * message.length()) + 32) / 1000;
+        if (messageSizeKb < maxInnerMessageSizeKb) return message;
+        String messageUuid = fileStorage.putMessageToDb(
+                params.getAdLogin(),
+                params.getSessionId(),
+                params.getTraceId(),
+                params.getAdLogin() + "_" + params.getRequestType(),
+                message, params.getUuid()
+        ).getMessageUID();
+        return mapper.writeValueAsString(response.asStoredReference(messageUuid));
     }
 }
-
 
 package ru.ntdev.srhr.ms.paystub;
 
@@ -141,6 +109,7 @@ import ru.ntdev.srhr.ms.paystub.kafka.task.ConsumerCreatorTask;
         "app.request-reply.enabled=true",
         "spring.kafka.ssl.enabled=false",
         "spring.kafka.topic.name.to-easup=srhr.paystub.to.easup",
+        "spring.kafka.producer.max-inner-message-size-kb=10000",
 })
 @Testcontainers
 public abstract class BaseIntegrationTest {
@@ -202,3 +171,313 @@ public abstract class BaseIntegrationTest {
         ).createConsumer();
     }
 }
+
+
+"C:\Users\NPushkaryov\AppData\Local\Programs\Eclipse Adoptium\jdk-17.0.14.7-hotspot\bin\java.exe" -Dmaven.multiModuleProjectDirectory=C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub -Djansi.passthrough=true "-Dmaven.home=C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven3" "-Dclassworlds.conf=C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven3\bin\m2.conf" "-Dmaven.ext.class.path=C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven-event-listener.jar" "-javaagent:C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\lib\idea_rt.jar=50535:C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\bin" -Dfile.encoding=UTF-8 -classpath "C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven3\boot\plexus-classworlds-2.7.0.jar;C:\Program Files\JetBrains\IntelliJ IDEA Community 2024.1.3\plugins\maven\lib\maven3\boot\plexus-classworlds.license" org.codehaus.classworlds.Launcher -Didea.version=2024.1.3 install
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------< ru.ntdev.srhr:srhr-ms-paystub >--------------------
+[INFO] Building srhr-ms-paystub 8.2.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- jacoco:0.8.7:prepare-agent (prepare-agent) @ srhr-ms-paystub ---
+[INFO] argLine set to -javaagent:C:\\Users\\NPushkaryov\\.m2\\repository\\org\\jacoco\\org.jacoco.agent\\0.8.7\\org.jacoco.agent-0.8.7-runtime.jar=destfile=C:\\Users\\NPushkaryov\\IdeaProjects\\srhr-backend\\srhr-ms-paystub\\target\\jacoco.exec
+[INFO] 
+[INFO] --- spring-boot:3.2.0:build-info (default) @ srhr-ms-paystub ---
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ srhr-ms-paystub ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 9 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.9.0:compile (default-compile) @ srhr-ms-paystub ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 49 source files to C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub\target\classes
+[INFO] /C:/Users/NPushkaryov/IdeaProjects/srhr-backend/srhr-ms-paystub/src/main/java/ru/ntdev/srhr/ms/paystub/config/SecurityConfig.java: C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub\src\main\java\ru\ntdev\srhr\ms\paystub\config\SecurityConfig.java uses or overrides a deprecated API that is marked for removal.
+[INFO] /C:/Users/NPushkaryov/IdeaProjects/srhr-backend/srhr-ms-paystub/src/main/java/ru/ntdev/srhr/ms/paystub/config/SecurityConfig.java: Recompile with -Xlint:removal for details.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ srhr-ms-paystub ---
+[INFO] Copying 2 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.9.0:testCompile (default-testCompile) @ srhr-ms-paystub ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 3 source files to C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub\target\test-classes
+[INFO] 
+[INFO] --- surefire:2.22.2:test (default-test) @ srhr-ms-paystub ---
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+Standard Commons Logging discovery in action with spring-jcl: please remove commons-logging.jar from classpath in order to avoid potential conflicts
+[INFO] Running ru.ntdev.srhr.ms.paystub.e2e.PaystubKafkaIntegrationTest
+17:21:16.972 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [ru.ntdev.srhr.ms.paystub.e2e.PaystubKafkaIntegrationTest]: PaystubKafkaIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+17:21:17.213 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+17:21:17.225 [main] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+17:21:18.252 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+17:21:18.787 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
+17:21:18.789 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+17:21:18.811 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 27.2.0
+  API Version: 1.47
+  Operating System: Docker Desktop
+  Total Memory: 15649 MB
+17:21:18.864 [main] INFO tc.testcontainers/ryuk:0.5.1 -- Creating container for image: testcontainers/ryuk:0.5.1
+17:21:19.316 [main] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/
+17:21:19.467 [main] INFO tc.testcontainers/ryuk:0.5.1 -- Container testcontainers/ryuk:0.5.1 is starting: 79743ebdbd3cb2f4b32ada96d2c89b47c19e9d8d108edb77198d2865341fd0a8
+17:21:20.068 [main] INFO tc.testcontainers/ryuk:0.5.1 -- Container testcontainers/ryuk:0.5.1 started in PT1.2041077S
+17:21:20.082 [main] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+17:21:20.083 [main] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+17:21:20.084 [main] INFO org.testcontainers.DockerClientFactory -- ?? Docker server version should be at least 1.6.0
+17:21:20.085 [main] INFO tc.postgres:16-alpine -- Creating container for image: postgres:16-alpine
+17:21:20.141 [main] INFO tc.postgres:16-alpine -- Container postgres:16-alpine is starting: 4d9986d4162360a3866b61dbb6fa834be65d319236c140cddbb871bd24dc5b6b
+17:21:21.511 [main] INFO tc.postgres:16-alpine -- Container postgres:16-alpine started in PT1.426111S
+17:21:21.511 [main] INFO tc.postgres:16-alpine -- Container is started (JDBC URL: jdbc:postgresql://localhost:50589/test?loggerLevel=OFF)
+17:21:21.528 [main] INFO org.testcontainers.ext.ScriptUtils -- Executing database script from db/init-schema.sql
+17:21:21.777 [main] INFO org.testcontainers.ext.ScriptUtils -- Executed database script from db/init-schema.sql in 249 ms.
+17:21:21.999 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration ru.ntdev.srhr.ms.paystub.SrhrMsPaystubApplication for test class ru.ntdev.srhr.ms.paystub.e2e.PaystubKafkaIntegrationTest
+17:21:22.251 [main] INFO tc.confluentinc/cp-kafka:7.5.0 -- Creating container for image: confluentinc/cp-kafka:7.5.0
+17:21:22.325 [main] INFO tc.confluentinc/cp-kafka:7.5.0 -- Container confluentinc/cp-kafka:7.5.0 is starting: 369be5f41ede8fe05d5997e7bec8474cdd38a5dbe6df2e73784b1bd8959a1ad9
+17:21:27.137 [main] INFO tc.confluentinc/cp-kafka:7.5.0 -- Container confluentinc/cp-kafka:7.5.0 started in PT4.8859908S
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.0)
+
+2026-09-04T17:21:28.071+03:00  INFO 13408 --- [srhr-ms-paystub] [           main] r.n.s.m.p.e.PaystubKafkaIntegrationTest  : Starting PaystubKafkaIntegrationTest using Java 17.0.14 with PID 13408 (started by NPushkaryov in C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub)
+2026-09-04T17:21:28.073+03:00  INFO 13408 --- [srhr-ms-paystub] [           main] r.n.s.m.p.e.PaystubKafkaIntegrationTest  : The following 1 profile is active: "test"
+2026-09-04T17:21:43.806+03:00  WARN 13408 --- [srhr-ms-paystub] [           main] r.ntdev.srhr.common.redis.RedisAdapter   : Ошибка подключения к Redis: [Unable to connect to localhost/<unresolved>:12000]
+2026-09-04T17:21:43.807+03:00 ERROR 13408 --- [srhr-ms-paystub] [           main] r.ntdev.srhr.common.redis.RedisAdapter   : Redis не доступен
+2026-09-04T17:21:43.864+03:00  INFO 13408 --- [srhr-ms-paystub] [           main] r.n.s.m.p.kafka.config.KafkaConfig       : Будстрап сервер конфиг: [PLAINTEXT://localhost:50595]
+2026-09-04T17:21:44.065+03:00  WARN 13408 --- [srhr-ms-paystub] [           main] o.s.w.c.s.GenericWebApplicationContext   : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'consumerAssignmentTask' defined in file [C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub\target\classes\ru\ntdev\srhr\ms\paystub\kafka\task\ConsumerAssignmentTask.class]: Unsatisfied dependency expressed through constructor parameter 2: Error creating bean with name 'messageProcessingService' defined in file [C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub\target\classes\ru\ntdev\srhr\ms\paystub\service\impl\MessageProcessingService.class]: Unsatisfied dependency expressed through constructor parameter 1: Error creating bean with name 'responseProcessingService' defined in file [C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub\target\classes\ru\ntdev\srhr\ms\paystub\service\impl\ResponseProcessingService.class]: Unsatisfied dependency expressed through constructor parameter 3: No qualifying bean of type 'int' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+2026-09-04T17:21:44.214+03:00 ERROR 13408 --- [srhr-ms-paystub] [           main] o.s.b.d.LoggingFailureAnalysisReporter   : 
+
+***************************
+APPLICATION FAILED TO START
+***************************
+
+Description:
+
+Parameter 3 of constructor in ru.ntdev.srhr.ms.paystub.service.impl.ResponseProcessingService required a bean of type 'int' that could not be found.
+
+
+Action:
+
+Consider defining a bean of type 'int' in your configuration.
+
+
+
+
+============================
+CONDITIONS EVALUATION REPORT
+============================
+
+
+Positive matches:
+-----------------
+
+    None
+
+
+Negative matches:
+-----------------
+
+    None
+
+
+Exclusions:
+-----------
+
+    None
+
+
+Unconditional classes:
+----------------------
+
+    None
+
+
+
+2026-09-04T17:21:44.238+03:00 ERROR 13408 --- [srhr-ms-paystub] [           main] o.s.test.context.TestContextManager      : Caught exception while allowing TestExecutionListener [org.springframework.test.context.web.ServletTestExecutionListener] to prepare test instance [ru.ntdev.srhr.ms.paystub.e2e.PaystubKafkaIntegrationTest@48f1fcf7]
+
+java.lang.IllegalStateException: Failed to load ApplicationContext for [WebMergedContextConfiguration@1b37def1 testClass = ru.ntdev.srhr.ms.paystub.e2e.PaystubKafkaIntegrationTest, locations = [], classes = [ru.ntdev.srhr.ms.paystub.SrhrMsPaystubApplication], contextInitializerClasses = [], activeProfiles = ["test"], propertySourceDescriptors = [], propertySourceProperties = ["app.request-reply.enabled=true", "spring.kafka.ssl.enabled=false", "spring.kafka.topic.name.to-easup=srhr.paystub.to.easup", "spring.kafka.producer.max-inner-message-size-kb=10000", "org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true"], contextCustomizers = [org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@3c017078, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@7bb004b8, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@588cd519, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@0, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@4349754, org.springframework.test.context.support.DynamicPropertiesContextCustomizer@a4e80369, org.springframework.boot.testcontainers.service.connection.ServiceConnectionContextCustomizer@8b5d0952, org.springframework.boot.test.context.SpringBootTestAnnotation@1c948ab3], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:180) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.support.DefaultTestContext.getApplicationContext(DefaultTestContext.java:130) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.web.ServletTestExecutionListener.setUpRequestContextIfNecessary(ServletTestExecutionListener.java:191) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.web.ServletTestExecutionListener.prepareTestInstance(ServletTestExecutionListener.java:130) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.TestContextManager.prepareTestInstance(TestContextManager.java:247) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.junit.jupiter.SpringExtension.postProcessTestInstance(SpringExtension.java:163) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$10(ClassBasedTestDescriptor.java:378) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.executeAndMaskThrowable(ClassBasedTestDescriptor.java:383) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$invokeTestInstancePostProcessors$11(ClassBasedTestDescriptor.java:378) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline$2$1.accept(ReferencePipeline.java:179) ~[na:na]
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1625) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499) ~[na:na]
+	at java.base/java.util.stream.StreamSpliterators$WrappingSpliterator.forEachRemaining(StreamSpliterators.java:310) ~[na:na]
+	at java.base/java.util.stream.Streams$ConcatSpliterator.forEachRemaining(Streams.java:735) ~[na:na]
+	at java.base/java.util.stream.Streams$ConcatSpliterator.forEachRemaining(Streams.java:734) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:762) ~[na:na]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.invokeTestInstancePostProcessors(ClassBasedTestDescriptor.java:377) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$instantiateAndPostProcessTestInstance$6(ClassBasedTestDescriptor.java:290) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.instantiateAndPostProcessTestInstance(ClassBasedTestDescriptor.java:289) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$4(ClassBasedTestDescriptor.java:279) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at java.base/java.util.Optional.orElseGet(Optional.java:364) ~[na:na]
+	at org.junit.jupiter.engine.descriptor.ClassBasedTestDescriptor.lambda$testInstancesProvider$5(ClassBasedTestDescriptor.java:278) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.execution.TestInstancesProvider.getTestInstances(TestInstancesProvider.java:31) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$prepare$0(TestMethodTestDescriptor.java:106) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:105) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.prepare(TestMethodTestDescriptor.java:69) ~[junit-jupiter-engine-5.10.1.jar:5.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$prepare$2(NodeTestTask.java:123) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.prepare(NodeTestTask.java:123) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:90) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511) ~[na:na]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:41) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$8(NodeTestTask.java:141) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:137) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$9(NodeTestTask.java:139) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:73) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:138) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:95) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:35) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:57) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:54) ~[junit-platform-engine-1.10.1.jar:1.10.1]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:198) ~[junit-platform-launcher-1.10.1.jar:1.10.1]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:169) ~[junit-platform-launcher-1.10.1.jar:1.10.1]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:93) ~[junit-platform-launcher-1.10.1.jar:1.10.1]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:58) ~[junit-platform-launcher-1.10.1.jar:1.10.1]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:141) ~[junit-platform-launcher-1.10.1.jar:1.10.1]
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:57) ~[junit-platform-launcher-1.10.1.jar:1.10.1]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:103) ~[junit-platform-launcher-1.10.1.jar:1.10.1]
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:85) ~[junit-platform-launcher-1.10.1.jar:1.10.1]
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:47) ~[junit-platform-launcher-1.10.1.jar:1.10.1]
+	at org.junit.platform.launcher.core.SessionPerRequestLauncher.execute(SessionPerRequestLauncher.java:63) ~[junit-platform-launcher-1.10.1.jar:1.10.1]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:150) ~[surefire-junit-platform-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:116) ~[surefire-junit-platform-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.invokeProviderInSameClassLoader(ForkedBooter.java:384) ~[surefire-booter-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:345) ~[surefire-booter-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:126) ~[surefire-booter-2.22.2.jar:2.22.2]
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:418) ~[surefire-booter-2.22.2.jar:2.22.2]
+Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'consumerAssignmentTask' defined in file [C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub\target\classes\ru\ntdev\srhr\ms\paystub\kafka\task\ConsumerAssignmentTask.class]: Unsatisfied dependency expressed through constructor parameter 2: Error creating bean with name 'messageProcessingService' defined in file [C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub\target\classes\ru\ntdev\srhr\ms\paystub\service\impl\MessageProcessingService.class]: Unsatisfied dependency expressed through constructor parameter 1: Error creating bean with name 'responseProcessingService' defined in file [C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub\target\classes\ru\ntdev\srhr\ms\paystub\service\impl\ResponseProcessingService.class]: Unsatisfied dependency expressed through constructor parameter 3: No qualifying bean of type 'int' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:802) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor(ConstructorResolver.java:241) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireConstructor(AbstractAutowireCapableBeanFactory.java:1356) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1193) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:563) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:523) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:325) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:323) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:973) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:946) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:616) ~[spring-context-6.1.1.jar:6.1.1]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:753) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:455) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:323) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.test.context.SpringBootContextLoader.lambda$loadContext$3(SpringBootContextLoader.java:137) ~[spring-boot-test-3.2.0.jar:3.2.0]
+	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:58) ~[spring-core-6.1.1.jar:6.1.1]
+	at org.springframework.util.function.ThrowingSupplier.get(ThrowingSupplier.java:46) ~[spring-core-6.1.1.jar:6.1.1]
+	at org.springframework.boot.SpringApplication.withHook(SpringApplication.java:1442) ~[spring-boot-3.2.0.jar:3.2.0]
+	at org.springframework.boot.test.context.SpringBootContextLoader$ContextLoaderHook.run(SpringBootContextLoader.java:552) ~[spring-boot-test-3.2.0.jar:3.2.0]
+	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:137) ~[spring-boot-test-3.2.0.jar:3.2.0]
+	at org.springframework.boot.test.context.SpringBootContextLoader.loadContext(SpringBootContextLoader.java:108) ~[spring-boot-test-3.2.0.jar:3.2.0]
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContextInternal(DefaultCacheAwareContextLoaderDelegate.java:225) ~[spring-test-6.1.1.jar:6.1.1]
+	at org.springframework.test.context.cache.DefaultCacheAwareContextLoaderDelegate.loadContext(DefaultCacheAwareContextLoaderDelegate.java:152) ~[spring-test-6.1.1.jar:6.1.1]
+	... 72 common frames omitted
+Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'messageProcessingService' defined in file [C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub\target\classes\ru\ntdev\srhr\ms\paystub\service\impl\MessageProcessingService.class]: Unsatisfied dependency expressed through constructor parameter 1: Error creating bean with name 'responseProcessingService' defined in file [C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub\target\classes\ru\ntdev\srhr\ms\paystub\service\impl\ResponseProcessingService.class]: Unsatisfied dependency expressed through constructor parameter 3: No qualifying bean of type 'int' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:802) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor(ConstructorResolver.java:241) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireConstructor(AbstractAutowireCapableBeanFactory.java:1356) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1193) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:563) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:523) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:325) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:323) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:254) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1441) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1348) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveAutowiredArgument(ConstructorResolver.java:911) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:789) ~[spring-beans-6.1.1.jar:6.1.1]
+	... 96 common frames omitted
+Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'responseProcessingService' defined in file [C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub\target\classes\ru\ntdev\srhr\ms\paystub\service\impl\ResponseProcessingService.class]: Unsatisfied dependency expressed through constructor parameter 3: No qualifying bean of type 'int' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:802) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.ConstructorResolver.autowireConstructor(ConstructorResolver.java:241) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.autowireConstructor(AbstractAutowireCapableBeanFactory.java:1356) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1193) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:563) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:523) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:325) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:234) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:323) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:199) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.config.DependencyDescriptor.resolveCandidate(DependencyDescriptor.java:254) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1441) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1348) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveAutowiredArgument(ConstructorResolver.java:911) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:789) ~[spring-beans-6.1.1.jar:6.1.1]
+	... 110 common frames omitted
+Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'int' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.raiseNoMatchingBeanFound(DefaultListableBeanFactory.java:1878) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.doResolveDependency(DefaultListableBeanFactory.java:1404) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.resolveDependency(DefaultListableBeanFactory.java:1348) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.ConstructorResolver.resolveAutowiredArgument(ConstructorResolver.java:911) ~[spring-beans-6.1.1.jar:6.1.1]
+	at org.springframework.beans.factory.support.ConstructorResolver.createArgumentArray(ConstructorResolver.java:789) ~[spring-beans-6.1.1.jar:6.1.1]
+	... 124 common frames omitted
+
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 28.41 s <<< FAILURE! - in ru.ntdev.srhr.ms.paystub.e2e.PaystubKafkaIntegrationTest
+[ERROR] shouldProcessMessageAndReturnResponseToKafka  Time elapsed: 0.061 s  <<< ERROR!
+java.lang.IllegalStateException: Failed to load ApplicationContext for [WebMergedContextConfiguration@1b37def1 testClass = ru.ntdev.srhr.ms.paystub.e2e.PaystubKafkaIntegrationTest, locations = [], classes = [ru.ntdev.srhr.ms.paystub.SrhrMsPaystubApplication], contextInitializerClasses = [], activeProfiles = ["test"], propertySourceDescriptors = [], propertySourceProperties = ["app.request-reply.enabled=true", "spring.kafka.ssl.enabled=false", "spring.kafka.topic.name.to-easup=srhr.paystub.to.easup", "spring.kafka.producer.max-inner-message-size-kb=10000", "org.springframework.boot.test.context.SpringBootTestContextBootstrapper=true"], contextCustomizers = [org.springframework.boot.test.context.filter.ExcludeFilterContextCustomizer@3c017078, org.springframework.boot.test.json.DuplicateJsonObjectContextCustomizerFactory$DuplicateJsonObjectContextCustomizer@7bb004b8, org.springframework.boot.test.mock.mockito.MockitoContextCustomizer@0, org.springframework.boot.test.web.client.TestRestTemplateContextCustomizer@588cd519, org.springframework.boot.test.autoconfigure.actuate.observability.ObservabilityContextCustomizerFactory$DisableObservabilityContextCustomizer@1f, org.springframework.boot.test.autoconfigure.properties.PropertyMappingContextCustomizer@0, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverContextCustomizer@4349754, org.springframework.test.context.support.DynamicPropertiesContextCustomizer@a4e80369, org.springframework.boot.testcontainers.service.connection.ServiceConnectionContextCustomizer@8b5d0952, org.springframework.boot.test.context.SpringBootTestAnnotation@1c948ab3], resourceBasePath = "src/main/webapp", contextLoader = org.springframework.boot.test.context.SpringBootContextLoader, parent = null]
+Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'consumerAssignmentTask' defined in file [C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub\target\classes\ru\ntdev\srhr\ms\paystub\kafka\task\ConsumerAssignmentTask.class]: Unsatisfied dependency expressed through constructor parameter 2: Error creating bean with name 'messageProcessingService' defined in file [C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub\target\classes\ru\ntdev\srhr\ms\paystub\service\impl\MessageProcessingService.class]: Unsatisfied dependency expressed through constructor parameter 1: Error creating bean with name 'responseProcessingService' defined in file [C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub\target\classes\ru\ntdev\srhr\ms\paystub\service\impl\ResponseProcessingService.class]: Unsatisfied dependency expressed through constructor parameter 3: No qualifying bean of type 'int' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'messageProcessingService' defined in file [C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub\target\classes\ru\ntdev\srhr\ms\paystub\service\impl\MessageProcessingService.class]: Unsatisfied dependency expressed through constructor parameter 1: Error creating bean with name 'responseProcessingService' defined in file [C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub\target\classes\ru\ntdev\srhr\ms\paystub\service\impl\ResponseProcessingService.class]: Unsatisfied dependency expressed through constructor parameter 3: No qualifying bean of type 'int' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+Caused by: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'responseProcessingService' defined in file [C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub\target\classes\ru\ntdev\srhr\ms\paystub\service\impl\ResponseProcessingService.class]: Unsatisfied dependency expressed through constructor parameter 3: No qualifying bean of type 'int' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+Caused by: org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'int' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Errors: 
+[ERROR]   PaystubKafkaIntegrationTest.shouldProcessMessageAndReturnResponseToKafka » IllegalState
+[INFO] 
+[ERROR] Tests run: 1, Failures: 0, Errors: 1, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  42.723 s
+[INFO] Finished at: 2026-09-04T17:21:46+03:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.22.2:test (default-test) on project srhr-ms-paystub: There are test failures.
+[ERROR] 
+[ERROR] Please refer to C:\Users\NPushkaryov\IdeaProjects\srhr-backend\srhr-ms-paystub\target\surefire-reports for the individual test results.
+[ERROR] Please refer to dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+
+Process finished with exit code 1
