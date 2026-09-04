@@ -1,0 +1,136 @@
+@SpringBootTest(properties = {
+        "app.requestEnvelope-reply.enabled=true",
+        "spring.kafka.ssl.enabled=false"
+})
+@Testcontainers
+class PaystubKafkaIntegrationTest {
+
+    private static final String TO_EASUP = "it.paystub.to.easup";
+    private static final String FROM_EASUP = "it.paystub.from.easup";
+
+    @Container
+    static final KafkaContainer KAFKA =
+            new KafkaContainer(
+                    DockerImageName.parse("confluentinc/cp-kafka:7.5.0")
+            );
+
+    @DynamicPropertySource
+    static void kafkaProperties(DynamicPropertyRegistry registry) {
+        registry.add(
+                "spring.kafka.bootstrap-servers",
+                KAFKA::getBootstrapServers
+        );
+
+        registry.add(
+                "spring.kafka.topic.name.to-easup",
+                () -> TO_EASUP
+        );
+
+        registry.add(
+                "spring.kafka.topic.name.from-easup",
+                () -> FROM_EASUP
+        );
+
+        // Для теста нам достаточно одного consumer
+        registry.add(
+                "spring.kafka.task.partition.number",
+                () -> 1
+        );
+    }
+
+    @Autowired
+    KafkaTemplate<Long, String> kafkaTemplate;
+
+    @Autowired
+    ConsumerCreatorTask consumerCreatorTask;
+
+    @Autowired
+    ConsumerAssignmentTask consumerAssignmentTask;
+
+    private Consumer<String, String> responseConsumer;
+
+    @BeforeEach
+    void setUp() throws Exception {
+
+        // Создаём внутренний consumer приложения:
+        // to-easup -> KafkaConsumerServiceImpl
+        consumerCreatorTask.createConsumers();
+
+        responseConsumer = createResponseConsumer();
+
+        responseConsumer.subscribe(
+                List.of(FROM_EASUP)
+        );
+
+        // Чтобы Kafka успела назначить partition
+        responseConsumer.poll(Duration.ofMillis(500));
+    }
+
+    @AfterEach
+    void tearDown() {
+        if (responseConsumer != null) {
+            responseConsumer.close();
+        }
+    }
+
+    @Test
+    void shouldProcessMessageAndReturnResponseToKafka() throws Exception {
+
+        String request = """
+                {
+                    "uuid": "uuid-123",
+                    "requestType": "paystub_pdf",
+                    "adLogin": "test-user",
+                    "sessionId": "test-session",
+                    "traceId": "test-trace"
+                }
+                """;
+
+        // 1. Отправляем запрос как будто его прислал внешний сервис
+        kafkaTemplate.send(
+                TO_EASUP,
+                request
+        ).get();
+
+        // 2. Запускаем один проход основной таски
+        ConsumerAssignmentTask target =
+                AopTestUtils.getTargetObject(
+                        consumerAssignmentTask
+                );
+
+        target.assignKafkaMessages();
+
+        // 3. Забираем результат из Kafka
+        ConsumerRecord<String, String> response =
+                KafkaTestUtils.getSingleRecord(
+                        responseConsumer,
+                        FROM_EASUP,
+                        Duration.ofSeconds(10)
+                );
+
+        assertThat(response).isNotNull();
+        assertThat(response.value())
+                .contains("uuid-123");
+    }
+
+    private Consumer<String, String> createResponseConsumer() {
+
+        Map<String, Object> props =
+                KafkaTestUtils.consumerProps(
+                        KAFKA.getBootstrapServers(),
+                        "paystub-it-result-consumer",
+                        "true"
+                );
+
+        props.put(
+                ConsumerConfig.AUTO_OFFSET_RESET_CONFIG,
+                "earliest"
+        );
+
+        return new DefaultKafkaConsumerFactory<>(
+                props,
+                new StringDeserializer(),
+                new StringDeserializer()
+        ).createConsumer();
+    }
+}
