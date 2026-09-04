@@ -1,22 +1,72 @@
-<mirrors>
-    <mirror>
-      <id>srhr-maven</id>
-      <url>https://maven.repo-ci.sfera.inno.local/repository/srhr-maven/</url>
-      <mirrorOf>central</mirrorOf>
-    </mirror>
-    <mirror>
-      <id>srhr-maven-proxy-group</id>
-      <mirrorOf>central</mirrorOf>
-      <url>https://maven.repo-ci.sfera.inno.local/repository/srhr-maven-proxy-group/</url>
-    </mirror>
-    <mirror>
-      <id>tsec-maven-pub</id>
-      <mirrorOf>central</mirrorOf>
-      <url>https://maven.repo-ci.sfera.inno.local/repository/tsec-maven-pub/</url>
-    </mirror>
-      <mirror>
-          <id>tsau-maven-pub</id>
-          <mirrorOf>central</mirrorOf>
-          <url>https://maven.repo-ci.sfera.inno.local/repository/tsau-maven-pub/</url>
-      </mirror>
-  </mirrors>
+package ru.ntdev.srhr.ms.paystub.service.impl;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Service;
+import ru.ntdev.srhr.common.reqreply.exception.ProcessingException;
+import ru.ntdev.srhr.common.reqreply.reply.PreparedRequest;
+import ru.ntdev.srhr.common.reqreply.reply.PreparedResponse;
+import ru.ntdev.srhr.common.reqreply.reply.RequestHandlerResolver;
+import ru.ntdev.srhr.ms.paystub.entity.PaystubRequestEntity;
+import ru.ntdev.srhr.ms.paystub.application.exception.PreparationException;
+import ru.ntdev.srhr.ms.paystub.service.KafkaTaskService;
+
+@Service
+@Slf4j
+@AllArgsConstructor
+@ConditionalOnProperty(
+        name = "app.requestEnvelope-reply.enabled",
+        havingValue = "true"
+)
+public class MessageProcessingService implements KafkaTaskService {
+
+    private final PreparedRequestService preparedService;
+    private final ResponseProcessingService responseService;
+    private final RequestHandlerResolver requestHandlerResolver;
+
+    @Override
+    public String processMessage(String messageIncoming) throws Exception {
+        PreparedRequest<JsonNode, ?> prepared;
+        try {
+            prepared = preparedService.prepare(messageIncoming);
+        } catch (PreparationException e) {
+            return responseService.error(e.getSystemParams(), e.getRequestEntity(), e.getStartedAt(), e.getCode(), e.getMessage());
+        }
+        try {
+            PreparedResponse<?, ?> result = requestHandlerResolver
+                    .resolve(prepared.requestEnvelope().getRequestType())
+                    .handle(prepared);
+            return responseService.success(prepared, result);
+        } catch (ProcessingException e) {
+            return responseService.error(prepared.systemParams(), (PaystubRequestEntity) prepared.requestEntity(), prepared.startedAt(), e.getCode(), e.getMessage());
+        } catch (Exception e) {
+            return responseService.error(prepared.systemParams(), (PaystubRequestEntity) prepared.requestEntity(), prepared.startedAt(), "500", e.getMessage());
+        }
+    }
+}
+
+
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class ConsumerCreatorTask {
+
+    private final KafkaConsumerServiceImpl kafkaConsumerService;
+    @Value("${spring.kafka.topic.name.to-easup}")
+    String kafkaTopicNameToEasup;
+
+    @Value("${spring.kafka.task.partition.number}")
+    Integer kafkaPartitionNumber;
+
+    @Scheduled(fixedDelay = 10000)
+    public void createConsumers() throws Exception {
+        Integer needThisMoreConsumers = kafkaConsumerService.isEnoughConsumers(kafkaPartitionNumber);
+        if (needThisMoreConsumers > 0) {
+            for (int i = 0; i < needThisMoreConsumers; i++)
+                kafkaConsumerService.createConsumer("pt",kafkaTopicNameToEasup,1);
+        }
+    }
+}
