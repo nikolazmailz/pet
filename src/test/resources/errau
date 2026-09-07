@@ -1,13 +1,12 @@
 SRHR-2271 remove AuditParam
 
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-filestorage/pulls/2661795     
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-works-schedule-rest/pulls/2661798
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-payavg-rest/pulls/2661800
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition-rest/pulls/2661803
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-salarychange-rest/pulls/2661804
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-vacationreq-rest/pulls/2661805
-
-
+srhr-ms-timesheet-rest
+srhr-ms-filestorage
+srhr-ms-payavg-rest
+srhr-ms-requisition-rest
+srhr-ms-salarychange-rest
+srhr-ms-vacationreq-rest
+srhr-ms-works-schedule-rest
 
 
 
