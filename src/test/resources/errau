@@ -1,18 +1,18 @@
-    @Test
-    void shouldGenerateOpenApiYaml() throws Exception {
-        byte[] openApiYaml = mockMvc.perform(get("/v3/api-docs.yaml"))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsByteArray();
+SRHR-2271 remove AuditParam
 
-        Path outputFile = Path.of(
-                "build",
-                "generated",
-                "openapi",
-                "openapi.yaml"
-        );
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-filestorage/pulls/2661795     
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-works-schedule-rest/pulls/2661798
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-payavg-rest/pulls/2661800
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition-rest/pulls/2661803
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-salarychange-rest/pulls/2661804
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-vacationreq-rest/pulls/2661805
 
-        Files.createDirectories(outputFile.getParent());
-        Files.write(outputFile, openApiYaml);
-    }
+
+
+
+
+
+
+
+
+
