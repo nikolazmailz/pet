@@ -1,10 +1,1 @@
-  @Scheduled(cron = "${app.scheduler.db.cron-master-data-requisition-task}")
-    @Async(value = "RequisitionTaskExecutor")
-    @Audit(value = "SRHR_SAPPO_AND_ESTAFF_INTEGRATION_GET_REQUISITIONS_AND_VACANCIES")
-    @SystemBlock(ttl = "${srhr.task-blocker.integration.ttl}")
-    public void getMasterDataRequisitions() throws Exception {
-        DataIntegrationEntity dataIntegrationEntity = new DataIntegrationEntity();
-        dataIntegrationEntity.setStartedAt(LocalDateTime.now());
-        log.info("Начала работу таска интеграции с набором 10280 и естафф, время начала; [{}]", LocalDateTime.now());
-...
-}
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-timesheet-rest/pulls/2660805
