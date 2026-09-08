@@ -1,1 +1,129 @@
 404 Not Found: "No response could be served as there are no stub mappings in this WireMock instance."
+src/test/resources/wiremock/mappings/tsrm/get-role.json
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/functional-role/[^/]+/[^/]+"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "tsrm/get-role-response.json",
+    "headers": {
+      "Content-Type": "application/json"
+    }
+  }
+}
+src/test/resources/wiremock/__files/tsrm/get-role-response.json
+{
+  "roles": [
+    {
+      "roleId": "admin",
+      "attributeIds": ["attr1", "attr2", "attr3"]
+    },
+    {
+      "roleId": "user"
+    }
+  ]
+}
+
+
+package ru.ntdev.srhr.ms.paystub;
+
+import jakarta.persistence.EntityManager;
+import java.util.Map;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.serialization.StringDeserializer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.test.utils.KafkaTestUtils;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.testcontainers.containers.KafkaContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
+import org.wiremock.spring.ConfigureWireMock;
+import org.wiremock.spring.EnableWireMock;
+import ru.ntdev.srhr.ms.paystub.kafka.task.ConsumerAssignmentTask;
+import ru.ntdev.srhr.ms.paystub.kafka.task.ConsumerCreatorTask;
+
+@ActiveProfiles("test")
+@SpringBootTest(properties = {
+        "app.request-reply.enabled=true",
+        "spring.kafka.ssl.enabled=false",
+        "spring.kafka.topic.name.to-easup=srhr.paystub.to.easup",
+        "spring.kafka.producer.max-inner-message-size-kb=10000",
+})
+@Testcontainers
+@EnableWireMock({
+        @ConfigureWireMock(
+                name = "tsrm",
+                baseUrlProperties = "tsrm.integration.service.url"
+        )
+})
+public abstract class BaseIntegrationTest {
+
+    protected static final String TO_EASUP = "srhr.paystub.to.easup";
+    protected static final String FROM_EASUP = "srhr.paystub.from.easup";
+
+    @ServiceConnection
+    static PostgreSQLContainer<?> postgres =
+            new PostgreSQLContainer<>("postgres:16-alpine")
+                    .withInitScript("db/init-schema.sql");
+
+    static {
+        postgres.start();
+    }
+
+    @Container
+    protected static final KafkaContainer KAFKA =
+            new KafkaContainer(
+                    DockerImageName.parse("confluentinc/cp-kafka:7.5.0")
+            );
+
+    @DynamicPropertySource
+    static void kafkaProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.kafka.bootstrap-servers", KAFKA::getBootstrapServers);
+        registry.add("spring.kafka.topic.name.to-easup", () -> TO_EASUP);
+        registry.add("spring.kafka.topic.name.from-easup", () -> FROM_EASUP);
+        registry.add("spring.kafka.task.partition.number", () -> 1);
+    }
+
+    @Autowired
+    protected KafkaTemplate<Long, String> kafkaTemplate;
+
+    @Autowired
+    protected ConsumerCreatorTask consumerCreatorTask;
+
+    @Autowired
+    protected ConsumerAssignmentTask consumerAssignmentTask;
+
+    @Autowired
+    protected EntityManager em;
+
+    @Autowired
+    protected TransactionTemplate transactionTemplate;
+
+    protected Consumer<String, String> createResponseConsumer() {
+        Map<String, Object> props =
+                KafkaTestUtils.consumerProps(
+                        KAFKA.getBootstrapServers(),
+                        "paystub-consumer",
+                        "true"
+                );
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+
+        return new DefaultKafkaConsumerFactory<>(
+                props,
+                new StringDeserializer(),
+                new StringDeserializer()
+        ).createConsumer();
+    }
+}
