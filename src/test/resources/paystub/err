@@ -1,129 +1,95 @@
-404 Not Found: "No response could be served as there are no stub mappings in this WireMock instance."
-src/test/resources/wiremock/mappings/tsrm/get-role.json
-{
-  "request": {
-    "method": "GET",
-    "urlPathPattern": "/functional-role/[^/]+/[^/]+"
-  },
-  "response": {
-    "status": 200,
-    "bodyFileName": "tsrm/get-role-response.json",
-    "headers": {
-      "Content-Type": "application/json"
-    }
-  }
-}
-src/test/resources/wiremock/__files/tsrm/get-role-response.json
-{
-  "roles": [
-    {
-      "roleId": "admin",
-      "attributeIds": ["attr1", "attr2", "attr3"]
-    },
-    {
-      "roleId": "user"
-    }
-  ]
-}
 
+public class ActorStageInMemoryStorage {
+    private static final Logger log = LoggerFactory.getLogger(ActorStageInMemoryStorage.class);
+    private final Map<AclibActorKey, AclibActorStageDto> storage = new ConcurrentHashMap();
+    private final Map<String, Set<AclibActorKey>> subjectStorage = new ConcurrentHashMap();
 
-package ru.ntdev.srhr.ms.paystub;
-
-import jakarta.persistence.EntityManager;
-import java.util.Map;
-import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.common.serialization.StringDeserializer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.test.utils.KafkaTestUtils;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.transaction.support.TransactionTemplate;
-import org.testcontainers.containers.KafkaContainer;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
-import org.wiremock.spring.ConfigureWireMock;
-import org.wiremock.spring.EnableWireMock;
-import ru.ntdev.srhr.ms.paystub.kafka.task.ConsumerAssignmentTask;
-import ru.ntdev.srhr.ms.paystub.kafka.task.ConsumerCreatorTask;
-
-@ActiveProfiles("test")
-@SpringBootTest(properties = {
-        "app.request-reply.enabled=true",
-        "spring.kafka.ssl.enabled=false",
-        "spring.kafka.topic.name.to-easup=srhr.paystub.to.easup",
-        "spring.kafka.producer.max-inner-message-size-kb=10000",
-})
-@Testcontainers
-@EnableWireMock({
-        @ConfigureWireMock(
-                name = "tsrm",
-                baseUrlProperties = "tsrm.integration.service.url"
-        )
-})
-public abstract class BaseIntegrationTest {
-
-    protected static final String TO_EASUP = "srhr.paystub.to.easup";
-    protected static final String FROM_EASUP = "srhr.paystub.from.easup";
-
-    @ServiceConnection
-    static PostgreSQLContainer<?> postgres =
-            new PostgreSQLContainer<>("postgres:16-alpine")
-                    .withInitScript("db/init-schema.sql");
-
-    static {
-        postgres.start();
+    public ActorStageInMemoryStorage() {
     }
 
-    @Container
-    protected static final KafkaContainer KAFKA =
-            new KafkaContainer(
-                    DockerImageName.parse("confluentinc/cp-kafka:7.5.0")
-            );
-
-    @DynamicPropertySource
-    static void kafkaProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.kafka.bootstrap-servers", KAFKA::getBootstrapServers);
-        registry.add("spring.kafka.topic.name.to-easup", () -> TO_EASUP);
-        registry.add("spring.kafka.topic.name.from-easup", () -> FROM_EASUP);
-        registry.add("spring.kafka.task.partition.number", () -> 1);
+    public Map<AclibActorKey, AclibActorStageDto> getStorage() {
+        return Collections.unmodifiableMap(this.storage);
     }
 
-    @Autowired
-    protected KafkaTemplate<Long, String> kafkaTemplate;
+    void init(ActorStageInMemoryStorage newStorage) {
+        log.debug("[IM] [Init] Storage before init: size = {}", this.storage.size());
+        this.storage.clear();
+        this.storage.putAll(newStorage.storage);
+        this.subjectStorage.clear();
+        this.subjectStorage.putAll(newStorage.subjectStorage);
+        log.debug("[IM] [Init] Storage after init: size = {}", this.storage.size());
+    }
 
-    @Autowired
-    protected ConsumerCreatorTask consumerCreatorTask;
+    void syncUserStage(String instanceCode, String subjectCode, AclibUserStageDto userStageDto, String tag) {
+        if (subjectCode != null && userStageDto != null) {
+            String upperSubjectCode = subjectCode.toUpperCase();
+            this.subjectStorage.putIfAbsent(upperSubjectCode, new HashSet());
+            Set<AclibActorKey> actorKeysInStorage = (Set)this.subjectStorage.get(upperSubjectCode);
+            if (actorKeysInStorage == null) {
+                log.debug("[IM] [{}] Add new ActorKey Set with key: subjectCode = {}", tag, subjectCode);
+            } else {
+                if (userStageDto.getActorStages() != null) {
+                    userStageDto.getActorStages().forEach((p) -> {
+                        this.upsert(p, actorKeysInStorage, tag);
+                    });
+                    log.debug("[IM] [{}] Upsert actor stage into in-memory storage: {}", tag, userStageDto);
+                }
 
-    @Autowired
-    protected ConsumerAssignmentTask consumerAssignmentTask;
+                this.revokeAssignments(instanceCode, userStageDto, actorKeysInStorage, tag);
+            }
+        } else {
+            log.warn("[IM] [{}] Subject or stage is null subjectCode = {}, userStageDto = {}", new Object[]{tag, subjectCode, userStageDto});
+        }
+    }
 
-    @Autowired
-    protected EntityManager em;
+    private void upsert(AclibActorStageDto aclibActorStageDto, Set<AclibActorKey> actorKeysInStorage, String tag) {
+        if (aclibActorStageDto != null) {
+            AclibActorKey aclibActorKeyDto = new AclibActorKey(aclibActorStageDto.getActor().getInstanceCode(), aclibActorStageDto.getActor().getUid(), aclibActorStageDto.getActor().getChannel());
+            this.innerUpsert(aclibActorKeyDto, aclibActorStageDto, tag);
+            actorKeysInStorage.add(aclibActorKeyDto);
+            log.debug("[IM] [{}] Upsert storage with key = {}, new size = {}", new Object[]{tag, aclibActorKeyDto, this.storage.size()});
+        }
 
-    @Autowired
-    protected TransactionTemplate transactionTemplate;
+    }
 
-    protected Consumer<String, String> createResponseConsumer() {
-        Map<String, Object> props =
-                KafkaTestUtils.consumerProps(
-                        KAFKA.getBootstrapServers(),
-                        "paystub-consumer",
-                        "true"
-                );
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+    private void innerUpsert(AclibActorKey aclibActorKeyDto, AclibActorStageDto aclibActorStageDto, String tag) {
+        if (this.storage.containsKey(aclibActorKeyDto)) {
+            log.info("[IM] [{}] Actor re-wrote to the storage, key: {}", tag, aclibActorKeyDto);
+        } else {
+            log.info("[IM] [{}] Actor put to the storage, key: {}", tag, aclibActorKeyDto);
+        }
 
-        return new DefaultKafkaConsumerFactory<>(
-                props,
-                new StringDeserializer(),
-                new StringDeserializer()
-        ).createConsumer();
+        this.storage.put(aclibActorKeyDto, aclibActorStageDto);
+    }
+
+    private void revokeAssignments(String instanceCode, AclibUserStageDto userStageDto, Set<AclibActorKey> actorKeysInStorage, String tag) {
+        Set<AclibActorKey> newActorKeys = this.getUserStageKeys(userStageDto);
+        actorKeysInStorage.forEach((aclibActorKey) -> {
+            if (instanceCode.equalsIgnoreCase(aclibActorKey.getInstanceCode()) && !newActorKeys.contains(aclibActorKey)) {
+                log.debug("[IM] [{}] Actor with key: {} removed from storage", aclibActorKey, tag);
+                this.putUnassignmentActor(aclibActorKey);
+            }
+
+        });
+    }
+
+    private Set<AclibActorKey> getUserStageKeys(AclibUserStageDto userStageDto) {
+        return (Set)(userStageDto.getActorStages() == null ? new HashSet() : (Set)userStageDto.getActorStages().stream().map((aclibActorStageDto) -> {
+            return new AclibActorKey(aclibActorStageDto.getActor().getInstanceCode(), aclibActorStageDto.getActor().getUid(), aclibActorStageDto.getActor().getChannel());
+        }).collect(Collectors.toSet()));
+    }
+
+    private void putUnassignmentActor(AclibActorKey aclibActorKey) {
+        AclibActorStageDto aclibActorStageDto = (AclibActorStageDto)this.storage.get(aclibActorKey);
+        if (aclibActorStageDto != null) {
+            this.storage.put(aclibActorKey, new AclibActorStageDto(new AclibActorDto(aclibActorStageDto.getActor().getInstanceCode(), aclibActorStageDto.getActor().getUid(), aclibActorStageDto.getActor().getChannel(), aclibActorStageDto.getActor().getInfoSystemCode(), aclibActorStageDto.getActor().getInfoSystemId(), aclibActorStageDto.getActor().getSubjectCode(), aclibActorStageDto.getActor().getRequestId(), aclibActorStageDto.getActor().getRequestAt(), aclibActorStageDto.getActor().getTrId(), new HashMap()), new ArrayList()));
+        } else {
+            log.warn("Actor with key: {} not found in storage", aclibActorKey);
+        }
+
+    }
+
+    public static boolean isSkipAssignmentsSyncRegistry(String instanceCode, AclibAssignmentsSyncRegistryDto assignmentsDto) {
+        return assignmentsDto == null || assignmentsDto.getSubjectCode() == null || assignmentsDto.getSubjectCode().isEmpty() || assignmentsDto.getInstanceCode() == null || assignmentsDto.getInstanceCode().isEmpty() || !assignmentsDto.getInstanceCode().equalsIgnoreCase(instanceCode);
     }
 }
