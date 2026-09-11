@@ -1,0 +1,14 @@
+{
+  "name": "TSRM - get functional roles",
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/functional-role/[^/]+/[^/]+"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "tsrm/get-role-response.json"
+  }
+}

@@ -1,0 +1,23 @@
+srhr-ms-mock-service/
+├── pom.xml
+├── Dockerfile
+├── docker-compose.yml
+├── README.md
+├── .gitignore
+└── src/
+    ├── main/
+    │   ├── java/ru/ntdev/srhr/ms/mock/
+    │   │   ├── SrhrMsMockServiceApplication.java
+    │   │   ├── config/
+    │   │   │   ├── WireMockConfig.java
+    │   │   │   └── WireMockProperties.java
+    │   │   └── health/
+    │   │       └── WireMockHealthIndicator.java
+    │   └── resources/
+    │       ├── application.yml
+    │       └── wiremock/
+    │           ├── mappings/tsrm/get-role.json
+    │           └── __files/tsrm/get-role-response.json
+    └── test/
+        └── java/ru/ntdev/srhr/ms/mock/
+            └── WireMockStartupTest.java

@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: srhr-ms-mock-service
+
+server:
+  # Spring Boot / Actuator HTTP port.
+  # Mock traffic is served separately by WireMock on 8080.
+  port: ${SERVER_PORT:8081}
+
+mock:
+  wiremock:
+    port: ${WIREMOCK_PORT:8080}
+    root-directory: ${WIREMOCK_ROOT_DIRECTORY:wiremock}
+    verbose: ${WIREMOCK_VERBOSE:true}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+logging:
+  level:
+    root: INFO
+    ru.ntdev.srhr.ms.mock: INFO

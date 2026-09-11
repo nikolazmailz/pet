@@ -1,0 +1,15 @@
+{
+  "roles": [
+    {
+      "roleId": "admin",
+      "attributeIds": [
+        "attr1",
+        "attr2",
+        "attr3"
+      ]
+    },
+    {
+      "roleId": "user"
+    }
+  ]
+}
