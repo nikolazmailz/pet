@@ -13,3 +13,36 @@ if (spoDto != null) {
                 log.debug("{} Произошла ошибка при попытке удаления и обновления в бд сущностей [candidates] и [candidates_events], стектрейс ошибки: [{}]", lp, ExceptionUtils.getStackTrace(e));
             }
         }
+
+
+    @Transactional
+    @Modifying
+    @Query(value = "delete from srhr_requisition.candidates_events ce where ce.candidate_id in " +
+            "(select id from srhr_requisition.candidates cd where cd.vacancy_id = :vacancyId)"
+            , nativeQuery = true)
+    void deleteCandidateEventEntitiesByVacancyId (
+            @Param("vacancyId") Integer vacancyId);
+
+    @Transactional
+    @Modifying
+    @Query(value = "delete from srhr_requisition.candidates cs where cs.vacancy_id = :vacancyId"
+            , nativeQuery = true)
+    void deleteCandidateEntitiesByVacancyId (
+            @Param("vacancyId") Integer vacancyId)
+
+@NoRepositoryBean
+public interface ListCrudRepository<T, ID> extends CrudRepository<T, ID> {
+    <S extends T> List<S> saveAll(Iterable<S> entities);
+
+    List<T> findAll();
+
+    List<T> findAllById(Iterable<ID> ids);
+}
+
+    @Transactional
+    @Modifying
+    @Query(value = "update srhr_requisition.vacancy p set candidates_last_update = :candidateUpdateDate where p.vacancy_id =  :vacancyId ", nativeQuery = true)
+    void updateCandidateUpdateDate(
+            @Param("vacancyId") String vacancyId,
+            @Param("candidateUpdateDate") LocalDateTime candidateUpdateDate
+    );
