@@ -1,5 +1,7 @@
 curl -v http://srhr-ms-mock-service:8180/__admin/mappings
 
+
+
 $ curl -v http://srhr-ms-mock-service:8180/__admin/mappings
 * Host srhr-ms-mock-service:8180 was resolved.
 * IPv6: (none)
@@ -22,3 +24,5 @@ $ curl -v http://srhr-ms-mock-service:8180/__admin/mappings
 < 
 * Connection #0 to host srhr-ms-mock-service:8180 left intact
 upstream connect error or disconnect/reset before headers. retried and the latest reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused$ 
+
+curl -v http://localhost:8180/__admin/mappings
