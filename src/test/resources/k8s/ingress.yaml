@@ -26,3 +26,16 @@ $ curl -v http://srhr-ms-mock-service:8180/__admin/mappings
 upstream connect error or disconnect/reset before headers. retried and the latest reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused$ 
 
 curl -v http://localhost:8180/__admin/mappings
+
+$ curl -v http://localhost:8180/__admin/mappings
+* Host localhost:8180 was resolved.
+* IPv6: ::1
+* IPv4: 127.0.0.1
+*   Trying [::1]:8180...
+* connect to ::1 port 8180 from ::1 port 42082 failed: Connection refused
+*   Trying 127.0.0.1:8180...
+* connect to 127.0.0.1 port 8180 from 127.0.0.1 port 33058 failed: Connection refused
+* Failed to connect to localhost port 8180 after 0 ms: Could not connect to server
+* closing connection #0
+curl: (7) Failed to connect to localhost port 8180 after 0 ms: Could not connect to server
+$  
