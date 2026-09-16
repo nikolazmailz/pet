@@ -1,92 +1,27 @@
+src/main/resources/mappings/epa/get-access-token.json
 
-public final class EpaAccessToken {
-    private final String value;
-    private final LocalDateTime issueDate;
-    private final LocalDateTime expiresIn;
-    private final HttpDetails httpDetails;
-
-    public String getValue() {
-        return this.value;
-    }
-
-    public LocalDateTime getIssueDate() {
-        return this.issueDate;
-    }
-
-    public LocalDateTime getExpiresIn() {
-        return this.expiresIn;
-    }
-
-    public HttpDetails getHttpDetails() {
-        return this.httpDetails;
-    }
-
-    public EpaAccessToken(String value, LocalDateTime issueDate, LocalDateTime expiresIn, HttpDetails httpDetails) {
-        this.value = value;
-        this.issueDate = issueDate;
-        this.expiresIn = expiresIn;
-        this.httpDetails = httpDetails;
-    }
+{
+  "name": "EPA - получение access token",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/.*token.*"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
+      "Pragma": "no-cache"
+    },
+    "bodyFileName": "epa/get-access-token-response.json"
+  }
 }
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by FernFlower decompiler)
-//
 
-package ru.vtb.epa.sso.aal.client;
+src/main/resources/__files/epa/get-access-token-response.json
 
-import org.apache.hc.core5.http.Header;
-
-public class HttpDetails {
-    private String requestBody;
-    private Header[] requestHeaders;
-    private String responseBody;
-    private Header[] responseHeaders;
-    private int statusCode;
-
-    public HttpDetails() {
-    }
-
-    public String getRequestBody() {
-        return this.requestBody;
-    }
-
-    public Header[] getRequestHeaders() {
-        return this.requestHeaders;
-    }
-
-    public String getResponseBody() {
-        return this.responseBody;
-    }
-
-    public Header[] getResponseHeaders() {
-        return this.responseHeaders;
-    }
-
-    public int getStatusCode() {
-        return this.statusCode;
-    }
-
-    public void setRequestBody(String requestBody) {
-        this.requestBody = requestBody;
-    }
-
-    public void setRequestHeaders(Header[] requestHeaders) {
-        this.requestHeaders = requestHeaders;
-    }
-
-    public void setResponseBody(String responseBody) {
-        this.responseBody = responseBody;
-    }
-
-    public void setResponseHeaders(Header[] responseHeaders) {
-        this.responseHeaders = responseHeaders;
-    }
-
-    public void setStatusCode(int statusCode) {
-        this.statusCode = statusCode;
-    }
-}
-public interface Header extends NameValuePair {
-    boolean isSensitive();
+{
+  "access_token": "test-access-token",
+  "token_type": "Bearer",
+  "expires_in": 3600
 }
