@@ -1,117 +1,92 @@
-package ru.ntdev.srhr.common.epa.impl;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.StringTokenizer;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
-import org.apache.commons.collections4.MultiValuedMap;
-import org.apache.logging.log4j.util.Strings;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Service;
-import ru.ntdev.srhr.common.epa.config.sdk.EpaConfigurationProperties;
-import ru.ntdev.srhr.common.epa.EpaSdkService;
-import ru.vtb.epa.authentication.EpaClientCredentialsClientFactory;
-import ru.vtb.epa.service.EpaValidationResult;
-import ru.vtb.epa.service.EpaValidationService;
-import ru.vtb.epa.sso.aal.client.HttpDetails;
-import ru.vtb.epa.sso.aal.validation.jwt.ValidationResult;
-import ru.vtb.epa.sso.clientcredentials.ClientCredentialsClient;
-import ru.vtb.epa.sso.clientcredentials.EpaAccessToken;
+public final class EpaAccessToken {
+    private final String value;
+    private final LocalDateTime issueDate;
+    private final LocalDateTime expiresIn;
+    private final HttpDetails httpDetails;
 
-@Service
-@Log4j2
-@RequiredArgsConstructor
-public class EpaSdkServiceImpl implements EpaSdkService {
-
-  public static final String AUTHORIZATION_HEADER = "Authorization";
-  public static final String CLIENT_SECRET = "client_secret";
-  private final Environment environment;
-  private final EpaValidationService epaValidationService;
-  private final EpaConfigurationProperties config;
-  private ClientCredentialsClient client;
-
-  @PostConstruct
-  public void init() {
-    client = EpaClientCredentialsClientFactory.createDefaultClient(environment,
-        config.getHostname(),
-        config.getAuth().getToken().getClient(),
-        config.getAuth().getToken().getPassword());
-    log.info("EPA SDK Service инициализирован с URL: {}", config.getHostname());
-  }
-
-  public String getAccessToken() {
-    return client.getToken();
-  }
-
-  public String getAccessToken(String clientId, String secret) {
-    return client.getToken(clientId, secret);
-  }
-
-  public String getAccessToken(MultiValuedMap<String, String> params) {
-    return client.getToken(params);
-  }
-
-  public EpaAccessToken getAccessTokenModel() {
-    log.debug("Запрос токена от ЕПА, url: {}", config.getHostname());
-    EpaAccessToken epaAccessToken = client.getTokenModel();
-    HttpDetails httpDetails = epaAccessToken.getHttpDetails();
-    log.debug("Token expires in: {}", epaAccessToken.getExpiresIn());
-    log.debug("Request body: {}", maskingParamsForLogging(httpDetails.getRequestBody()));
-    log.debug("Request headers: {}", List.of(httpDetails.getRequestHeaders()));
-    log.debug("Response body: {}", httpDetails.getResponseBody());
-    log.debug("Response headers: {}", List.of(httpDetails.getResponseHeaders()));
-    log.debug("Response status code: {}", httpDetails.getStatusCode());
-    return epaAccessToken;
-  }
-
-  public String refreshCacheableToken() {
-    return client.getRefreshedToken();
-  }
-
-  public EpaAccessToken refreshCacheableTokenModel() {
-    return client.getRefreshedTokenModel();
-  }
-
-  public EpaValidationResult checkJWT(HttpServletRequest request) {
-    String jwt;
-    try {
-      jwt = request.getHeader(AUTHORIZATION_HEADER).replace("Bearer ", "");
-    } catch (Exception ex) {
-      throw new RuntimeException("Отсутствует заголовок Authorization");
+    public String getValue() {
+        return this.value;
     }
-    return checkJWT(jwt);
-  }
 
-  public EpaValidationResult checkJWT(String jwt) {
-    EpaValidationResult validate = epaValidationService.validate(jwt);
-    ValidationResult validationResult = validate.getValidationResult();
-    boolean success = validationResult.isSuccess();
-    if (!success) {
-      ValidationResult.Reason reason = validationResult.getReason();
-      log.warn("Токен не валиден: {}", reason);
+    public LocalDateTime getIssueDate() {
+        return this.issueDate;
     }
-    return validate;
-  }
 
-  private String maskingParamsForLogging(String body) {
-    if (Strings.isEmpty(body) || !body.contains("&")) {
-      return body;
+    public LocalDateTime getExpiresIn() {
+        return this.expiresIn;
     }
-    Map<String, String> params = new HashMap<>();
-    StringTokenizer tokenizer = new StringTokenizer(body, "&");
-    while (tokenizer.hasMoreTokens()) {
-      String token = tokenizer.nextToken();
-      String[] keyValue = token.split("=");
-      if (keyValue[0].equalsIgnoreCase(CLIENT_SECRET)) {
-        params.put(keyValue[0], "***");
-      } else {
-        params.put(keyValue[0], keyValue[1]);
-      }
+
+    public HttpDetails getHttpDetails() {
+        return this.httpDetails;
     }
-    return params.toString();
-  }
+
+    public EpaAccessToken(String value, LocalDateTime issueDate, LocalDateTime expiresIn, HttpDetails httpDetails) {
+        this.value = value;
+        this.issueDate = issueDate;
+        this.expiresIn = expiresIn;
+        this.httpDetails = httpDetails;
+    }
+}
+//
+// Source code recreated from a .class file by IntelliJ IDEA
+// (powered by FernFlower decompiler)
+//
+
+package ru.vtb.epa.sso.aal.client;
+
+import org.apache.hc.core5.http.Header;
+
+public class HttpDetails {
+    private String requestBody;
+    private Header[] requestHeaders;
+    private String responseBody;
+    private Header[] responseHeaders;
+    private int statusCode;
+
+    public HttpDetails() {
+    }
+
+    public String getRequestBody() {
+        return this.requestBody;
+    }
+
+    public Header[] getRequestHeaders() {
+        return this.requestHeaders;
+    }
+
+    public String getResponseBody() {
+        return this.responseBody;
+    }
+
+    public Header[] getResponseHeaders() {
+        return this.responseHeaders;
+    }
+
+    public int getStatusCode() {
+        return this.statusCode;
+    }
+
+    public void setRequestBody(String requestBody) {
+        this.requestBody = requestBody;
+    }
+
+    public void setRequestHeaders(Header[] requestHeaders) {
+        this.requestHeaders = requestHeaders;
+    }
+
+    public void setResponseBody(String responseBody) {
+        this.responseBody = responseBody;
+    }
+
+    public void setResponseHeaders(Header[] responseHeaders) {
+        this.responseHeaders = responseHeaders;
+    }
+
+    public void setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
+    }
+}
+public interface Header extends NameValuePair {
+    boolean isSensitive();
 }
