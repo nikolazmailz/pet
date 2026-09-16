@@ -18,3 +18,6 @@ spec:
                 name: srhr-ms-mock-service
                 port:
                   number: 8180
+
+
+https://srhr-ms-mock-service.srhr.innodev.local/__admin/mappings
