@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: srhr-ms-mock-service-ingress
+  namespace: dk1-srhr01-srhr-srhr
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+spec:
+  ingressClassName: ingress-dk1-srhr01-srhr-001
+  rules:
+    - host: srhr-ms-mock-service.srhr.innodev.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: srhr-ms-mock-service
+                port:
+                  number: 8180
+
+
+https://srhr-ms-mock-service.srhr.innodev.local/__admin/mappings
