@@ -1,1 +1,24 @@
 curl -v http://srhr-ms-mock-service:8180/__admin/mappings
+
+$ curl -v http://srhr-ms-mock-service:8180/__admin/mappings
+* Host srhr-ms-mock-service:8180 was resolved.
+* IPv6: (none)
+* IPv4: 1.8.147.116
+*   Trying 1.8.147.116:8180...
+* Established connection to srhr-ms-mock-service (1.8.147.116 port 8180) from 1.0.13.141 port 57822 
+* using HTTP/1.x
+> GET /__admin/mappings HTTP/1.1
+> Host: srhr-ms-mock-service:8180
+> User-Agent: curl/8.18.0
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 503 Service Unavailable
+< content-length: 190
+< content-type: text/plain
+< date: Wed, 16 Sep 2026 12:21:56 GMT
+< server: envoy
+< x-envoy-upstream-service-time: 138
+< 
+* Connection #0 to host srhr-ms-mock-service:8180 left intact
+upstream connect error or disconnect/reset before headers. retried and the latest reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused$ 
