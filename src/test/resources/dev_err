@@ -1,3 +1,145 @@
-https://information-about-salary.srhr.innodev.local/service/information_about_salary/information
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  annotations:
+    meta.helm.sh/release-name: srhr-information-about-salary
+    meta.helm.sh/release-namespace: dk1-srhr01-srhr-srhr
+    nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+    nginx.ingress.kubernetes.io/ssl-passthrough: 'true'
+  resourceVersion: '291528942'
+  name: srhr-information-about-salary-ingress
+  uid: 0f87843d-70ba-4a24-868e-0942531870ed
+  creationTimestamp: '2026-09-09T13:48:53Z'
+  generation: 2
+  managedFields:
+    - manager: helm
+      operation: Update
+      apiVersion: networking.k8s.io/v1
+      time: '2026-09-09T13:48:53Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:annotations':
+            .: {}
+            'f:meta.helm.sh/release-name': {}
+            'f:meta.helm.sh/release-namespace': {}
+            'f:nginx.ingress.kubernetes.io/backend-protocol': {}
+            'f:nginx.ingress.kubernetes.io/ssl-passthrough': {}
+          'f:labels':
+            .: {}
+            'f:app.kubernetes.io/managed-by': {}
+            'f:app.kubernetes.io/part-of': {}
+            'f:helm.sh/chart': {}
+        'f:spec':
+          'f:ingressClassName': {}
+    - manager: Mozilla
+      operation: Update
+      apiVersion: networking.k8s.io/v1
+      time: '2026-09-14T12:07:23Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:spec':
+          'f:rules': {}
+    - manager: nginx-ingress-controller
+      operation: Update
+      apiVersion: networking.k8s.io/v1
+      time: '2026-09-15T09:31:54Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:status':
+          'f:loadBalancer':
+            'f:ingress': {}
+      subresource: status
+  namespace: dk1-srhr01-srhr-srhr
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: srhr
+    helm.sh/chart: srhr-information-about-salary-8.1.0-20260909155346
+spec:
+  ingressClassName: ingress-dk1-srhr01-srhr-001
+  rules:
+    - host: information-about-salary.srhr.innodev.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: srhr-information-about-salary-ingress
+                port:
+                  number: 10078
+status:
+  loadBalancer:
+    ingress:
+      - ip: 1.8.249.10
 
-http://localhost:8089/__admin/mappings
+
+
+
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  annotations:
+    meta.helm.sh/release-name: srhr-ms-paystub-rest
+    meta.helm.sh/release-namespace: dk1-srhr01-srhr-srhr
+    nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+    nginx.ingress.kubernetes.io/ssl-passthrough: 'true'
+  resourceVersion: '291528941'
+  name: srhr-ms-paystub-rest-ingress
+  uid: b5864449-38f2-49c1-9ee5-24fe6759f22b
+  creationTimestamp: '2026-09-15T08:08:40Z'
+  generation: 1
+  managedFields:
+    - manager: helm
+      operation: Update
+      apiVersion: networking.k8s.io/v1
+      time: '2026-09-15T08:08:40Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:annotations':
+            .: {}
+            'f:meta.helm.sh/release-name': {}
+            'f:meta.helm.sh/release-namespace': {}
+            'f:nginx.ingress.kubernetes.io/backend-protocol': {}
+            'f:nginx.ingress.kubernetes.io/ssl-passthrough': {}
+          'f:labels':
+            .: {}
+            'f:app.kubernetes.io/managed-by': {}
+            'f:app.kubernetes.io/part-of': {}
+            'f:helm.sh/chart': {}
+        'f:spec':
+          'f:ingressClassName': {}
+          'f:rules': {}
+    - manager: nginx-ingress-controller
+      operation: Update
+      apiVersion: networking.k8s.io/v1
+      time: '2026-09-15T09:31:54Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:status':
+          'f:loadBalancer':
+            'f:ingress': {}
+      subresource: status
+  namespace: dk1-srhr01-srhr-srhr
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: srhr
+    helm.sh/chart: srhr-ms-paystub-rest-8.1.0-20260909155412
+spec:
+  ingressClassName: ingress-dk1-srhr01-srhr-001
+  rules:
+    - host: paystub-rest.srhr.innodev.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: srhr-ms-paystub-rest-ingress
+                port:
+                  number: 10081
+status:
+  loadBalancer:
+    ingress:
+      - ip: 1.8.249.10
