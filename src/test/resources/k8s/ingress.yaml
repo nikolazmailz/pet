@@ -1,3 +1,1 @@
-curl.exe -v `
-  --resolve srhr-ms-mock-service.srhr.innodev.local:80:1.8.249.10 `
-  http://srhr-ms-mock-service.srhr.innodev.local/__admin/mappings
+Resolve-DnsName srhr-ms-mock-service.srhr.innodev.local
