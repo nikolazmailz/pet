@@ -1,0 +1,6 @@
+apiVersion: v2
+name: srhr-ms-mock-service
+description: Helm chart
+type: application
+version: 1.0.7
+appVersion: auto
