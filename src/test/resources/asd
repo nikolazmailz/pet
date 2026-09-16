@@ -1,0 +1,169 @@
+@Override
+    public RequisitionPostVacancyCandidatesDto getRequisitionPostVacancyCandidates(RequisitionPostVacancyCandidatesRequest requestValues, SapSystemParamsDto systemParams) throws Exception {
+        LocalDateTime currentTime = LocalDateTime.now();
+        String lp = "DatabaseServiceImpl : getRequisitionPostVacancyCandidates : ";
+
+        Boolean skipCache = requestValues.isSkipCache();
+        ResponseEntity<SpoVacancyCandidatesDto> response;
+        String vacancyId = requestValues.getVacancyId();
+        VacancyEntity vacancyEntity = vacancyRepository.findVacancyStatusEntityByVacancyId(vacancyId);
+
+        log.debug("{} для вакансии [{}] внутренний id = [{}]", lp, vacancyId, vacancyEntity.getId());
+
+        SpoVacancyCandidatesDto spoDto = null;
+        if (vacancyEntity.getCandidatesLastUpdate() == null || skipCache) {
+            response = masterDataIntegrationService.getPostVacancyCandidates(systemParams, systemParams.getTabNumber(), requestValues.getVacancyId());
+            if (response != null) {
+                spoDto = response.getBody();
+                log.debug("{} Получаемый ответ по кандидатам и их этапам : [{}]", lp, objectMapper.writeValueAsString(spoDto));
+            }
+        } else {
+            if (vacancyEntity.getCandidatesLastUpdate().plusHours(ttlVacancyCandidates).isBefore(currentTime)) {
+                response = masterDataIntegrationService.getPostVacancyCandidates(systemParams, systemParams.getTabNumber(), requestValues.getVacancyId());
+                if (response != null) {
+                    spoDto = response.getBody();
+                    log.debug("{} Получаемый ответ по кандидатам и их этапам : [{}]", lp, objectMapper.writeValueAsString(spoDto));
+                }
+            }
+        }
+
+        if (spoDto != null) {
+            SpoVacancyCandidatesMappedDto mappedDto = mapperService.mapSpoCandidatesToCandidateEntities(spoDto.getData().getCandidates(), vacancyEntity);
+            List<CandidateEntity> candidateEntities = mappedDto.getCandidateEntityList();
+            List<CandidateEventEntity> candidateEventEntities = mappedDto.getCandidateEventEntities();
+            try {
+                candidateEventRepository.deleteCandidateEventEntitiesByVacancyId(vacancyEntity.getId());
+                candidateRepository.deleteCandidateEntitiesByVacancyId(vacancyEntity.getId());
+                candidateRepository.saveAll(candidateEntities);
+                candidateEventRepository.saveAll(candidateEventEntities);
+                vacancyRepository.updateCandidateUpdateDate(vacancyId, LocalDateTime.now());
+            } catch (Exception e) {
+                log.error("Произошла ошибка при попытке удаления и обновления в бд сущностей [candidates] и [candidates_events], текст ошибки: [{}]", e.getMessage());
+                log.debug("{} Произошла ошибка при попытке удаления и обновления в бд сущностей [candidates] и [candidates_events], стектрейс ошибки: [{}]", lp, ExceptionUtils.getStackTrace(e));
+            }
+        }
+        List<CandidateEventEntity> candidateEventsLatest;
+
+        Integer offset = calculateOffset(requestValues.getPage(), requestValues.getPageSize());
+        Integer limit = requestValues.getPageSize();
+        String tabsCode = requestValues.getCandidateTabsCode();
+        Integer activeTabCount = 0;
+        Integer inactiveTabCount = 0;
+
+        boolean filtersPresent = false;
+        if (requestValues.getFilter() != null) {
+
+            boolean isEventCodeFilter = requestValues.getFilter().getEventCodeList() != null && !requestValues.getFilter().getEventCodeList().isEmpty();
+            boolean isEventStatusCodeFilter = requestValues.getFilter().getEventStatusCodeList() != null && !requestValues.getFilter().getEventStatusCodeList().isEmpty();
+            boolean isSearchFilter = requestValues.getFilter().getSearch() != null && !requestValues.getFilter().getSearch().isEmpty();
+
+            filtersPresent = isEventCodeFilter || isEventStatusCodeFilter || isSearchFilter;
+        }
+        String searchString = null;
+        if (requestValues.getFilter() != null && requestValues.getFilter().getSearch() != null && !requestValues.getFilter().getSearch().isEmpty()) {
+            searchString = prepareSearchString(requestValues.getFilter().getSearch());
+        }
+
+        List<String> eventCodeList = requestValues.getFilter().getEventCodeList() == null ? List.of() : requestValues.getFilter().getEventCodeList();
+        List<RequisitionFilterEventStatusCodeItem> eventStatusCodeList = requestValues.getFilter().getEventStatusCodeList();
+        var pairs = Optional.ofNullable(eventStatusCodeList).orElseGet(List::of);
+        String[] pairEventCodes  = pairs.stream().map(RequisitionFilterEventStatusCodeItem::getStageCode).toArray(String[]::new);
+        String[] pairStatusCodes = pairs.stream().map(RequisitionFilterEventStatusCodeItem::getStatusCode).toArray(String[]::new);
+
+        log.debug("{} Начало получения данных из БД", lp);
+        boolean tabsCodeIsActive = tabsCode.equals("active");
+
+        if (filtersPresent && tabsCodeIsActive) {
+
+            activeTabCount = candidateEventRepository.countActiveCandidatesAndCandidatesEventsByVacancyIdWithFilters(
+                    vacancyEntity.getId(),
+                    searchString,
+                    eventCodeList.toArray(new String[0]),
+                    pairEventCodes,
+                    pairStatusCodes
+            );
+
+            candidateEventsLatest = candidateEventRepository.findActiveCandidatesAndCandidatesEventsByVacancyIdWithFilters(
+                    vacancyEntity.getId(),
+                    searchString,
+                    eventCodeList.toArray(new String[0]),
+                    pairEventCodes,
+                    pairStatusCodes
+            );
+            inactiveTabCount = candidateEventRepository.countInactiveCandidatesAndCandidatesEventsByVacancyId(vacancyEntity.getId());
+
+        } else if (!filtersPresent && tabsCodeIsActive) {
+
+            inactiveTabCount = candidateEventRepository.countInactiveCandidatesAndCandidatesEventsByVacancyId(vacancyEntity.getId());
+            activeTabCount = candidateEventRepository.countActiveCandidatesAndCandidatesEventsByVacancyId(vacancyEntity.getId());
+
+            candidateEventsLatest = candidateEventRepository.findActiveCandidatesAndCandidatesEventsByVacancyId(
+                    vacancyEntity.getId()
+            );
+
+        } else if (filtersPresent && !tabsCodeIsActive) {
+            inactiveTabCount = candidateEventRepository.countInactiveCandidatesAndCandidatesEventsByVacancyIdWithFilters(
+                    vacancyEntity.getId(),
+                    searchString,
+                    eventCodeList.toArray(new String[0]),
+                    pairEventCodes,
+                    pairStatusCodes
+            );
+            candidateEventsLatest = candidateEventRepository.findInactiveCandidatesAndCandidatesEventsByVacancyIdWithFilters(
+                    vacancyEntity.getId(),
+                    searchString,
+                    eventCodeList.toArray(new String[0]),
+                    pairEventCodes,
+                    pairStatusCodes
+            );
+            activeTabCount = candidateEventRepository.countActiveCandidatesAndCandidatesEventsByVacancyId(vacancyEntity.getId());
+
+        } else {
+
+            activeTabCount = candidateEventRepository.countActiveCandidatesAndCandidatesEventsByVacancyId(vacancyEntity.getId());
+            inactiveTabCount = candidateEventRepository.countInactiveCandidatesAndCandidatesEventsByVacancyId(vacancyEntity.getId());
+            candidateEventsLatest = candidateEventRepository.findInactiveCandidatesAndCandidatesEventsByVacancyId(
+                    vacancyEntity.getId()
+            );
+        }
+
+        log.debug("{} Полученные данные из БД с параметрами: фильтры = [{}], tabsCode = [{}]. activeCount = [{}], inactiveCount = [{}], latestEventsCount = [{}]",
+                lp, filtersPresent, tabsCode, activeTabCount, inactiveTabCount, candidateEventsLatest.size());
+
+        // Сортируем до пагинации
+        sortCandidateEvents(candidateEventsLatest,
+                requestValues.getSortAttribute().toLowerCase(),
+                requestValues.getSortDirection().toLowerCase());
+
+        log.debug("{} Данные после сортировки: latestEventsCount = [{}]",
+                lp, candidateEventsLatest.size());
+
+        //Отбираем список для возвращения на фронт по оффсету, лимиту из всего списка сущностей
+        List<CandidateEventEntity> candidateEventsSelected = getCandidatesEventsWithLimits(candidateEventsLatest, offset, limit);
+
+        //Отбираем уникальные статусы этапов и событий от всего списка сущностей
+        List<String> uniqueEventCodes = candidateEventsLatest.stream().map(CandidateEventEntity::getEventCode).distinct().toList();
+        List<CandidateEventStatusCodeItem> statusCodes = candidateEventsLatest.stream()
+                .map(event -> new CandidateEventStatusCodeItem(
+                        event.getStatusCode(),
+                        event.getEventCode()
+                ))
+                .toList();
+        //Чистим список, чтобы избежать дубликатов
+        List<CandidateEventStatusCodeItem> cleanedStatusCodes = statusCodes.stream().distinct().toList();
+
+        List<CandidateEventCodeItem> collectedEventCodeItems = new ArrayList<>();
+        for (String code : uniqueEventCodes){
+            CandidateEventCodeItem  item = new CandidateEventCodeItem();
+            item.setCodeValue(code);
+            collectedEventCodeItems.add(item);
+        }
+
+        RequisitionPostVacancyCandidatesDto dto;
+        dto = mapperService.mapCandidatesAndEventsToVacancyCandidatesDto(candidateEventsSelected, requestValues, activeTabCount, inactiveTabCount, cleanedStatusCodes, collectedEventCodeItems);
+
+        log.debug("{} Данные после маппинга: latestEventsCount = [{}], dto = [{}]",
+                lp, candidateEventsSelected.size(), dto);
+
+        return dto;
+    }
