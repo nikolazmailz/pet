@@ -1,0 +1,7 @@
+target/
+.mvn/apache-maven-*/
+.mvn/apache-maven-*-bin.zip
+.idea/
+*.iml
+.DS_Store
+*.log

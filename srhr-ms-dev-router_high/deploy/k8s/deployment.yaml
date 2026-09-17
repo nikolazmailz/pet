@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: srhr-ms-dev-router
+  labels:
+    app: srhr-ms-dev-router
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: srhr-ms-dev-router
+  template:
+    metadata:
+      labels:
+        app: srhr-ms-dev-router
+    spec:
+      containers:
+        - name: srhr-ms-dev-router
+          # Replace with the approved image in the corporate registry.
+          image: registry.example.local/srhr/srhr-ms-dev-router:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8090
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: dev
+            - name: USERINFO_SERVICE_URI
+              value: http://srhr-ms-userinfo:8080
+            - name: PAYSTUB_SERVICE_URI
+              value: http://srhr-ms-paystub:8080
+            - name: DEV_UI_ORIGIN
+              value: https://replace-with-dev-ui.example.local
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 192Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: srhr-ms-dev-router
+spec:
+  selector:
+    app: srhr-ms-dev-router
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

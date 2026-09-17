@@ -1,0 +1,33 @@
+#!/bin/sh
+
+set -eu
+
+BASE_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+MAVEN_VERSION=3.9.9
+MAVEN_DIR="$BASE_DIR/.mvn/apache-maven-$MAVEN_VERSION"
+MAVEN_ZIP="$BASE_DIR/.mvn/apache-maven-$MAVEN_VERSION-bin.zip"
+DEFAULT_URL="https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/$MAVEN_VERSION/apache-maven-$MAVEN_VERSION-bin.zip"
+DISTRIBUTION_URL=${MAVEN_DISTRIBUTION_URL:-$DEFAULT_URL}
+
+if [ ! -x "$MAVEN_DIR/bin/mvn" ]; then
+  mkdir -p "$BASE_DIR/.mvn"
+  if [ ! -f "$MAVEN_ZIP" ]; then
+    if command -v curl >/dev/null 2>&1; then
+      curl --fail --location --silent --show-error "$DISTRIBUTION_URL" --output "$MAVEN_ZIP"
+    elif command -v wget >/dev/null 2>&1; then
+      wget -q "$DISTRIBUTION_URL" -O "$MAVEN_ZIP"
+    else
+      echo "Neither curl nor wget is available to download Maven." >&2
+      exit 1
+    fi
+  fi
+
+  if command -v unzip >/dev/null 2>&1; then
+    unzip -q "$MAVEN_ZIP" -d "$BASE_DIR/.mvn"
+  else
+    echo "unzip is required to install Maven Wrapper distribution." >&2
+    exit 1
+  fi
+fi
+
+exec "$MAVEN_DIR/bin/mvn" "$@"

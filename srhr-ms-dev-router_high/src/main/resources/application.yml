@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: srhr-ms-dev-router
+  cloud:
+    gateway:
+      httpclient:
+        connect-timeout: 3000
+        response-timeout: 30s
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowed-origin-patterns:
+              - "${DEV_UI_ORIGIN:http://localhost:*}"
+            allowed-methods: "*"
+            allowed-headers: "*"
+            allow-credentials: true
+      routes:
+        - id: userinfo
+          uri: "${USERINFO_SERVICE_URI:http://localhost:8081}"
+          predicates:
+            - Path=/ui-api-web/cross/srhr/userinfo/v1/**
+          filters:
+            - StripPrefix=5
+
+        - id: paystub
+          uri: "${PAYSTUB_SERVICE_URI:http://localhost:8082}"
+          predicates:
+            - Path=/ui-api-web/cross/srhr/paystub/v1/**
+          filters:
+            - StripPrefix=5
+
+server:
+  port: ${SERVER_PORT:8090}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+logging:
+  level:
+    ru.vtb.srhr.devrouter: INFO

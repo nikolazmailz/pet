@@ -1,0 +1,41 @@
+dev-router:
+  impersonation:
+    enabled: true
+    selector-header: X-Dev-User
+    selector-cookie: DEV_USER
+    session-cookie: DEV_SESSION_ID
+    default-user: employee
+    session-header: sessionId
+    trace-header: traceId
+    session-created-at-header: sessionCreatedAt
+    cookie-max-age: 8h
+    cookie-secure: ${DEV_COOKIE_SECURE:false}
+    cookie-same-site: ${DEV_COOKIE_SAME_SITE:Lax}
+
+  users:
+    employee:
+      display-name: "Петров Пётр — сотрудник"
+      headers:
+        adLogin: petrov_pp
+        pernr: "87654321"
+        channel: WEB
+        realm: EMPLOYEE
+        roles: EMPLOYEE
+
+    approver:
+      display-name: "Иванов Иван — согласующий"
+      headers:
+        adLogin: ivanov_ii
+        pernr: "12345678"
+        channel: WEB
+        realm: EMPLOYEE
+        roles: EMPLOYEE,APPROVER
+
+    admin:
+      display-name: "DEV Admin — администратор"
+      headers:
+        adLogin: dev_admin
+        pernr: "00000001"
+        channel: WEB
+        realm: ADMIN
+        roles: EMPLOYEE,APPROVER,HR_ADMIN
