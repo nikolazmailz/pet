@@ -1,0 +1,7 @@
+{
+    "HOST": "https://iftykc-gw-fapi-main-lb.test.vtb.ru",
+    "ENV_USERINFO_URI": "/ui-api-web/cross/srhr/userinfo/v1",
+    "ENV_PAYSTUB_URI": "/ui-api-web/cross/srhr/paystub/v1",
+    "FGW_HOST": "https://file-gateway.srhr-if.test.vtb.ru",
+    "ENV_USERPHOTO_URI": "/ui-api-web/cross/srhr/userphoto/v1"
+}

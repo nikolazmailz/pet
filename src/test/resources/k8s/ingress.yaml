@@ -1,21 +1,41 @@
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: {{ .Release.Name }}-ingress
-  labels:
-    {{- include "chart.labels" . | nindent 4 }}
-  annotations:
-    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
-spec:
-  ingressClassName: {{ .Values.ingressClassName }}
-  rules:
-    - host: {{ .Release.Name }}.{{ .Values.domainName }}
-      http:
-        paths:
-            - path: /
-              pathType: Prefix
-              backend:
-                service:
-                  name: {{ .Release.Name }}
-                  port:
-                    number: 8180
+curl -v http://srhr-ms-mock-service:8180/__admin/mappings
+
+
+
+$ curl -v http://srhr-ms-mock-service:8180/__admin/mappings
+* Host srhr-ms-mock-service:8180 was resolved.
+* IPv6: (none)
+* IPv4: 1.8.147.116
+*   Trying 1.8.147.116:8180...
+* Established connection to srhr-ms-mock-service (1.8.147.116 port 8180) from 1.0.13.141 port 57822 
+* using HTTP/1.x
+> GET /__admin/mappings HTTP/1.1
+> Host: srhr-ms-mock-service:8180
+> User-Agent: curl/8.18.0
+> Accept: */*
+> 
+* Request completely sent off
+< HTTP/1.1 503 Service Unavailable
+< content-length: 190
+< content-type: text/plain
+< date: Wed, 16 Sep 2026 12:21:56 GMT
+< server: envoy
+< x-envoy-upstream-service-time: 138
+< 
+* Connection #0 to host srhr-ms-mock-service:8180 left intact
+upstream connect error or disconnect/reset before headers. retried and the latest reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused$ 
+
+curl -v http://localhost:8180/__admin/mappings
+
+$ curl -v http://localhost:8180/__admin/mappings
+* Host localhost:8180 was resolved.
+* IPv6: ::1
+* IPv4: 127.0.0.1
+*   Trying [::1]:8180...
+* connect to ::1 port 8180 from ::1 port 42082 failed: Connection refused
+*   Trying 127.0.0.1:8180...
+* connect to 127.0.0.1 port 8180 from 127.0.0.1 port 33058 failed: Connection refused
+* Failed to connect to localhost port 8180 after 0 ms: Could not connect to server
+* closing connection #0
+curl: (7) Failed to connect to localhost port 8180 after 0 ms: Could not connect to server
+$  
