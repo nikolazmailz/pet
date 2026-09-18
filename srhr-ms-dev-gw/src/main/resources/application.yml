@@ -1,0 +1,29 @@
+server:
+  port: ${SERVER_PORT:8090}
+
+spring:
+  application:
+    name: srhr-ms-dev-gw
+  cloud:
+    gateway:
+      routes:
+        - id: userinfo
+          uri: ${USERINFO_SERVICE_URI:http://localhost:8081}
+          predicates:
+            - Path=/ui-api-web/cross/srhr/userinfo/**
+          filters:
+            - StripPrefix=4
+
+        - id: paystub
+          uri: ${PAYSTUB_SERVICE_URI:http://localhost:8082}
+          predicates:
+            - Path=/ui-api-web/cross/srhr/paystub/**
+          filters:
+            - StripPrefix=4
+
+        - id: userphoto
+          uri: ${USERPHOTO_SERVICE_URI:http://localhost:8083}
+          predicates:
+            - Path=/ui-api-web/cross/srhr/userphoto/**
+          filters:
+            - StripPrefix=4
