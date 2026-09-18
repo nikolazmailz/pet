@@ -1,0 +1,98 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: srhr-ms-dev-router
+  cloud:
+    gateway:
+      httpclient:
+        connect-timeout: ${ROUTER_CONNECT_TIMEOUT_MS:3000}
+        response-timeout: ${ROUTER_RESPONSE_TIMEOUT:30s}
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowed-origins:
+              - ${FRONTEND_ORIGIN:https://information-about-salary.srhr.innodev.local}
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowed-headers: '*'
+            exposed-headers:
+              - X-Request-ID
+            allow-credentials: true
+            max-age: 3600
+      routes:
+        - id: paystub
+          uri: ${PAYSTUB_ROUTE_URI:http://srhr-ms-paystub-rest:8180}
+          predicates:
+            - Path=/ui-api-web/cross/srhr/paystub/**
+          filters:
+            - StripPrefix=4
+
+        - id: userinfo
+          uri: ${USERINFO_ROUTE_URI:http://srhr-ms-userinfo-rest:8180}
+          predicates:
+            - Path=/ui-api-web/cross/srhr/userinfo/**
+          filters:
+            - StripPrefix=4
+
+        - id: userphoto
+          uri: ${USERPHOTO_ROUTE_URI:http://srhr-ms-userphoto-rest:8180}
+          predicates:
+            - Path=/ui-api-web/cross/srhr/userphoto/**
+          filters:
+            - StripPrefix=4
+
+dev-router:
+  session:
+    selector-header: X-Dev-User
+    user-cookie: DEV_USER
+    session-cookie: DEV_SESSION_ID
+    cookie-max-age: ${DEV_COOKIE_MAX_AGE:PT8H}
+    cookie-secure: ${DEV_COOKIE_SECURE:false}
+    cookie-same-site: ${DEV_COOKIE_SAME_SITE:Lax}
+  jwt:
+    issuer: ${DEV_JWT_ISSUER:srhr-ms-dev-router}
+    audience: ${DEV_JWT_AUDIENCE:srhr-dev}
+    key-id: ${DEV_JWT_KEY_ID:srhr-dev-router-key}
+    ttl: ${DEV_JWT_TTL:PT1H}
+    default-user: ${DEV_JWT_DEFAULT_USER:employee}
+    users:
+      employee:
+        sub: ${DEV_JWT_EMPLOYEE_SUB:petrov_pp@VTB.RU}
+        session-id: ${DEV_JWT_EMPLOYEE_SESSION_ID:dev-session-employee}
+        channel: ${DEV_JWT_EMPLOYEE_CHANNEL:WEB}
+        realm: ${DEV_JWT_EMPLOYEE_REALM:SRHR}
+      approver:
+        sub: ${DEV_JWT_APPROVER_SUB:ivanov_ii@VTB.RU}
+        session-id: ${DEV_JWT_APPROVER_SESSION_ID:dev-session-approver}
+        channel: ${DEV_JWT_APPROVER_CHANNEL:WEB}
+        realm: ${DEV_JWT_APPROVER_REALM:SRHR}
+      admin:
+        sub: ${DEV_JWT_ADMIN_SUB:dev_admin@VTB.RU}
+        session-id: ${DEV_JWT_ADMIN_SESSION_ID:dev-session-admin}
+        channel: ${DEV_JWT_ADMIN_CHANNEL:WEB}
+        realm: ${DEV_JWT_ADMIN_REALM:SRHR}
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    ru.ntdev.srhr.devrouter: INFO

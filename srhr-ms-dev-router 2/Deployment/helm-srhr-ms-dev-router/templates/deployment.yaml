@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    {{- include "dev-router.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        {{- include "dev-router.labels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Release.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.server.portContainer }}
+          env:
+            - name: SERVER_PORT
+              value: {{ .Values.server.portContainer | quote }}
+            - name: PAYSTUB_ROUTE_URI
+              value: {{ .Values.routes.paystubUri | quote }}
+            - name: USERINFO_ROUTE_URI
+              value: {{ .Values.routes.userinfoUri | quote }}
+            - name: USERPHOTO_ROUTE_URI
+              value: {{ .Values.routes.userphotoUri | quote }}
+            - name: FRONTEND_ORIGIN
+              value: {{ .Values.frontendOrigin | quote }}
+            - name: DEV_JWT_ISSUER
+              value: {{ .Values.jwt.issuer | quote }}
+            - name: DEV_JWT_AUDIENCE
+              value: {{ .Values.jwt.audience | quote }}
+            - name: DEV_JWT_KEY_ID
+              value: {{ .Values.jwt.keyId | quote }}
+            - name: DEV_JWT_TTL
+              value: {{ .Values.jwt.ttl | quote }}
+            - name: DEV_JWT_DEFAULT_USER
+              value: {{ .Values.jwt.defaultUser | quote }}
+            - name: DEV_JWT_EMPLOYEE_SUB
+              value: {{ .Values.jwt.employee.sub | quote }}
+            - name: DEV_JWT_EMPLOYEE_SESSION_ID
+              value: {{ .Values.jwt.employee.sessionId | quote }}
+            - name: DEV_JWT_EMPLOYEE_CHANNEL
+              value: {{ .Values.jwt.employee.channel | quote }}
+            - name: DEV_JWT_EMPLOYEE_REALM
+              value: {{ .Values.jwt.employee.realm | quote }}
+            - name: DEV_JWT_APPROVER_SUB
+              value: {{ .Values.jwt.approver.sub | quote }}
+            - name: DEV_JWT_APPROVER_SESSION_ID
+              value: {{ .Values.jwt.approver.sessionId | quote }}
+            - name: DEV_JWT_APPROVER_CHANNEL
+              value: {{ .Values.jwt.approver.channel | quote }}
+            - name: DEV_JWT_APPROVER_REALM
+              value: {{ .Values.jwt.approver.realm | quote }}
+            - name: DEV_JWT_ADMIN_SUB
+              value: {{ .Values.jwt.admin.sub | quote }}
+            - name: DEV_JWT_ADMIN_SESSION_ID
+              value: {{ .Values.jwt.admin.sessionId | quote }}
+            - name: DEV_JWT_ADMIN_CHANNEL
+              value: {{ .Values.jwt.admin.channel | quote }}
+            - name: DEV_JWT_ADMIN_REALM
+              value: {{ .Values.jwt.admin.realm | quote }}
+            - name: DEV_COOKIE_MAX_AGE
+              value: {{ .Values.session.cookieMaxAge | quote }}
+            - name: DEV_COOKIE_SECURE
+              value: {{ .Values.session.cookieSecure | quote }}
+            - name: DEV_COOKIE_SAME_SITE
+              value: {{ .Values.session.cookieSameSite | quote }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

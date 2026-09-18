@@ -1,0 +1,16 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/epa/jti"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "status": false
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/epa/open-keys"
+  },
+  "response": {
+    "proxyBaseUrl": "http://srhr-ms-dev-router:8180"
+  }
+}

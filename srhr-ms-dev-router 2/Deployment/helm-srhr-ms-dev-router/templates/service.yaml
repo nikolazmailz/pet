@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    {{- include "dev-router.labels" . | nindent 4 }}
+spec:
+  selector:
+    app: {{ .Release.Name }}
+  ports:
+    - name: http
+      port: {{ .Values.server.portService }}
+      targetPort: {{ .Values.server.portContainer }}
+      protocol: TCP

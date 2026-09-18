@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SRHR DEV user</title>
+    <style>
+        :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+        body { max-width: 760px; margin: 48px auto; padding: 0 20px; }
+        .current, button { border-radius: 10px; }
+        .current { padding: 16px; margin: 20px 0; background: color-mix(in srgb, CanvasText 8%, Canvas); }
+        .users { display: grid; gap: 10px; }
+        button { padding: 12px 16px; text-align: left; cursor: pointer; border: 1px solid #8886; background: Canvas; }
+        button:hover { border-color: #5b7cfa; }
+        .secondary { margin-top: 20px; color: #b33; }
+        code { font-size: .9em; }
+    </style>
+</head>
+<body>
+<h1>SRHR DEV user</h1>
+<p>Выберите пользователя. DEV-router будет создавать для него JWT и добавлять его в запросы к SRHR-сервисам.</p>
+<div class="current" id="current">Загрузка...</div>
+<div class="users" id="users"></div>
+<button class="secondary" id="clear">Сбросить выбор</button>
+
+<script>
+    const api = '/dev/session';
+
+    async function json(response) {
+        if (!response.ok) {
+            throw new Error(`${response.status}: ${await response.text()}`);
+        }
+        return response.json();
+    }
+
+    async function refresh() {
+        const [users, current] = await Promise.all([
+            fetch(`${api}/users`).then(json),
+            fetch(`${api}/current`).then(json)
+        ]);
+
+        document.querySelector('#current').innerHTML =
+            `Текущий пользователь: <strong>${escapeHtml(current.subject)}</strong><br>` +
+            `<code>${escapeHtml(current.id)} · ${escapeHtml(current.selectedBy)} · ctxi=${escapeHtml(current.sessionId)}</code>`;
+
+        const container = document.querySelector('#users');
+        container.replaceChildren(...users.map(user => {
+            const button = document.createElement('button');
+            button.textContent = `${user.subject} (${user.id})`;
+            button.onclick = async () => {
+                await fetch(`${api}/user/${encodeURIComponent(user.id)}`, { method: 'POST' }).then(json);
+                await refresh();
+            };
+            return button;
+        }));
+    }
+
+    document.querySelector('#clear').onclick = async () => {
+        await fetch(api, { method: 'DELETE' }).then(json);
+        await refresh();
+    };
+
+    function escapeHtml(value) {
+        const element = document.createElement('div');
+        element.textContent = value;
+        return element.innerHTML;
+    }
+
+    refresh().catch(error => {
+        document.querySelector('#current').textContent = `Ошибка: ${error.message}`;
+    });
+</script>
+</body>
+</html>

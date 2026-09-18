@@ -1,0 +1,62 @@
+replicaCount: 1
+
+image:
+  repository: registry.example.local/srhr-ms-dev-router
+  tag: latest
+  pullPolicy: IfNotPresent
+
+server:
+  portContainer: 8080
+  portService: 8180
+
+routes:
+  paystubUri: http://srhr-ms-paystub-rest:8180
+  userinfoUri: http://srhr-ms-userinfo-rest:8180
+  userphotoUri: http://srhr-ms-userphoto-rest:8180
+
+frontendOrigin: https://information-about-salary.srhr.innodev.local
+
+jwt:
+  issuer: srhr-ms-dev-router
+  audience: srhr-dev
+  keyId: srhr-dev-router-key
+  ttl: PT1H
+  defaultUser: employee
+  employee:
+    sub: petrov_pp@VTB.RU
+    sessionId: dev-session-employee
+    channel: WEB
+    realm: SRHR
+  approver:
+    sub: ivanov_ii@VTB.RU
+    sessionId: dev-session-approver
+    channel: WEB
+    realm: SRHR
+  admin:
+    sub: dev_admin@VTB.RU
+    sessionId: dev-session-admin
+    channel: WEB
+    realm: SRHR
+
+session:
+  cookieMaxAge: PT8H
+  cookieSecure: true
+  cookieSameSite: Lax
+
+ingress:
+  enabled: true
+  className: ingress-dk1-srhr01-srhr-001
+  host: srhr-dev-api.srhr.innodev.local
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+  tls:
+    enabled: false
+    secretName: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
