@@ -1,0 +1,46 @@
+server:
+  port: ${SERVER_PORT:8090}
+
+spring:
+  application:
+    name: srhr-ms-dev-gw
+  cloud:
+    gateway:
+      httpclient:
+        connect-timeout: ${ROUTER_CONNECT_TIMEOUT_MS:3000}
+        response-timeout: ${ROUTER_RESPONSE_TIMEOUT:30s}
+      routes:
+        - id: userinfo
+          uri: ${USERINFO_SERVICE_URI:http://localhost:8081}
+          predicates:
+            - Path=/ui-api-web/cross/srhr/userinfo/**
+          filters:
+            - StripPrefix=4
+
+        - id: paystub
+          uri: ${PAYSTUB_SERVICE_URI:http://localhost:8082}
+          predicates:
+            - Path=/ui-api-web/cross/srhr/paystub/**
+          filters:
+            - StripPrefix=4
+
+        - id: userphoto
+          uri: ${USERPHOTO_SERVICE_URI:http://localhost:8083}
+          predicates:
+            - Path=/ui-api-web/cross/srhr/userphoto/**
+          filters:
+            - StripPrefix=4
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    ru.ntdev.srhr.devgw: INFO
