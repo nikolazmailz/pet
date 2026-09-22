@@ -17,3 +17,33 @@ resumeContentType
         }
     }
 
+@Override
+public FileGetByIdDto downloadFromShkByUuid(
+        String adlogin,
+        String sessionId,
+        String traceId,
+        String fileUuid,
+        String mimeType
+) {
+    String path = String.format(integrationUrlDownloadFromShkByUuid, fileUuid);
+
+    URI uri = UriComponentsBuilder
+            .fromUriString(filestorageRestServiceUrl + path)
+            .queryParam("mimeType", mimeType)
+            .build()
+            .encode()
+            .toUri();
+
+    HttpEntity<Void> requestEntity = new HttpEntity<>(
+            ClientHttpHeaders.minimal(adlogin, sessionId, traceId)
+    );
+
+    ResponseEntity<FileGetByIdDto> response = loggingRestTemplate.exchange(
+            uri,
+            HttpMethod.GET,
+            requestEntity,
+            FileGetByIdDto.class
+    );
+
+    return response.getBody();
+}
