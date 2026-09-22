@@ -47,3 +47,17 @@ public FileGetByIdDto downloadFromShkByUuid(
 
     return response.getBody();
 }
+
+
+
+@GetMapping(value = "/shk/download", produces = "application/json")
+    @ResponseBody
+    @Operation(summary = "Запрос контента по айди",
+            tags = "filestorage-get-file-shk",
+            security = @SecurityRequirement(name = "bearerAuth"))
+   
+    public ResponseEntity<Object> getFileFromSHK(
+            HttpServletRequest request,
+            @Parameter(description = "Айди запрашиваемого контента", example = "")
+            @RequestParam(name = "uuid") UUID id
+    ) throws Exception
