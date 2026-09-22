@@ -1,0 +1,167 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+    app: {{ .Release.Name }}
+    chart: {{ template "app.chart" . }}
+    release: {{ .Release.Name | quote }}
+    heritage: {{ .Release.Service | quote }}
+spec:
+  replicas: {{ .Values.main.replicas }}
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+      release: {{ .Release.Name | quote }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        {{- include "chart.labels" . | nindent 8 }}
+        app: {{ .Release.Name }}
+        chart: {{ template "app.chart" . }}
+        release: {{ .Release.Name | quote }}
+      annotations:
+        rollme: {{ randAlphaNum 5 | quote }}
+       {{- if .Values.istio.enabled }}
+        sidecar.istio.io/inject: {{ .Values.istio.enabled | squote }}
+        sidecar.istio.io/rewriteAppHTTPProbers: 'true'
+        sidecar.istio.io/proxyCPULimit: {{ .Values.istio.resources.limits.cpu }}
+        sidecar.istio.io/proxyMemoryLimit: {{ .Values.istio.resources.limits.memory }}
+        sidecar.istio.io/proxyCPU: {{ .Values.istio.resources.requests.cpu }}
+        sidecar.istio.io/proxyMemory: {{ .Values.istio.resources.requests.memory }}
+        proxy.istio.io/config: '{"proxyMetadata":{"ISTIO_META_DNS_AUTO_ALLOCATE":"false","ISTIO_META_DNS_CAPTURE":"false"}}, { "holdApplicationUntilProxyStarts": true }'
+        traffic.sidecar.istio.io/excludeOutboundPorts: {{ .Values.istio.excludeOutboundPorts | squote }}
+       {{- end }}
+    spec:
+      imagePullSecrets:
+        - name: {{ .Values.imagePullSecretsName }}
+      containers:
+        - name: {{ .Release.Name }}
+          env:
+          {{- if .Values.keyAstrom.enabled }}
+            - name: DT_TAGS
+              value: {{ .Values.keyAstrom.dtTags }}
+            - name: DT_CLUSTER_ID
+              value: {{ .Release.Name }}_on_{{ .Release.Namespace }}
+          {{- end }}
+          {{- if .Values.tslgAgent.enabled }}
+            - name: LOGGING_CONFIG
+              value: "/opt/configs/logback/logback.xml"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          {{- end }}
+          envFrom:
+          {{- if .Values.app_config }}
+            - configMapRef:
+                name: {{ .Release.Name }}-config
+          {{- end }}
+          {{- if .Values.app_secret }}
+            - secretRef:
+                name: {{ .Release.Name }}-secret
+          {{- end }}
+#          {{- if .Values.epa.secret.enabled }}
+#            - secretRef:
+#                name: {{ .Values.risCode | lower }}-epa-sdk-secret
+#          {{- end }}
+          {{- if .Values.postgres.tls.enabled }}
+            - configMapRef:
+                name: {{ .Values.risCode | lower }}-postgres-tls-config
+          {{- end }}
+          {{- if .Values.postgres.secret.enabled }}
+            - secretRef:
+                name: {{ .Values.risCode | lower }}-postgres-secret
+          {{- end }}
+          {{- if .Values.redis.secret.enabled }}
+            - secretRef:
+                name: {{ .Values.risCode | lower }}-redis-secret
+          {{- end }}
+          {{- if .Values.audit.enabled }}
+            - secretRef:
+                name: {{ .Values.risCode | lower }}-audit-secret
+          {{- end }}
+          image: {{ include "main.image" . }}
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ .Values.server.portService }}
+              protocol: TCP
+          {{- with .Values.main.probes.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+            tcpSocket:
+              port: 8080
+          {{- with .Values.main.probes.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+            tcpSocket:
+              port: 8080
+          {{- with .Values.main.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - name: {{ .Values.risCode | lower }}-services-key
+              mountPath: /opt/secrets/services
+          {{- if .Values.tslgAgent.enabled }}
+            - name: logback-config
+              mountPath: /opt/configs/logback
+          {{- end }}
+          {{- if .Values.kafka.enabled }}
+            - name: {{ .Values.risCode | lower }}-kafka-key
+              mountPath: /opt/secrets/kafka
+          {{- end }}
+          {{- if .Values.postgres.tls.enabled }}
+            - name: {{ .Values.risCode | lower }}-postgres-tls-key
+              mountPath: /opt/secrets/postgres
+          {{- end }}
+      volumes:
+        - name: {{ .Values.risCode | lower }}-services-key
+          secret:
+            secretName: {{ .Values.risCode | lower }}-services-key-secret
+      {{- if .Values.tslgAgent.enabled }}
+        - name: logback-config
+          configMap:
+            name: {{ .Release.Name }}-log-config
+      {{- end }}
+      {{- if .Values.kafka.enabled }}
+        - name: {{ .Values.risCode | lower }}-kafka-key
+          secret:
+            secretName: {{ .Values.risCode | lower }}-kafka-key-secret
+      {{- end }}
+      {{- if .Values.postgres.tls.enabled }}
+        - name: {{ .Values.risCode | lower }}-postgres-tls-key
+          secret:
+            secretName: {{ .Values.risCode | lower }}-postgres-tls-key-secret
+      {{- end }}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      {{- if gt (int .Values.main.replicas) 1 }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: {{ .Release.Name }}
+                topologyKey: kubernetes.io/hostname
+      {{- end }}
