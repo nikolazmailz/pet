@@ -1,2 +1,19 @@
 resumeFileName
 resumeContentType
+
+    @Override
+    public FileGetByIdDto downloadFromShkByUuid(String adlogin, String sessionId, String traceId, String fileUuid) {
+         String uri = String.format(integrationUrlDownloadFromShkByUuid, fileUuid);
+        uri = filestorageRestServiceUrl + uri;
+
+        ResponseEntity<FileGetByIdDto> filestorageResponse;
+        HttpEntity<Void> requestEntity =
+                new HttpEntity<>(ClientHttpHeaders.minimal(adlogin, sessionId, traceId));
+        filestorageResponse = loggingRestTemplate.exchange(uri, HttpMethod.GET, requestEntity, FileGetByIdDto.class);
+        if (filestorageResponse.hasBody()) {
+            return filestorageResponse.getBody();
+        } else {
+            return null;
+        }
+    }
+
