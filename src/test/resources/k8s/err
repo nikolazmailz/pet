@@ -11,3 +11,13 @@ sh-5.2$ curl -vk https://srhr-ms-dev-gw.srhr.innodev.local/actuator/health
 * Closing connection 0
 curl: (35) Recv failure: Connection reset by peer
 
+sh-5.2$ curl -vk https://srhr-ms-dev-gw.srhr.innodev.local/actuator/health
+*   Trying 10.147.230.23:443...
+* Connected to srhr-ms-dev-gw.srhr.innodev.local (10.147.230.23) port 443 (#0)
+* ALPN: offers h2,http/1.1
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+* Recv failure: Connection reset by peer
+* OpenSSL SSL_connect: Connection reset by peer in connection to srhr-ms-dev-gw.srhr.innodev.local:443 
+* Closing connection 0
+curl: (35) Recv failure: Connection reset by peer
+sh-5.2$ ^C
