@@ -2,36 +2,11 @@ curl -vk https://srhr-ms-dev-gw.srhr.innodev.local/actuator/health
 
 curl -v http://srhr-ms-dev-gw/actuator/health
 
-sh-5.2$ curl -v http://localhost:8180/actuator/health
-*   Trying 127.0.0.1:8180...
-* connect to 127.0.0.1 port 8180 failed: Connection refused
-*   Trying [::1]:8180...
-* connect to ::1 port 8180 failed: Connection refused
-* Failed to connect to localhost port 8180 after 0 ms: Couldn't connect to server
-* Closing connection 0
-curl: (7) Failed to connect to localhost port 8180 after 0 ms: Couldn't connect to server
-sh-5.2$ curl -v http://localhost:8090/actuator/health
-*   Trying 127.0.0.1:8090...
-* connect to 127.0.0.1 port 8090 failed: Connection refused
-*   Trying [::1]:8090...
-* connect to ::1 port 8090 failed: Connection refused
-* Failed to connect to localhost port 8090 after 0 ms: Couldn't connect to server
-* Closing connection 0
-curl: (7) Failed to connect to localhost port 8090 after 0 ms: Couldn't connect to server
-sh-5.2$ curl -v http://localhost:8080/actuator/health
-*   Trying 127.0.0.1:8080...
-* Connected to localhost (127.0.0.1) port 8080 (#0)
-> GET /actuator/health HTTP/1.1
-> Host: localhost:8080
-> User-Agent: curl/7.88.1
-> Accept: */*
-> 
-< HTTP/1.1 200 OK
-< Content-Type: application/vnd.spring-boot.actuator.v3+json
-< Content-Length: 49
-< 
-* Connection #0 to host localhost left intact
-{"status":"UP","groups":["liveness","readiness"]}sh-5.2$ 
+curl -v http://localhost:8180/actuator/health
+
+curl -v http://srhr-ms-dev-gw:8180/actuator/health
+
+curl -vk https://srhr-ms-dev-gw.srhr.innodev.local/actuator/health
 
 srhr-ms-dev-gw
 
