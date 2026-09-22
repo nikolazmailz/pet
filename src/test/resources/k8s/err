@@ -8,6 +8,11 @@ curl -v http://srhr-ms-dev-gw:8180/actuator/health
 
 curl -vk https://srhr-ms-dev-gw.srhr.innodev.local/actuator/health
 
+
+curl -vk https://dev-gw.srhr.innodev.local/actuator/health
+
+---
+
 srhr-ms-dev-gw
 
 srhr-ms-dev-gw-ingress
