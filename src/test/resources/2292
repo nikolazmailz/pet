@@ -1,3 +1,8 @@
+SRHR-2292 Получение и передача типа и наименование файла резюме на фронт новым способом
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-filestorage/pulls/2716219
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-mod-commons/pulls/2716221
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition/pulls/2716223
+
 resumeFileName
 resumeContentType
 
