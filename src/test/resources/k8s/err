@@ -10,45 +10,71 @@ curl -vk https://srhr-ms-dev-gw.srhr.innodev.local/actuator/health
 
 srhr-ms-dev-gw
 
-sh-5.2$ curl -v http://localhost:8180/actuator/health
-*   Trying 127.0.0.1:8180...
-* Connected to localhost (127.0.0.1) port 8180 (#0)
-> GET /actuator/health HTTP/1.1
-> Host: localhost:8180
-> User-Agent: curl/7.88.1
-> Accept: */*
-> 
-< HTTP/1.1 200 OK
-< Content-Type: application/vnd.spring-boot.actuator.v3+json
-< Content-Length: 49
-< 
-* Connection #0 to host localhost left intact
-{"status":"UP","groups":["liveness","readiness"]}sh-5.2$ 
-sh-5.2$ curl -v http://srhr-ms-dev-gw:8180/actuator/health
-*   Trying 1.8.187.251:8180...
-* Connected to srhr-ms-dev-gw (1.8.187.251) port 8180 (#0)
-> GET /actuator/health HTTP/1.1
-> Host: srhr-ms-dev-gw:8180
-> User-Agent: curl/7.88.1
-> Accept: */*
-> 
-< HTTP/1.1 200 OK
-< content-type: application/vnd.spring-boot.actuator.v3+json
-< content-length: 49
-< x-envoy-upstream-service-time: 7
-< date: Tue, 22 Sep 2026 14:19:31 GMT
-< server: envoy
-< 
-* Connection #0 to host srhr-ms-dev-gw left intact
-{"status":"UP","groups":["liveness","readiness"]}sh-5.2$ 
-sh-5.2$ 
-sh-5.2$ curl -vk https://srhr-ms-dev-gw.srhr.innodev.local/actuator/health
-*   Trying 10.147.230.23:443...
-* Connected to srhr-ms-dev-gw.srhr.innodev.local (10.147.230.23) port 443 (#0)
-* ALPN: offers h2,http/1.1
-* TLSv1.3 (OUT), TLS handshake, Client hello (1):
-* Recv failure: Connection reset by peer
-* OpenSSL SSL_connect: Connection reset by peer in connection to srhr-ms-dev-gw.srhr.innodev.local:443 
-* Closing connection 0
-curl: (35) Recv failure: Connection reset by peer
-sh-5.2$ 
+srhr-ms-dev-gw-ingress
+
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  annotations:
+    meta.helm.sh/release-name: srhr-ms-dev-gw
+    meta.helm.sh/release-namespace: dk1-srhr01-srhr-srhr
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+  resourceVersion: '295513987'
+  name: srhr-ms-dev-gw-ingress
+  uid: 58026922-7d28-4d34-afdc-1dbb7c89a50a
+  creationTimestamp: '2026-09-21T11:34:04Z'
+  generation: 1
+  managedFields:
+    - manager: nginx-ingress-controller
+      operation: Update
+      apiVersion: networking.k8s.io/v1
+      time: '2026-09-21T11:34:54Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:status':
+          'f:loadBalancer':
+            'f:ingress': {}
+      subresource: status
+    - manager: helm
+      operation: Update
+      apiVersion: networking.k8s.io/v1
+      time: '2026-09-22T14:14:06Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:annotations':
+            .: {}
+            'f:meta.helm.sh/release-name': {}
+            'f:meta.helm.sh/release-namespace': {}
+            'f:nginx.ingress.kubernetes.io/backend-protocol': {}
+          'f:labels':
+            .: {}
+            'f:app.kubernetes.io/managed-by': {}
+            'f:app.kubernetes.io/part-of': {}
+            'f:helm.sh/chart': {}
+        'f:spec':
+          'f:ingressClassName': {}
+          'f:rules': {}
+  namespace: dk1-srhr01-srhr-srhr
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: srhr
+    helm.sh/chart: srhr-ms-dev-gw-1.0.0-SNAPSHOT-20260922171140
+spec:
+  ingressClassName: ingress-dk1-srhr01-srhr-001
+  rules:
+    - host: dev-gw.srhr.innodev.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: srhr-ms-dev-gw-ingress
+                port:
+                  number: 10081
+status:
+  loadBalancer:
+    ingress:
+      - ip: 1.8.249.10
+
