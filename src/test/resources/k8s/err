@@ -5,3 +5,8 @@ https://dev-gw.srhr.innodev.local/ui-api-web/cross/srhr/paystub/v1/paystub/perio
 
 
 curl -v http://localhost:8080/__admin/mappings
+
+
+curl -vk https://srhr-ms-mock-service.srhr.innodev.local/__admin/mappings
+
+curl -v http://srhr-ms-mock-service:8180/__admin/mappings
