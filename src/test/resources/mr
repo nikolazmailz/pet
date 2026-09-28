@@ -19,46 +19,37 @@ srhr-ms-requisition
 srhr-ms-filestorage
 
 
-package ru.ntdev.srhr.ms.requisition.kafka.service.listener;
+public class IntegrationServiceImpl implements IntegrationService {
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.support.Acknowledgment;
-import org.springframework.stereotype.Component;
-import ru.ntdev.srhr.common.redis.RedisAdapter;
-
-@Component
-@RequiredArgsConstructor
-@Slf4j
-public class KafkaSapRequisitionListener implements Runnable {
-
-    private final RedisAdapter redisAdapter;
-
-    @Value("${spring.kafka.topic.name.requisition-from-sap}")
-    String kafkaTopicNameFromStaff;
-
-    @Value("${spring.data.redis.sap-req-queue}")
-    String sapRequisitionQueue;
-    @org.springframework.kafka.annotation.KafkaListener(
-            id = "${spring.kafka.listener.sap-req-id}",
-            topics = "${spring.kafka.topic.name.requisition-from-sap}",
-            groupId = "${spring.kafka.listener.sap-req-group-id}",
-            concurrency = "1",
-            autoStartup = "true",
-            containerFactory = "kafkaListenerContainerFactory"
-    )
-    public void listen(String data, Acknowledgment ack) {
-             try {
-                 redisAdapter.putToQueue(sapRequisitionQueue, data);
-                 ack.acknowledge();
-             } catch (Exception e) {
-                 log.warn("Ошибка в листенере [sap_requisition_listener]: [{}]", e.getMessage());
-                 ack.acknowledge();
-             }
-    }
-
+    private static final int FIRST_STRUCT_UNIT_PATH_ORDER_NUMBER = 1;
+  /**
+     * Заполнение дто-связки между guid заявки данных о родительских подразделениях структурного подразделения
+     */
     @Override
-    public void run() {
+    public List<RequisitionStructureUnitPath> fillRequisitionStructureUnitPath(List<String> guidList, StructUnit unit) {
+        List<RequisitionStructureUnitPath> requisitionStructureUnitPathList = new ArrayList<>();
+        RequisitionStructureUnitPath requisitionStructureUnitPath;
+        List<StructUnitPath> structUnitPathList = unit.getStructUnitPathList();
+
+        // Поскольку несем прямую ДТО osrf в БД нужно ее данные изменить
+        for (StructUnitPath item : structUnitPathList) {
+            prepareStructUnitPathItem(item);
+        }
+
+        for (String guid : guidList) {
+            int orderNumber = FIRST_STRUCT_UNIT_PATH_ORDER_NUMBER;
+            for (StructUnitPath path : structUnitPathList) {
+                requisitionStructureUnitPath = new RequisitionStructureUnitPath();
+                requisitionStructureUnitPath.setRequisitionGuid(guid);
+                requisitionStructureUnitPath.setOrderNumber(orderNumber++);
+                requisitionStructureUnitPath.setPathId(path.getId());
+                requisitionStructureUnitPath.setTypeDesc(path.getTypeDesc());
+                requisitionStructureUnitPath.setPathName(path.getName());
+                requisitionStructureUnitPathList.add(requisitionStructureUnitPath);
+            }
+        }
+
+        return requisitionStructureUnitPathList;
     }
+
 }
