@@ -19,55 +19,13 @@ srhr-ms-requisition
 srhr-ms-filestorage
 
 
-public class IntegrationServiceImpl implements IntegrationService {
-
-    private static final int FIRST_STRUCT_UNIT_PATH_ORDER_NUMBER = 1;
-  /**
-     * Заполнение дто-связки между guid заявки данных о родительских подразделениях структурного подразделения
-     */
-    @Override
-    public List<RequisitionStructureUnitPath> fillRequisitionStructureUnitPath(List<String> guidList, StructUnit unit) {
-        List<RequisitionStructureUnitPath> requisitionStructureUnitPathList = new ArrayList<>();
-        RequisitionStructureUnitPath requisitionStructureUnitPath;
-        List<StructUnitPath> structUnitPathList = unit.getStructUnitPathList();
-
-        // Поскольку несем прямую ДТО osrf в БД нужно ее данные изменить
-        for (StructUnitPath item : structUnitPathList) {
-            prepareStructUnitPathItem(item);
-        }
-
-        for (String guid : guidList) {
-            int orderNumber = FIRST_STRUCT_UNIT_PATH_ORDER_NUMBER;
-            for (StructUnitPath path : structUnitPathList) {
-                requisitionStructureUnitPath = new RequisitionStructureUnitPath();
-                requisitionStructureUnitPath.setRequisitionGuid(guid);
-                requisitionStructureUnitPath.setOrderNumber(orderNumber++);
-                requisitionStructureUnitPath.setPathId(path.getId());
-                requisitionStructureUnitPath.setTypeDesc(path.getTypeDesc());
-                requisitionStructureUnitPath.setPathName(path.getName());
-                requisitionStructureUnitPathList.add(requisitionStructureUnitPath);
-            }
-        }
-
-        return requisitionStructureUnitPathList;
-    }
-
-/**
-     * Подмена данных для пути структурной единицы
-     */
-    private void prepareStructUnitPathItem(StructUnitPath item) {
-        String typeDescName = getStructUnitPathTypeDescName(item.getTypeDescCode());
-
-        // костыль если в словаре не оказалось полученного кода
-        if (typeDescName == null) {
-            typeDescName = item.getTypeDesc();
-            log.debug("MasterDataGetRequisitionsTask : prepareStructUnitPathItem : Для кода [{}] не найдено соответствующее значение в словаре, доступные значения словаря {}",
-                    item.getTypeDescCode(),
-                    structUnitTypeMap.keySet()
-            );
-        }
-
-        item.setTypeDesc(typeDescName);
-    }
-
-}
+    @Query(value = """
+            SELECT  req.guid            AS guid,
+                    sm.lkr_name         AS lkrName,
+                    vac.vacancy_id      AS vacancyId
+            FROM srhr_requisition.vacancy vac
+            JOIN srhr_requisition.requisitions req on req.guid = vac.requisition_guid
+            JOIN srhr_requisition.status_mapping sm on sm.lkr_code = req.computed_status
+            WHERE vac.requisition_guid IN :guids and req.is_deleted = false
+            """, nativeQuery = true)
+    List<VacancyRequisitionShortProjection> getShortVacancyInfo(List<String> guids);
