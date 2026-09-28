@@ -23,3 +23,16 @@ SRHR-2309
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition/pulls/2734678
 
 https://dm.snest.fvds.ru/s/2020/p/dorabotka-peresmotra-zp-lhQuoV8Ao1
+
+
+Изменение эндпоинта GET /staff/detail
+Добавить параметр GET:
+emplFrom – ТН делегатора (Необязательный).
+
+Изменение эндпоинта GET /staff/search
+Добавить параметр GET:
+search- параметр поиска (Необязательный).
+
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-mod-commons/pulls/2736920
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-salarychange/pulls/2736921
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-salarychange-rest/pulls/2736922
