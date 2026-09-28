@@ -22,40 +22,24 @@ srhr-ms-filestorage
 SRHR-2309
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition/pulls/2734678
 
-
-@Override
-    public List<StructureUnitEntity> processStructureUnits(Requisition item, RequisitionEntity entity) {
-        List<StructureUnitEntity> entities = new ArrayList<>();
-        if (item.getStructUnitPath() != null) {
-            try {
-                int orderNumber = FIRST_STRUCT_UNIT_PATH_ORDER_NUMBER;
-                for (RequisitionStructureUnitPathItem requisitionStructureUnitPathItem : item.getStructUnitPath()) {
-                    StructureUnitEntity structureUnitEntity = entityService.prepareStructureUnit(requisitionStructureUnitPathItem, entity, new StructureUnitEntity(), orderNumber++);
-                    if (structureUnitEntity != null) {
-                        entities.add(structureUnitEntity);
-                    }
+ @Override
+    public RequisitionEntity processRequisition(Requisition item, DataIntegrationEntity dataIntegrationEntity, RequisitionEntity entity, Map<String, String> easupToLkrStatusMapping, Map<String, String> restoredRequisitionsMap) {
+        try {
+            if (entity == null) {
+                String computedStatus = easupToLkrStatusMapping.get(item.getStatus().getCode());
+                entity = entityService.prepareRequisition(dataIntegrationEntity, item, new RequisitionEntity(), computedStatus);
+            } else {
+                if (entity.getIsDeleted()){
+                    restoredRequisitionsMap.put(entity.getGuid(),entity.getNumber());
                 }
-            } catch (Exception e) {
-                log.error("Ошибка при попытке подготовки сущности [structure_unit] в базу: [{}]", e.getMessage());
-            }
-        }
-        return  entities;
-    }
-
-    @Override
-    public List<ApproverEntity> processApprovers(Requisition item, RequisitionEntity entity) {
-        List<ApproverEntity> entities = new ArrayList<>();
-        if (item.getApprovers() != null) {
-            try {
-                for (RequisitionApprovers requisitionApprovers : item.getApprovers()) {
-                    ApproverEntity approverEntity = entityService.prepareApprover(new ApproverEntity(), requisitionApprovers.getPernr(), requisitionApprovers.getDelegatorPernr(), entity);
-                    if (approverEntity != null) {
-                        entities.add(approverEntity);
-                    }
+                String computedStatus = entity.getComputedStatus();
+                if (computedStatus == null || (!entity.getStatusCode().equals("0010") && !entity.getStatusCode().equals("0006") && !entity.getStatusCode().equals("0007"))) {
+                    computedStatus = easupToLkrStatusMapping.get(item.getStatus().getCode());
                 }
-            } catch (Exception e) {
-                log.error("Ошибка при попытке подготовки сущности [approvers] в базу: [{}]", e.getMessage());
+                entity = entityService.prepareRequisition(dataIntegrationEntity, item, entity, computedStatus);
             }
+        } catch (Exception e) {
+            log.error("Ошибка при попытке подготовки сущности [requisition] в базу: [{}]", e.getMessage());
         }
-        return entities;
+        return entity;
     }
