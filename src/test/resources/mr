@@ -17,3 +17,48 @@ SRHR-2292 Получение и передача типа и наименова�
 srhr-mod-commons
 srhr-ms-requisition
 srhr-ms-filestorage
+
+
+package ru.ntdev.srhr.ms.requisition.kafka.service.listener;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.support.Acknowledgment;
+import org.springframework.stereotype.Component;
+import ru.ntdev.srhr.common.redis.RedisAdapter;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class KafkaSapRequisitionListener implements Runnable {
+
+    private final RedisAdapter redisAdapter;
+
+    @Value("${spring.kafka.topic.name.requisition-from-sap}")
+    String kafkaTopicNameFromStaff;
+
+    @Value("${spring.data.redis.sap-req-queue}")
+    String sapRequisitionQueue;
+    @org.springframework.kafka.annotation.KafkaListener(
+            id = "${spring.kafka.listener.sap-req-id}",
+            topics = "${spring.kafka.topic.name.requisition-from-sap}",
+            groupId = "${spring.kafka.listener.sap-req-group-id}",
+            concurrency = "1",
+            autoStartup = "true",
+            containerFactory = "kafkaListenerContainerFactory"
+    )
+    public void listen(String data, Acknowledgment ack) {
+             try {
+                 redisAdapter.putToQueue(sapRequisitionQueue, data);
+                 ack.acknowledge();
+             } catch (Exception e) {
+                 log.warn("Ошибка в листенере [sap_requisition_listener]: [{}]", e.getMessage());
+                 ack.acknowledge();
+             }
+    }
+
+    @Override
+    public void run() {
+    }
+}
