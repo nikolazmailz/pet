@@ -22,24 +22,25 @@ srhr-ms-filestorage
 SRHR-2309
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition/pulls/2734678
 
- @Override
-    public RequisitionEntity processRequisition(Requisition item, DataIntegrationEntity dataIntegrationEntity, RequisitionEntity entity, Map<String, String> easupToLkrStatusMapping, Map<String, String> restoredRequisitionsMap) {
+
+ public VacancyEntity processStatusVacancy(VacancyStatusListItem vacancyStatusListItem, DataIntegrationEntity dataIntegrationEntity, VacancyEntity vacancyEntity, Map<String,String> estaffToLkrStatusMapping){
         try {
-            if (entity == null) {
-                String computedStatus = easupToLkrStatusMapping.get(item.getStatus().getCode());
-                entity = entityService.prepareRequisition(dataIntegrationEntity, item, new RequisitionEntity(), computedStatus);
+            if (vacancyEntity !=null) {
+                vacancyEntity = entityService.prepareVacancyStatus(dataIntegrationEntity, vacancyEntity, vacancyStatusListItem);
             } else {
-                if (entity.getIsDeleted()){
-                    restoredRequisitionsMap.put(entity.getGuid(),entity.getNumber());
-                }
-                String computedStatus = entity.getComputedStatus();
-                if (computedStatus == null || (!entity.getStatusCode().equals("0010") && !entity.getStatusCode().equals("0006") && !entity.getStatusCode().equals("0007"))) {
-                    computedStatus = easupToLkrStatusMapping.get(item.getStatus().getCode());
-                }
-                entity = entityService.prepareRequisition(dataIntegrationEntity, item, entity, computedStatus);
+                vacancyEntity = entityService.prepareVacancyStatus(dataIntegrationEntity, new VacancyEntity(), vacancyStatusListItem);
             }
-        } catch (Exception e) {
-            log.error("Ошибка при попытке подготовки сущности [requisition] в базу: [{}]", e.getMessage());
+            if (vacancyStatusListItem.getVacancyStatusName()!=null&&vacancyStatusListItem.getVacancyStatusCode()!=null) {
+                try {
+                    String computedStatus = estaffToLkrStatusMapping.get(vacancyStatusListItem.getVacancyStatusCode());
+                    entityService.updateRequisitionComputedStatus(computedStatus, vacancyStatusListItem.getRequisitionGuid());
+                } catch (Exception e) {
+                    log.error("Ошибка при попытке обновления computed_status сущности [requisition] в базе: [{}]", e.getMessage());
+                }
+            }
         }
-        return entity;
+        catch (Exception e) {
+            log.error("Ошибка при попытке подготовки сущности [vacancy] в базу: [{}]", e.getMessage());
+        }
+        return vacancyEntity;
     }
