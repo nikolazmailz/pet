@@ -18,14 +18,29 @@ srhr-mod-commons
 srhr-ms-requisition
 srhr-ms-filestorage
 
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
-    @Query(value = """
-            SELECT  req.guid            AS guid,
-                    sm.lkr_name         AS lkrName,
-                    vac.vacancy_id      AS vacancyId
-            FROM srhr_requisition.vacancy vac
-            JOIN srhr_requisition.requisitions req on req.guid = vac.requisition_guid
-            JOIN srhr_requisition.status_mapping sm on sm.lkr_code = req.computed_status
-            WHERE vac.requisition_guid IN :guids and req.is_deleted = false
-            """, nativeQuery = true)
-    List<VacancyRequisitionShortProjection> getShortVacancyInfo(List<String> guids);
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+class StatusMappingIntegrationTest extends BaseIntegrationTest {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Test
+    void printAllStatusMappings() {
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList("""
+                SELECT *
+                FROM srhr_requisition.status_mapping
+                ORDER BY lkr_code
+                """);
+
+        assertFalse(rows.isEmpty(), "Таблица status_mapping пуста");
+        rows.forEach(System.out::println);
+    }
+}
