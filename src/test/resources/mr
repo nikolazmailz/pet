@@ -52,4 +52,22 @@ public class IntegrationServiceImpl implements IntegrationService {
         return requisitionStructureUnitPathList;
     }
 
+/**
+     * Подмена данных для пути структурной единицы
+     */
+    private void prepareStructUnitPathItem(StructUnitPath item) {
+        String typeDescName = getStructUnitPathTypeDescName(item.getTypeDescCode());
+
+        // костыль если в словаре не оказалось полученного кода
+        if (typeDescName == null) {
+            typeDescName = item.getTypeDesc();
+            log.debug("MasterDataGetRequisitionsTask : prepareStructUnitPathItem : Для кода [{}] не найдено соответствующее значение в словаре, доступные значения словаря {}",
+                    item.getTypeDescCode(),
+                    structUnitTypeMap.keySet()
+            );
+        }
+
+        item.setTypeDesc(typeDescName);
+    }
+
 }
