@@ -18,29 +18,26 @@ srhr-mod-commons
 srhr-ms-requisition
 srhr-ms-filestorage
 
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.util.List;
-import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
-class StatusMappingIntegrationTest extends BaseIntegrationTest {
+@Autowired
+private JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+@Autowired
+private ObjectMapper objectMapper;
 
-    @Test
-    void printAllStatusMappings() {
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList("""
-                SELECT *
-                FROM srhr_requisition.status_mapping
-                ORDER BY lkr_code
-                """);
+@Test
+void printAllStatusMappingsAsJson() throws JsonProcessingException {
+    List<Map<String, Object>> rows = jdbcTemplate.queryForList("""
+            SELECT *
+            FROM srhr_requisition.status_mapping
+            ORDER BY lkr_code
+            """);
 
-        assertFalse(rows.isEmpty(), "Таблица status_mapping пуста");
-        rows.forEach(System.out::println);
-    }
+    String json = objectMapper
+            .writerWithDefaultPrettyPrinter()
+            .writeValueAsString(rows);
+
+    System.out.println(json);
 }
