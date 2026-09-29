@@ -33,8 +33,5 @@ emplFrom – ТН делегатора (Необязательный).
 Добавить параметр GET:
 search- параметр поиска (Необязательный).
 
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-mod-commons/pulls/2736920
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-salarychange/pulls/2736921
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-salarychange-rest/pulls/2736922
-
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-easup-integration/pulls/2739898
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-salarychange-rest/pulls/2741637
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-easup-integration/pulls/2741638
