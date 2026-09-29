@@ -1,0 +1,5077 @@
+openapi: 3.0.1
+info:
+  title: HR сервис "Пересмотр заработной платы"
+  description: Сервисы HR
+  version: 9.0.0
+servers:
+  - url: /
+    description: Default Server URL
+tags:
+  - name: Salarychange
+    description: The Salarychange API
+paths:
+  /staff/detail:
+    get:
+      tags:
+        - salarychange-staff-detail
+        - Salarychange
+      summary: Информация о сотруднике
+      operationId: getSalarychangeStaffDetail
+      parameters:
+        - name: uuid
+          in: query
+          description: Идентификатор списка
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 0
+            type: string
+        - name: lt
+          in: query
+          description: Тип списка
+          required: true
+          schema:
+            maxLength: 16
+            minLength: 0
+            type: string
+        - name: dc
+          in: query
+          description: Код зависимости
+          required: true
+          schema:
+            maxLength: 16
+            minLength: 0
+            type: string
+        - name: tn
+          in: query
+          description: Табельный номер персонала
+          required: true
+          schema:
+            maxLength: 16
+            minLength: 0
+            type: string
+        - name: posid
+          in: query
+          description: Идентификатор должности
+          required: true
+          schema:
+            maxLength: 16
+            minLength: 0
+            type: string
+        - name: exp
+          in: query
+          description: Параметр экспандов в еасуп
+          required: true
+          schema:
+            maxLength: 1024
+            minLength: 0
+            type: string
+        - name: emplFrom
+          in: query
+          required: true
+          schema:
+            maxLength: 8
+            minLength: 0
+            type: string
+      responses:
+        "404":
+          description: Информация о сотруднике не получена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "200":
+          description: Получена информация о сотруднике
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangeStaffDetailDtoOut'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: [ ]
+    post:
+      tags:
+        - Salarychange
+        - salarychange-post-staff-detail
+      summary: Корректировка данных по сотруднику
+      operationId: postSalarychangeStaffDetail
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalarychangePostStaffDetailRequest'
+        required: true
+      responses:
+        "200":
+          description: Корректировка данных по сотруднику
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangePostStaffDetailDtoOut'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+        "404":
+          description: Не получены данные для корректировки данных по сотруднику
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /staff-multi-list:
+    post:
+      tags:
+        - Salarychange
+        - salarychange-post-staff-multi-list
+      summary: Создание нескольких заявок на пересмотр ЗП
+      operationId: postSalarychangeStaffMultiList
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalarychangePostStaffMultiListRequest'
+        required: true
+      responses:
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "404":
+          description: Не получены данные для создание нескольких заявок на пересмотр
+            ЗП
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "200":
+          description: Создание нескольких заявок на пересмотр ЗП произведено успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangePostStaffMultiListRebaseDtoOut'
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: [ ]
+  /staff-multi-list/rebase:
+    post:
+      tags:
+        - Salarychange
+        - salarychange-post-staff-multi-list-rebase
+      summary: Перенос сотрудников по списку
+      operationId: postSalarychangeStaffMultiListRebase
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalarychangePostStaffMultiListRebaseRequest'
+        required: true
+      responses:
+        "404":
+          description: Не получены данные для переноса списка сотрудников
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "200":
+          description: Перенос списка сотрудников произведен успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangePostStaffMultiListRebaseDtoOut'
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: [ ]
+  /staff-multi-list/action:
+    post:
+      tags:
+        - Salarychange
+        - salarychange-post-staff-multi-list-action
+      summary: Редактирование списка сотрудников
+      operationId: postSalarychangeStaffMultiListAction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalarychangePostStaffMultiListActionRequest'
+        required: true
+      responses:
+        "200":
+          description: Редактирование списка сотрудников произведено успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangePostStaffMultiListActionDtoOut'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+        "404":
+          description: Не получены данные для редактирования списка сотрудников
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /staff-list:
+    get:
+      tags:
+        - salarychange-staff-list
+        - Salarychange
+      summary: Получение реестра списков сотрудников
+      operationId: getSalarychangeStaffList
+      parameters:
+        - name: exp
+          in: query
+          description: Параметр экспанд в еасуп
+          required: true
+          schema:
+            maxLength: 1024
+            minLength: 0
+            type: string
+        - name: lid
+          in: query
+          description: Идентификатор списка
+          required: true
+          schema:
+            maxLength: 16
+            minLength: 0
+            type: string
+      responses:
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "200":
+          description: Получен реестр списков сотрудников
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangeStaffListDtoOut'
+        "401":
+          description: Unauthorized
+        "404":
+          description: Реестр списков сотрудников не получен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+    post:
+      tags:
+        - Salarychange
+        - salarychange-post-staff-list
+      summary: Изменения предложений
+      operationId: postSalarychangeStaffList
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalarychangePostStaffListRequest'
+        required: true
+      responses:
+        "200":
+          description: Изменения предложений
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangePostStaffListDtoOut'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "404":
+          description: Не получены изменения предложений
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: [ ]
+  /staff-list/event:
+    post:
+      tags:
+        - Salarychange
+        - salarychange-post-staff-list-event
+      summary: Обработка действий со списком
+      operationId: postSalarychangeStaffListEvent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalarychangePostStaffListEventRequest'
+        required: true
+      responses:
+        "200":
+          description: Обработка действий со списком произведена успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangePostStaffListEventDtoOut'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "404":
+          description: Не получены данные для обработки действий со списком
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: [ ]
+  /report/task:
+    post:
+      tags:
+        - salarychange-post-report-task
+        - Salarychange
+      summary: Печать отчета
+      operationId: postSalarychangeReportTask
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalarychangePostReportTaskRequest'
+        required: true
+      responses:
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "200":
+          description: Печать отчета
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangePostReportTaskDtoOut'
+        "404":
+          description: Не получены данные для печати отчета
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: [ ]
+  /delegation:
+    post:
+      tags:
+        - Salarychange
+        - salarychange-post-delegation
+      summary: Создание делегирования
+      operationId: postSalarychangeDelegation
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SalarychangePostDelegationRequest'
+        required: true
+      responses:
+        "404":
+          description: Не получены данные для создания делегирования
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "200":
+          description: Создание делегирования
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangePostDelegationDtoOut'
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: [ ]
+  /tab:
+    get:
+      tags:
+        - Salarychange
+        - salarychange-reference-tab
+      summary: Получение списка настроек вкладок
+      operationId: getSalarychangeReferenceTab
+      parameters:
+        - name: exp
+          in: query
+          description: Параметр экспандов в еасуп
+          required: true
+          schema:
+            maxLength: 256
+            minLength: 1
+            type: string
+      responses:
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "200":
+          description: Список настроек вкладок получен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangeReferenceTabDtoOut'
+        "401":
+          description: Unauthorized
+        "404":
+          description: Список настроек вкладок не получен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /staff/search:
+    get:
+      tags:
+        - Salarychange
+        - salarychange-staff-search
+      summary: Запрос поиска сотрудников
+      operationId: getSalarychangeStaffSearch
+      parameters:
+        - name: exp
+          in: query
+          description: Параметр экспандов в еасуп
+          required: false
+          schema:
+            maxLength: 256
+            minLength: 0
+            type: string
+          example: departmentsPath
+        - name: f
+          in: query
+          description: Строка фильтрации
+          required: false
+          schema:
+            maxLength: 255
+            minLength: 0
+            type: string
+          example: searchOption eq 'SALREV'
+        - name: top
+          in: query
+          description: "Количество записей, которые необходимо показать"
+          required: false
+          schema:
+            maximum: 999999999
+            minimum: 1
+            type: integer
+            format: int32
+        - name: skip
+          in: query
+          description: "Количество записей, которые необходимо пропустить"
+          required: false
+          schema:
+            maximum: 999999999
+            minimum: 0
+            type: integer
+            format: int32
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "404":
+          description: Не получены сотрудники по поиску
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "200":
+          description: Получены сотрудники по поиску
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangeStaffSearchDtoOut'
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: [ ]
+  /staff/duty:
+    get:
+      tags:
+        - Salarychange
+        - salarychange-staff-duty
+      summary: Получение ответственного сотрудника
+      operationId: getSalarychangeStaffDuty
+      parameters:
+        - name: exp
+          in: query
+          description: Параметр экспандов в еасуп
+          required: false
+          schema:
+            maxLength: 256
+            minLength: 0
+            type: string
+        - name: search
+          in: query
+          description: Параметр поиска
+          required: false
+          schema:
+            maxLength: 256
+            minLength: 0
+            type: string
+        - name: top
+          in: query
+          description: Параметр исключения
+          required: false
+          schema:
+            maximum: 999999999
+            minimum: 0
+            type: integer
+            format: int32
+        - name: skip
+          in: query
+          description: Параметр ограничения
+          required: false
+          schema:
+            maximum: 999999999
+            minimum: 0
+            type: integer
+            format: int32
+        - name: filter
+          in: query
+          description: Параметр фильтрации
+          required: false
+          schema:
+            maxLength: 256
+            minLength: 0
+            type: string
+      responses:
+        "404":
+          description: Не получен ответственный сотрудник
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "200":
+          description: Получен ответственный сотрудник
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangeStaffDutyDto'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: [ ]
+  /staff/delegation-list:
+    get:
+      tags:
+        - Salarychange
+        - salarychange-staff-delegation-list
+      summary: Получение списка делегирования
+      operationId: getSalarychangeStaffDelegationList
+      parameters:
+        - name: f
+          in: query
+          description: Строка фильтрации
+          required: false
+          schema:
+            maxLength: 255
+            minLength: 0
+            type: string
+        - name: exp
+          in: query
+          description: Параметр экспандов в еасуп
+          required: false
+          schema:
+            maxLength: 255
+            minLength: 0
+            type: string
+        - name: order
+          in: query
+          description: Параметр упорядоченности
+          required: false
+          schema:
+            maxLength: 16
+            minLength: 0
+            type: string
+        - name: top
+          in: query
+          description: "Количество записей, которые необходимо показать"
+          required: false
+          schema:
+            maximum: 999999999
+            minimum: 1
+            type: integer
+            format: int32
+        - name: skip
+          in: query
+          description: "Количество записей, которые необходимо пропустить"
+          required: false
+          schema:
+            maximum: 999999999
+            minimum: 0
+            type: integer
+            format: int32
+        - name: str
+          in: query
+          description: Поисковая строка
+          required: false
+          schema:
+            maxLength: 255
+            minLength: 0
+            type: string
+      responses:
+        "200":
+          description: Получен список делегирования
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangeStaffDelegationListDtoOut'
+        "404":
+          description: Список делегирования не получен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: [ ]
+  /staff/chief:
+    get:
+      tags:
+        - Salarychange
+        - salarychange-staff-chief
+      summary: Выбор руководителя для делегирования
+      operationId: getSalarychangeStaffChief
+      parameters:
+        - name: exp
+          in: query
+          description: Параметр экспандов в еасуп
+          required: false
+          schema:
+            maxLength: 256
+            minLength: 0
+            type: string
+        - name: uuid
+          in: query
+          description: Guid
+          required: false
+          schema:
+            maxLength: 256
+            minLength: 0
+            type: string
+        - name: lt
+          in: query
+          description: Тип листа
+          required: false
+          schema:
+            maxLength: 256
+            minLength: 0
+            type: string
+      responses:
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "200":
+          description: Получен руководитель для делегирования
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangeStaffChiefDto'
+        "401":
+          description: Unauthorized
+        "404":
+          description: Не получен руководитель для делегирования
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /staff-list/detail:
+    get:
+      tags:
+        - salarychange-staff-list-detail
+        - Salarychange
+      summary: Получение конкретного списка на пересмотр
+      operationId: getSalarychangeStaffListDetail
+      parameters:
+        - name: uuid
+          in: query
+          description: Идентификатор
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 0
+            type: string
+        - name: t
+          in: query
+          description: Тип
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 0
+            type: string
+        - name: depCode
+          in: query
+          description: Код
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 0
+            type: string
+        - name: exp
+          in: query
+          description: Экспанд
+          required: false
+          schema:
+            maxLength: 1024
+            minLength: 0
+            type: string
+      responses:
+        "404":
+          description: Конкретный список на пересмотр не получен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "200":
+          description: Получен конкретный список на пересмотр
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangeStaffListDetailDtoOut'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: [ ]
+  /staff-dependency:
+    get:
+      tags:
+        - Salarychange
+        - salarychange-staff-dependency
+      summary: Получение информации о структуре подчинения сотрудников
+      operationId: getSalarychangeStaffDependency
+      responses:
+        "200":
+          description: Получена информация о структуре подчинения сотрудников
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangeStaffDependencyDtoOut'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "404":
+          description: Информация о структуре подчинения сотрудников не получена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: [ ]
+  /staff-dependency-exp:
+    get:
+      tags:
+        - salarychange-staff-dependency-exp
+        - Salarychange
+      summary: Формирование списков с расширением выдачи информации
+      operationId: getSalarychangeStaffDependencyExp
+      responses:
+        "404":
+          description: Информация о формировании списков с расширением выдачи информации
+            не получена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "200":
+          description: Получена информация о формировании списков с расширением выдачи
+            информации
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangeStaffDependencyExpDtoOut'
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: [ ]
+  /report/task/status:
+    get:
+      tags:
+        - salarychange-report-task-status
+        - Salarychange
+      summary: Определение статуса задачи печати
+      operationId: getSalarychangeReportTaskStatus
+      parameters:
+        - name: tid
+          in: query
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 0
+            type: string
+      responses:
+        "200":
+          description: Определение статуса задачи печати
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangeReportTaskStatusDtoOut'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "404":
+          description: Cтатус задачи печати не получен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: [ ]
+  /report/attachment:
+    get:
+      tags:
+        - Salarychange
+        - salarychange-report-attachment
+      summary: Получение контента вложения
+      operationId: getSalarychangeReportAttachment
+      parameters:
+        - name: uuid
+          in: query
+          required: true
+          schema:
+            maxLength: 64
+            minLength: 0
+            type: string
+      responses:
+        "200":
+          description: Печать отчета
+          content:
+            application/octet-stream: { }
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "404":
+          description: Не получен контент вложения
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: [ ]
+  /reference:
+    get:
+      tags:
+        - Salarychange
+        - salarychange-reference-ref
+      summary: Получение списка справочников
+      operationId: getSalarychangeReferenceRef
+      responses:
+        "200":
+          description: Получение списка справочников
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangeReferenceRefDtoOut'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+        "404":
+          description: Списки справочников не получены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+      security:
+        - bearerAuth: [ ]
+  /reference/trm:
+    get:
+      tags:
+        - Salarychange
+        - salarychange-reference-ref-trm
+      summary: Получение справочника ТРМ
+      operationId: getSalarychangeReferenceTrm
+      parameters:
+        - name: s
+          in: query
+          description: Строка поиска
+          required: false
+          schema:
+            maxLength: 256
+            minLength: 1
+            type: string
+        - name: t
+          in: query
+          description: Кол-во отображаемых строк
+          required: false
+          schema:
+            maximum: 999999999
+            minimum: 1
+            type: integer
+            format: int32
+        - name: sk
+          in: query
+          description: Кол-во пропущенных строк(оффсет)
+          required: false
+          schema:
+            maximum: 999999999
+            minimum: 0
+            type: integer
+            format: int32
+      responses:
+        "404":
+          description: Справочник ТРМ не получен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "200":
+          description: Получение справочника ТРМ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangeReferenceTrmDtoOut'
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: [ ]
+  /reference/staff-position:
+    get:
+      tags:
+        - Salarychange
+        - salarychange-reference-staff-position
+      summary: Получение справочника должностей
+      operationId: getSalarychangeReferenceStaffPosition
+      parameters:
+        - name: s
+          in: query
+          description: Строка поиска
+          required: false
+          schema:
+            maxLength: 256
+            minLength: 1
+            type: string
+        - name: t
+          in: query
+          description: Кол-во отображаемых строк
+          required: false
+          schema:
+            maximum: 999999999
+            minimum: 1
+            type: integer
+            format: int32
+        - name: sk
+          in: query
+          description: Кол-во пропущенных строк(оффсет)
+          required: false
+          schema:
+            maximum: 999999999
+            minimum: 0
+            type: integer
+            format: int32
+        - name: f
+          in: query
+          description: Строка фильтрации
+          required: false
+          schema:
+            maxLength: 256
+            minLength: 1
+            type: string
+      responses:
+        "200":
+          description: Получение справочника должностей
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangeReferenceStaffPositionDtoOut'
+        "404":
+          description: Справочник должностей не получен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: [ ]
+  /reference/delegation:
+    get:
+      tags:
+        - Salarychange
+        - salarychange-reference-ref-delegation
+      summary: Формирование статусов делегирования
+      operationId: getSalarychangeReferenceDelegation
+      parameters:
+        - name: exp
+          in: query
+          description: Параметр экспандов в еасуп
+          required: false
+          schema:
+            maxLength: 256
+            minLength: 1
+            type: string
+      responses:
+        "404":
+          description: Данные для формирования статусов делегирования не получены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+        "200":
+          description: Формирование статусов делегирования
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangeReferenceDelegationDtoOut'
+      security:
+        - bearerAuth: [ ]
+  /reference/city:
+    get:
+      tags:
+        - Salarychange
+        - salarychange-reference-city
+      summary: Получение справочника городов
+      operationId: getSalarychangeReferenceCity
+      parameters:
+        - name: s
+          in: query
+          description: Строка поиска
+          required: false
+          schema:
+            maxLength: 256
+            minLength: 1
+            type: string
+        - name: t
+          in: query
+          description: Кол-во отображаемых строк
+          required: false
+          schema:
+            maximum: 999999999
+            minimum: 1
+            type: integer
+            format: int32
+        - name: sk
+          in: query
+          description: Кол-во пропущенных строк(оффсет)
+          required: false
+          schema:
+            maximum: 999999999
+            minimum: 0
+            type: integer
+            format: int32
+      responses:
+        "200":
+          description: Получение справочника городов
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SalarychangeReferenceCityDtoOut'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "404":
+          description: Справочник городов не получен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "401":
+          description: Unauthorized
+      security:
+        - bearerAuth: [ ]
+  /delegation/settings:
+    get:
+      tags:
+        - Salarychange
+        - delegation-settings
+      summary: Получение настроек делегирования по версии
+      operationId: getDelegationSettings
+      parameters:
+        - name: vid
+          in: query
+          description: Идентификатор версии настроек делегирования
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Настройки делегирования получены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DelegationSettingOut'
+        "500":
+          description: Непредвиденная ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "404":
+          description: Настройки делегирования не найдены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceErrorDto'
+        "400":
+          description: Неверный или отсутствующий version_id
+      security:
+        - bearerAuth: [ ]
+components:
+  schemas:
+    SalarychangeCommentShortReq:
+      type: object
+      properties:
+        comment:
+          maxLength: 255
+          type: string
+          description: Комментарий
+          nullable: true
+        id:
+          maxLength: 255
+          type: string
+          description: Уникальный идентификационный номер
+          nullable: true
+        responsible:
+          $ref: '#/components/schemas/SalarychangeUserShortReq'
+      description: Массив данных о комментарии
+      nullable: true
+    SalarychangeEventReq:
+      type: object
+      properties:
+        event:
+          maxLength: 255
+          type: string
+          description: Код события
+          nullable: true
+        text:
+          maxLength: 255
+          type: string
+          description: Текст события
+          nullable: true
+      description: Данные о событиях
+      nullable: true
+    SalarychangeOffer:
+      type: object
+      properties:
+        empId:
+          maxLength: 255
+          type: string
+          description: Табельный номер
+          nullable: true
+        offerUnit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Предложение
+          nullable: true
+        offerUnitMode:
+          maxLength: 255
+          type: string
+          description: Предлагаемые изменения
+          nullable: true
+        offerEmployee:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Сумма предложения
+          nullable: true
+        offerEmployeeMode:
+          maxLength: 255
+          type: string
+          description: Предлагаемые изменения
+          nullable: true
+        offerUnitPercent:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Предложение в процентах
+          format: double
+          nullable: true
+        offerEmployeePercent:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Сумма в процентах
+          format: double
+          nullable: true
+        offerUnitCR:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Предложение
+          format: double
+          nullable: true
+        offerEmployeeCR:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Предложение по сотруднику
+          format: double
+          nullable: true
+        corrOklUnitFlag:
+          type: boolean
+          description: Флаг корректировки оклада (ШЕ)
+          nullable: true
+        corrOklEmployeeFlag:
+          type: boolean
+          description: Флаг корректироваки оклада (ТН)
+          nullable: true
+        offerVisible:
+          maxLength: 255
+          type: boolean
+          description: Признак видимого предложения
+          nullable: true
+      description: Массив данных о предложениях
+      nullable: true
+    SalarychangePostStaffDetailRequest:
+      type: object
+      properties:
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код предложения пересмотра заработной платы
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: Уникальный идентификационный номер
+          nullable: true
+        listType:
+          maxLength: 255
+          type: string
+          description: Тип листа
+          nullable: true
+        empId:
+          maxLength: 255
+          type: string
+          description: Табельный номер
+          nullable: true
+        posId:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер предложения
+          nullable: true
+        action:
+          maxLength: 255
+          type: string
+          description: Доступное действие
+          nullable: true
+        grade:
+          maxLength: 255
+          type: string
+          description: Уровень
+          nullable: true
+        status:
+          maxLength: 255
+          type: string
+          description: Статус
+          nullable: true
+        statusName:
+          maxLength: 255
+          type: string
+          description: Наименование статуса
+          nullable: true
+        drpInfoText:
+          maxLength: 255
+          type: string
+          description: Текстовая информация
+          nullable: true
+        drpInfoStatus:
+          maxLength: 255
+          type: string
+          description: Статус текстовой инфромации
+          nullable: true
+        isDelegate:
+          type: boolean
+          description: Признак делегирования
+          nullable: true
+        comments:
+          maxItems: 99999
+          type: array
+          description: Массив данных о комментариях
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeCommentShortReq'
+        offerLin:
+          $ref: '#/components/schemas/SalarychangeOffer'
+        offerDRP:
+          $ref: '#/components/schemas/SalarychangeOffer'
+        offerFun:
+          $ref: '#/components/schemas/SalarychangeOffer'
+        events:
+          maxItems: 99999
+          type: array
+          description: Массив данных о событиях
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEventReq'
+        emplFrom:
+          maxLength: 8
+          type: string
+          description: "ТН руководителя, за которого осуществляеся делегирование"
+          nullable: true
+      description: Запрос сотрудников
+      nullable: true
+    SalarychangeUserShortReq:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Таб. номер сотрудника
+          nullable: true
+      description: Массив информации с данными ответственного сотрудника
+      nullable: true
+    SalarychangeComment:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер комментария
+          nullable: true
+        comment:
+          maxLength: 255
+          type: string
+          description: Комментарий
+          nullable: true
+        responsible:
+          $ref: '#/components/schemas/SalarychangeUser'
+      description: Массив данных о комментариях
+      nullable: true
+    SalarychangeDepartmentsPath:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        name:
+          maxLength: 255
+          type: string
+          description: Наименование
+          nullable: true
+        unitType:
+          maxLength: 255
+          type: string
+          description: Тип отдела
+          nullable: true
+        unitTypeDesc:
+          maxLength: 255
+          type: string
+          description: Описание типа отдела
+          nullable: true
+      description: Данные об отделах сотрудников
+      nullable: true
+    SalarychangeEvent:
+      type: object
+      properties:
+        event:
+          maxLength: 255
+          type: string
+          description: Код события
+          nullable: true
+        text:
+          maxLength: 255
+          type: string
+          description: Текст события
+          nullable: true
+      description: Данные о событиях
+      nullable: true
+    SalarychangePostStaffDetailDtoOut:
+      type: object
+      properties:
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код предложения пересмотра заработной платы
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        listType:
+          maxLength: 255
+          type: string
+          description: Тип листа
+          nullable: true
+        empId:
+          maxLength: 255
+          type: string
+          description: Табельный номер
+          nullable: true
+        posId:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер предложения
+          nullable: true
+        action:
+          maxLength: 255
+          type: string
+          description: Доступное действие
+          nullable: true
+        grade:
+          maxLength: 255
+          type: string
+          description: Уровень
+          nullable: true
+        status:
+          maxLength: 255
+          type: string
+          description: Статус
+          nullable: true
+        statusName:
+          maxLength: 255
+          type: string
+          description: Наименование статуса
+          nullable: true
+        drpInfoText:
+          maxLength: 255
+          type: string
+          description: Текстовая информация
+          nullable: true
+        drpInfoStatus:
+          maxLength: 255
+          type: string
+          description: Статус текстовой инфромации
+          nullable: true
+        isDelegate:
+          type: boolean
+          description: Признак делегирования
+          nullable: true
+        comments:
+          maxItems: 99999
+          type: array
+          description: Массив данных о комментарии
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeComment'
+        offerLin:
+          $ref: '#/components/schemas/SalarychangeOffer'
+        offerDRP:
+          $ref: '#/components/schemas/SalarychangeOffer'
+        offerFun:
+          $ref: '#/components/schemas/SalarychangeOffer'
+        events:
+          maxItems: 99999
+          type: array
+          description: Массив данных о событиях
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEvent'
+        emplFrom:
+          maxLength: 8
+          type: string
+          description: "ТН руководителя, за которого осуществляеся делегирование"
+          nullable: true
+      description: Дто ответа на запрос корректировки данных по сотруднику
+    SalarychangeUser:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Табельный номер сотрудника
+          nullable: true
+        fullName:
+          maxLength: 255
+          type: string
+          description: ФИО
+          nullable: true
+        firstName:
+          maxLength: 255
+          type: string
+          description: Имя
+          nullable: true
+        lastName:
+          maxLength: 255
+          type: string
+          description: Фамилия
+          nullable: true
+        middleName:
+          maxLength: 255
+          type: string
+          description: Отчество
+          nullable: true
+        photo:
+          maxLength: 4096
+          type: string
+          description: Ссылка на фото
+          nullable: true
+        position:
+          maxLength: 255
+          type: string
+          description: Должность
+          nullable: true
+        department:
+          maxLength: 255
+          type: string
+          description: Информация о департаменте
+          nullable: true
+        manager:
+          type: boolean
+          description: Признак менеджера
+          nullable: true
+        departmentsPath:
+          maxItems: 99999
+          type: array
+          description: Массив с данными отдела сотрудника
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeDepartmentsPath'
+      description: "Данные сотрудника, полные"
+      nullable: true
+    SapErrorDetails:
+      type: object
+      properties:
+        code:
+          maxLength: 255
+          type: string
+          description: Код ошибки
+          nullable: true
+          example: '''510'''
+        message:
+          maxLength: 1000
+          type: string
+          description: Текст ошибки
+          nullable: true
+          example: Отсутствуют полномочия к данной группе
+        '@SAP__common.Severity':
+          maxLength: 255
+          type: string
+          description: Уровень критичности
+          nullable: true
+          example: Error
+      description: Массив параметров деталей ошибки от сап
+    ServiceError:
+      type: object
+      properties:
+        message:
+          maxLength: 4000
+          type: string
+          description: Текст ошибки
+          nullable: true
+          example: Ответ не найден
+        code:
+          maxLength: 200
+          type: string
+          description: Код ошибки
+          nullable: true
+        logId:
+          maxLength: 200
+          type: string
+          description: Трейс ошибки
+          nullable: true
+        details:
+          maxItems: 99999
+          uniqueItems: true
+          type: array
+          description: Массив с детализированными данными по ошибке от сервисов
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SapErrorDetails'
+      description: Массив параметров деталей ошибки от сервиса
+      nullable: true
+    ServiceErrorDto:
+      type: object
+      properties:
+        ServiceError:
+          $ref: '#/components/schemas/ServiceError'
+      description: Сущность ошибки от сервисов
+    SalarychangeDepartmentsPathReq:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        name:
+          maxLength: 255
+          type: string
+          description: Наименование
+          nullable: true
+        unitType:
+          maxLength: 255
+          type: string
+          description: Тип отдела
+          nullable: true
+        unitTypeDesc:
+          maxLength: 255
+          type: string
+          description: Описание типа отдела
+          nullable: true
+      description: Данные об отделах сотрудников
+      nullable: true
+    SalarychangeEmployeeReq:
+      type: object
+      properties:
+        empId:
+          maxLength: 255
+          type: string
+          description: Табельный номер
+          nullable: true
+        posId:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер предложения
+          nullable: true
+        grade:
+          maxLength: 255
+          type: string
+          description: Уровень
+          nullable: true
+        countBase:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Базовый расчёт
+          format: double
+          nullable: true
+        countFact:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Фактический расчёт
+          format: double
+          nullable: true
+        unitInd:
+          maxLength: 255
+          type: string
+          description: Значение
+          nullable: true
+        salaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Лимит значения пересмотра
+          format: double
+          nullable: true
+        salaryUnitLimitPercent:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Лимит значения пересмотра в процента
+          format: double
+          nullable: true
+        salary:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Пересмотр
+          format: double
+          nullable: true
+        salaryPercent:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Пересмотр а процентах
+          format: double
+          nullable: true
+        rangeMin:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Минимальный диапазон
+          format: double
+          nullable: true
+        rangeMid:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Средний диапазон
+          format: double
+          nullable: true
+        rangeMax:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Максимальный диапазон
+          format: double
+          nullable: true
+        offerUnit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Предложение
+          nullable: true
+        offerUnitPercent:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Предложение в процентах
+          format: double
+          nullable: true
+        offerUnitMode:
+          maxLength: 255
+          type: string
+          description: Предлагаемые изменения
+          nullable: true
+        offerEmployee:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Сумма
+          nullable: true
+        offerEmployeePercent:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Сумма в процентах
+          format: double
+          nullable: true
+        offerEmployeeMode:
+          maxLength: 255
+          type: string
+          description: Предлагаемые изменения
+          nullable: true
+        drpInfoText:
+          maxLength: 255
+          type: string
+          description: Текстовая информация
+          nullable: true
+        drpInfoStatus:
+          maxLength: 255
+          type: string
+          description: Статус текстовой информации
+          nullable: true
+        offerUnitDRP:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Предложение от ДРП
+          format: int32
+          nullable: true
+        offerEmployeeDRP:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Предложение сотруднику от ДРП
+          format: int32
+          nullable: true
+        hasComments:
+          type: boolean
+          description: Значение наличия комментария
+          nullable: true
+        isDelegate:
+          type: boolean
+          description: Значение наличия делегирования
+          nullable: true
+        corrOklUnitFlag:
+          type: boolean
+          description: Флаг корректировки оклада (ШЕ)
+          nullable: true
+        corrOklEmployeeFlag:
+          type: boolean
+          description: Флаг корректироваки оклада (ТН)
+          nullable: true
+        employee:
+          $ref: '#/components/schemas/SalarychangeUserReq'
+        checkboxActive:
+          type: boolean
+          description: Чек-бокс выбора записи в разрезе ТН/ШЕ
+          nullable: true
+        emplFrom:
+          maxLength: 8
+          type: string
+          description: "ТН руководителя, за которого осуществляеся делегирование"
+          nullable: true
+        add:
+          $ref: '#/components/schemas/SalarychangeFilter'
+      description: Данные о сотруднике
+      nullable: true
+    SalarychangeFilter:
+      required:
+        - baseBonus
+        - city
+        - discipAction
+        - drpInfoId
+        - empId
+        - hireDate
+        - lastIncreaseDate
+        - lastIncreasePercent
+        - partId
+        - trm
+        - ued
+      type: object
+      properties:
+        empId:
+          maxLength: 8
+          type: string
+          description: Табельный номер
+        city:
+          maxLength: 30
+          type: string
+          description: Город
+        trm:
+          maxLength: 8
+          type: string
+          description: ТРМ
+        hireDate:
+          maximum: 9007199254740991
+          minimum: -99999999999999
+          type: integer
+          description: Дата приёма
+          format: int64
+        lastIncreaseDate:
+          maximum: 9007199254740991
+          minimum: -99999999999999
+          type: integer
+          description: Дата прошлого повышения
+          format: int64
+        lastIncreasePercent:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Прошлое повышение в проценте
+          format: double
+        ued:
+          maxLength: 1
+          type: string
+          description: УЭД
+        discipAction:
+          maxLength: 4
+          type: string
+          description: Дисциплинарное высказывание
+        baseBonus:
+          maxLength: 2
+          type: string
+          description: Базовый бонус
+        drpInfoId:
+          maxLength: 2
+          type: string
+          description: Идентификационный номер
+        partId:
+          maxLength: 2
+          type: string
+          description: Идентификационный номер шага
+      description: Дто параметров фильтрации
+      nullable: true
+    SalarychangePostStaffMultiListRequest:
+      type: object
+      properties:
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код предложения пересмотра заработной платы
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        listType:
+          maxLength: 255
+          type: string
+          description: Тип листа
+          nullable: true
+        name:
+          maxLength: 255
+          type: string
+          description: Наименование работы
+          nullable: true
+        offerUnit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Предложение
+          nullable: true
+        offerEmployee:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Сумма
+          nullable: true
+        salaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Лимит суммы
+          format: double
+          nullable: true
+        payrollFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Фонд
+          format: double
+          nullable: true
+        additionalFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Дополнительный фонд
+          format: double
+          nullable: true
+        newSalaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Новый лимит суммы
+          format: double
+          nullable: true
+        balance:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Баланс
+          format: double
+          nullable: true
+        count:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Расчёт
+          format: int32
+          nullable: true
+        event:
+          maxLength: 255
+          type: string
+          description: Событие
+          nullable: true
+        emplList:
+          maxItems: 99999
+          type: array
+          description: Массив данных о предложениях
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEmployeeReq'
+      description: Отправка нескольких заявок на пересмотр ЗП
+      nullable: true
+    SalarychangeUserReq:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Табельный номер сотрудника
+          nullable: true
+        fullName:
+          maxLength: 255
+          type: string
+          description: ФИО
+          nullable: true
+        firstName:
+          maxLength: 255
+          type: string
+          description: Имя
+          nullable: true
+        lastName:
+          maxLength: 255
+          type: string
+          description: Фамилия
+          nullable: true
+        middleName:
+          maxLength: 255
+          type: string
+          description: Отчество
+          nullable: true
+        photo:
+          maxLength: 255
+          type: string
+          description: Ссылка на фото
+          nullable: true
+        position:
+          maxLength: 255
+          type: string
+          description: Должность
+          nullable: true
+        department:
+          maxLength: 255
+          type: string
+          description: Информация о департаменте
+          nullable: true
+        manager:
+          type: boolean
+          description: Признак менеджера
+          nullable: true
+        departmentsPath:
+          maxItems: 99999
+          type: array
+          description: Массив с данными отдела сотрудника
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeDepartmentsPathReq'
+    SalarychangeEmployee:
+      type: object
+      properties:
+        empId:
+          maxLength: 255
+          type: string
+          description: Табельный номер
+          nullable: true
+        posId:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер предложения
+          nullable: true
+        grade:
+          maxLength: 255
+          type: string
+          description: Уровень
+          nullable: true
+        countBase:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Базовый расчёт
+          format: double
+          nullable: true
+        countFact:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Фактический расчёт
+          format: double
+          nullable: true
+        unitInd:
+          maxLength: 255
+          type: string
+          description: Значение
+          nullable: true
+        salaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Лимит значения пересмотра
+          format: double
+          nullable: true
+        salaryUnitLimitPercent:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Лимит значения пересмотра в процента
+          format: double
+          nullable: true
+        salary:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Пересмотр
+          format: double
+          nullable: true
+        salaryPercent:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Пересмотр а процентах
+          format: double
+          nullable: true
+        rangeMin:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Минимальный диапазон
+          format: double
+          nullable: true
+        rangeMid:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Средний диапазон
+          format: double
+          nullable: true
+        rangeMax:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Максимальный диапазон
+          format: double
+          nullable: true
+        offerUnit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Предложение
+          nullable: true
+        offerUnitPercent:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Предложение в процентах
+          format: double
+          nullable: true
+        offerUnitMode:
+          maxLength: 255
+          type: string
+          description: Предлагаемые изменения
+          nullable: true
+        offerEmployee:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Сумма
+          nullable: true
+        offerEmployeePercent:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Сумма в процентах
+          format: double
+          nullable: true
+        offerEmployeeMode:
+          maxLength: 255
+          type: string
+          description: Предлагаемые изменения
+          nullable: true
+        drpInfoText:
+          maxLength: 255
+          type: string
+          description: Текстовая информация
+          nullable: true
+        drpInfoStatus:
+          maxLength: 255
+          type: string
+          description: Статус текстовой информации
+          nullable: true
+        offerUnitDRP:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Предложение от ДРП
+          format: int32
+          nullable: true
+        offerEmployeeDRP:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Предложение сотруднику от ДРП
+          format: int32
+          nullable: true
+        hasComments:
+          type: boolean
+          description: Значение наличия комментария
+          nullable: true
+        isDelegate:
+          type: boolean
+          description: Значение наличия делегирования
+          nullable: true
+        corrOklUnitFlag:
+          type: boolean
+          description: Флаг корректировки оклада (ШЕ)
+          nullable: true
+        corrOklEmployeeFlag:
+          type: boolean
+          description: Флаг корректироваки оклада (ТН)
+          nullable: true
+        employee:
+          $ref: '#/components/schemas/SalarychangeUser'
+        checkboxActive:
+          type: boolean
+          description: Чек-бокс выбора записи в разрезе ТН/ШЕ
+          nullable: true
+        emplFrom:
+          maxLength: 8
+          type: string
+          description: "ТН руководителя, за которого осуществляеся делегирование"
+          nullable: true
+        add:
+          $ref: '#/components/schemas/SalarychangeFilter'
+      description: Данные о сотруднике
+      nullable: true
+    SalarychangePostStaffMultiListRebaseDtoOut:
+      type: object
+      properties:
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код предложения пересмотра заработной платы
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        listType:
+          maxLength: 255
+          type: string
+          description: Тип листа
+          nullable: true
+        name:
+          maxLength: 255
+          type: string
+          description: Наименование работы
+          nullable: true
+        salaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Лимит суммы
+          format: double
+          nullable: true
+        payrollFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Фонд
+          format: double
+          nullable: true
+        additionalFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Дополнительный фонд
+          format: double
+          nullable: true
+        newSalaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Новый лимит суммы
+          format: double
+          nullable: true
+        balance:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Баланс
+          format: double
+          nullable: true
+        count:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Расчёт
+          format: int32
+          nullable: true
+        event:
+          maxLength: 255
+          type: string
+          description: Событие
+          nullable: true
+        editName:
+          type: boolean
+          description: Признак редактирования
+          nullable: true
+        activeMassMode:
+          type: boolean
+          description: Кнопка «Внести предложения»
+          nullable: true
+        activeMoveMode:
+          type: boolean
+          description: кнопка «Переместить»
+          nullable: true
+        checkboxActive:
+          type: boolean
+          description: Чек-бокс выбора записи в разрезе ТН/ШЕ
+          nullable: true
+        toUuid:
+          maxLength: 255
+          type: string
+          description: guid списка для перемещения
+          nullable: true
+        activeFinishMode:
+          maxLength: 255
+          type: string
+          description: Кнопка «Завершить пересмотр»
+          nullable: true
+        emplList:
+          maxItems: 99999
+          type: array
+          description: Массив данных о предложениях
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEmployee'
+      description: Дто ответа на запрос переноса списка сотрудников
+    SalarychangePostStaffMultiListRebaseRequest:
+      type: object
+      properties:
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код предложения пересмотра заработной платы
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        listType:
+          maxLength: 255
+          type: string
+          description: Тип листа
+          nullable: true
+        name:
+          maxLength: 255
+          type: string
+          description: Наименование работы
+          nullable: true
+        salaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Лимит суммы
+          format: double
+          nullable: true
+        payrollFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Фонд
+          format: double
+          nullable: true
+        additionalFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Дополнительный фонд
+          format: double
+          nullable: true
+        newSalaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Новый лимит суммы
+          format: double
+          nullable: true
+        balance:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Баланс
+          format: double
+          nullable: true
+        count:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Расчёт
+          format: int32
+          nullable: true
+        event:
+          maxLength: 255
+          type: string
+          description: Событие
+          nullable: true
+        editName:
+          type: boolean
+          description: Признак редактирования
+          nullable: true
+        activeMassMode:
+          type: boolean
+          description: Кнопка «Внести предложения»
+          nullable: true
+        activeMoveMode:
+          type: boolean
+          description: кнопка «Переместить»
+          nullable: true
+        checkboxActive:
+          type: boolean
+          description: Чек-бокс выбора записи в разрезе ТН/ШЕ
+          nullable: true
+        toUuid:
+          maxLength: 255
+          type: string
+          description: guid списка для перемещения
+          nullable: true
+        activeFinishMode:
+          maxLength: 255
+          type: string
+          description: Кнопка «Завершить пересмотр»
+          nullable: true
+        emplList:
+          maxItems: 99999
+          type: array
+          description: Массив данных о предложениях
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEmployeeReq'
+      description: Редактирование списка сотрудников
+      nullable: true
+    SalarychangeFunctionalLeaderReq:
+      type: object
+      properties:
+        uuid:
+          maxLength: 255
+          type: string
+          description: Уникальный идентификационный номер
+          nullable: true
+        name:
+          maxLength: 255
+          type: string
+          description: Наименование
+          nullable: true
+        salaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Лимит
+          format: double
+          nullable: true
+        payrollFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Фонд
+          format: double
+          nullable: true
+        additionalFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Дополнительный фонд
+          format: double
+          nullable: true
+        newSalaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Новый лимит
+          format: double
+          nullable: true
+        balance:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Баланс
+          format: double
+          nullable: true
+        status:
+          maxLength: 255
+          type: string
+          description: Статус
+          nullable: true
+        statusName:
+          maxLength: 255
+          type: string
+          description: Наименование статуса
+          nullable: true
+        editMode:
+          type: boolean
+          description: Режим редактирования
+          nullable: true
+        activity:
+          maxLength: 255
+          type: string
+          description: Код активности
+          nullable: true
+        finishReview:
+          type: boolean
+          description: Окончательный пересмотр
+          nullable: true
+        emplFrom:
+          maxLength: 8
+          type: string
+          description: "ТН руководителя, за которого осуществляеся делегирование"
+          nullable: true
+        events:
+          maxItems: 99999
+          type: array
+          description: Массив данных с событиями
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEventReq'
+        delegate:
+          maxItems: 99999
+          type: array
+          description: Массив с информацией о делегировании
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeUserReq'
+        responsible:
+          maxItems: 99999
+          type: array
+          description: Массив информации с данными ответственного сотрудника
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeUserReq'
+      description: Массив данных с согласованием функционального руководителя
+      nullable: true
+    SalarychangeLinearLeaderReq:
+      type: object
+      properties:
+        uuid:
+          maxLength: 255
+          type: string
+          description: Уникальный идентификационный номер
+          nullable: true
+        name:
+          maxLength: 255
+          type: string
+          description: Наименование
+          nullable: true
+        parentUuid:
+          maxLength: 255
+          type: string
+          description: Родительский уникальный идентификационный номер
+          nullable: true
+        salaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Лимит
+          format: double
+          nullable: true
+        payrollFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Фонд
+          format: double
+          nullable: true
+        additionalFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Дополнительный фонд
+          format: double
+          nullable: true
+        newSalaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Новый лимит
+          format: double
+          nullable: true
+        balance:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Баланс
+          format: double
+          nullable: true
+        status:
+          maxLength: 255
+          type: string
+          description: Статус
+          nullable: true
+        statusName:
+          maxLength: 255
+          type: string
+          description: Наименование статуса
+          nullable: true
+        editMode:
+          type: boolean
+          description: Режим редактирования
+          nullable: true
+        activity:
+          maxLength: 255
+          type: string
+          description: Код активности
+          nullable: true
+        finishReview:
+          type: boolean
+          description: Окончательный пересмотр
+          nullable: true
+        editResp:
+          type: boolean
+          description: Режим соответствия
+          nullable: true
+        moveReady:
+          type: boolean
+          description: Флаг доступности списка для перемещения
+          nullable: true
+        emplFrom:
+          maxLength: 8
+          type: string
+          description: "ТН руководителя, за которого осуществляеся делегирование"
+          nullable: true
+        events:
+          maxItems: 99999
+          type: array
+          description: Массив данных с событиями
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEventReq'
+        delegate:
+          maxItems: 99999
+          type: array
+          description: Массив с информацией о делегировании
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeUserReq'
+        responsible:
+          maxItems: 99999
+          type: array
+          description: Массив информации с данными ответственного сотрудника
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeUserReq'
+      description: Массив данных с согласованием линейного руководителя
+      nullable: true
+    SalarychangePostStaffMultiListActionRequest:
+      type: object
+      properties:
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код предложения пересмотра заработной платы
+          nullable: true
+        action:
+          maxLength: 255
+          type: string
+          description: Доступное действие
+          nullable: true
+        listType:
+          maxLength: 255
+          type: string
+          description: Тип листа
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        additionalFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Дополнительный фонд
+          nullable: true
+        finishReviewActive:
+          type: boolean
+          description: Признак активного ревью
+          nullable: true
+        responsible:
+          maxLength: 8
+          type: string
+          description: Ответственный
+        events:
+          maxItems: 99999
+          type: array
+          description: Массив с данными о событиями
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEventReq'
+        LRList:
+          maxItems: 99999
+          type: array
+          description: Массив данных с согласованием линейного руководителя
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeLinearLeaderReq'
+        FRList:
+          maxItems: 99999
+          type: array
+          description: Массив данных с согласованием функционального руководителя
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeFunctionalLeaderReq'
+      description: Редактирование списка сотрудников
+      nullable: true
+    SalarychangeFunctionalLeader:
+      type: object
+      properties:
+        uuid:
+          maxLength: 255
+          type: string
+          description: Уникальный идентификационный номер
+          nullable: true
+        name:
+          maxLength: 255
+          type: string
+          description: Наименование
+          nullable: true
+        salaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Лимит
+          format: double
+          nullable: true
+        payrollFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Фонд
+          format: double
+          nullable: true
+        additionalFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Дополнительный фонд
+          format: double
+          nullable: true
+        newSalaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Новый лимит
+          format: double
+          nullable: true
+        balance:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Баланс
+          format: double
+          nullable: true
+        status:
+          maxLength: 255
+          type: string
+          description: Статус
+          nullable: true
+        statusName:
+          maxLength: 255
+          type: string
+          description: Наименование статуса
+          nullable: true
+        editMode:
+          type: boolean
+          description: Режим редактирования
+          nullable: true
+        activity:
+          maxLength: 255
+          type: string
+          description: Код активности
+          nullable: true
+        finishReview:
+          type: boolean
+          description: Окончательный пересмотр
+          nullable: true
+        emplFrom:
+          maxLength: 8
+          type: string
+          description: "ТН руководителя, за которого осуществляеся делегирование"
+          nullable: true
+        events:
+          maxItems: 99999
+          type: array
+          description: Массив данных с событиями
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEvent'
+        delegate:
+          maxItems: 99999
+          type: array
+          description: Массив с информацией о делегировании
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeUser'
+        responsible:
+          maxItems: 99999
+          type: array
+          description: Массив информации с данными ответственного сотрудника
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeUser'
+      description: Массив данных с согласованием функционального руководителя
+      nullable: true
+    SalarychangeLinearLeader:
+      type: object
+      properties:
+        uuid:
+          maxLength: 255
+          type: string
+          description: Уникальный идентификационный номер
+          nullable: true
+        name:
+          maxLength: 255
+          type: string
+          description: Наименование
+          nullable: true
+        parentUuid:
+          maxLength: 255
+          type: string
+          description: Родительский уникальный идентификационный номер
+          nullable: true
+        salaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Лимит
+          format: double
+          nullable: true
+        payrollFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Фонд
+          format: double
+          nullable: true
+        additionalFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Дополнительный фонд
+          format: double
+          nullable: true
+        newSalaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Новый лимит
+          format: double
+          nullable: true
+        balance:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Баланс
+          format: double
+          nullable: true
+        status:
+          maxLength: 255
+          type: string
+          description: Статус
+          nullable: true
+        statusName:
+          maxLength: 255
+          type: string
+          description: Наименование статуса
+          nullable: true
+        editMode:
+          type: boolean
+          description: Режим редактирования
+          nullable: true
+        activity:
+          maxLength: 255
+          type: string
+          description: Код активности
+          nullable: true
+        finishReview:
+          type: boolean
+          description: Окончательный пересмотр
+          nullable: true
+        editResp:
+          type: boolean
+          description: Режим соответствия
+          nullable: true
+        moveReady:
+          type: boolean
+          description: Флаг доступности списка для перемещения
+          nullable: true
+        emplFrom:
+          maxLength: 8
+          type: string
+          description: "ТН руководителя, за которого осуществляеся делегирование"
+          nullable: true
+        events:
+          maxItems: 99999
+          type: array
+          description: Массив данных с событиями
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEvent'
+        delegate:
+          maxItems: 99999
+          type: array
+          description: Массив с информацией о делегировании
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeUser'
+        delegateReady:
+          type: boolean
+        groupList:
+          type: boolean
+        responsible:
+          maxItems: 99999
+          type: array
+          description: Массив информации с данными ответственного сотрудника
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeUser'
+      description: Массив данных с согласованием линейного руководителя
+      nullable: true
+    SalarychangePostStaffMultiListActionDtoOut:
+      required:
+        - responsible
+      type: object
+      properties:
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код предложения пересмотра заработной платы
+          nullable: true
+        action:
+          maxLength: 255
+          type: string
+          description: Доступное действие
+          nullable: true
+        listType:
+          maxLength: 255
+          type: string
+          description: Тип листа
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        additionalFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Дополнительный фонд
+          nullable: true
+        finishReviewActive:
+          type: boolean
+          description: Признак активного ревью
+          nullable: true
+        responsible:
+          maxLength: 8
+          type: string
+          description: Ответственный
+        events:
+          maxItems: 99999
+          type: array
+          description: Массив с данными о событиями
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEvent'
+        LRList:
+          maxItems: 99999
+          type: array
+          description: Массив данных с согласованием линейного руководителя
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeLinearLeader'
+        FRList:
+          maxItems: 99999
+          type: array
+          description: Массив данных с согласованием функционального руководителя
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeFunctionalLeader'
+      description: Дто ответа на запрос изменения списка сотрудников
+    SalarychangePostStaffListRequest:
+      type: object
+      properties:
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код предложения пересмотра заработной платы
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        listType:
+          maxLength: 255
+          type: string
+          description: Тип листа
+          nullable: true
+        name:
+          maxLength: 255
+          type: string
+          description: Наименование работы
+          nullable: true
+        salaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Лимит суммы
+          format: double
+          nullable: true
+        payrollFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Фонд
+          format: double
+          nullable: true
+        additionalFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Дополнительный фонд
+          format: double
+          nullable: true
+        newSalaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Новый лимит суммы
+          format: double
+          nullable: true
+        balance:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Баланс
+          nullable: true
+        count:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Расчёт
+          format: int32
+          nullable: true
+        event:
+          maxLength: 255
+          type: string
+          description: Событие
+          nullable: true
+        editName:
+          type: boolean
+          description: Признак редактирования
+          nullable: true
+        activeMassMode:
+          type: boolean
+          description: Кнопка «Внести предложения»
+          nullable: true
+        activeMoveMode:
+          type: boolean
+          description: кнопка «Переместить»
+          nullable: true
+        checkboxActive:
+          type: boolean
+          description: Чек-бокс выбора записи в разрезе ТН/ШЕ
+          nullable: true
+        toUuid:
+          maxLength: 255
+          type: string
+          description: guid списка для перемещения
+          nullable: true
+        activeFinishMode:
+          maxLength: 255
+          type: string
+          description: Кнопка «Завершить пересмотр»
+          nullable: true
+        emplList:
+          maxItems: 99999
+          type: array
+          description: Массив данных о предложениях
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEmployeeReq'
+      description: Запрос списка сотрудников
+      nullable: true
+    SalarychangePostStaffListDtoOut:
+      type: object
+      properties:
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код предложения пересмотра заработной платы
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        listType:
+          maxLength: 255
+          type: string
+          description: Тип листа
+          nullable: true
+        name:
+          maxLength: 255
+          type: string
+          description: Наименование работы
+          nullable: true
+        salaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Лимит суммы
+          format: int32
+          nullable: true
+        payrollFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Фонд
+          format: double
+          nullable: true
+        additionalFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Дополнительный фонд
+          format: double
+          nullable: true
+        newSalaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Новый лимит суммы
+          format: double
+          nullable: true
+        balance:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Баланс
+          nullable: true
+        count:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Расчёт
+          format: double
+          nullable: true
+        event:
+          maxLength: 255
+          type: string
+          description: Событие
+          nullable: true
+        editName:
+          type: boolean
+          description: Признак редактирования
+          nullable: true
+        activeMassMode:
+          type: boolean
+          description: Кнопка «Внести предложения»
+          nullable: true
+        activeMoveMode:
+          type: boolean
+          description: кнопка «Переместить»
+          nullable: true
+        checkboxActive:
+          type: boolean
+          description: Чек-бокс выбора записи в разрезе ТН/ШЕ
+          nullable: true
+        toUuid:
+          maxLength: 255
+          type: string
+          description: guid списка для перемещения
+          nullable: true
+        activeFinishMode:
+          maxLength: 255
+          type: string
+          description: Кнопка «Завершить пересмотр»
+          nullable: true
+        emplList:
+          maxItems: 99999
+          type: array
+          description: Массив данных о предложениях
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEmployee'
+      description: Дто ответа на запрос изменения предложений
+    SalarychangePostStaffListEventRequest:
+      type: object
+      properties:
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код предложения пересмотра заработной платы
+          nullable: true
+        action:
+          maxLength: 255
+          type: string
+          description: Доступное действие
+          nullable: true
+        listType:
+          maxLength: 255
+          type: string
+          description: Тип листа
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        additionalFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Дополнительный фонд
+          nullable: true
+        finishReviewActive:
+          type: boolean
+          description: Признак активного ревью
+          nullable: true
+        responsible:
+          maxLength: 8
+          type: string
+          description: Ответственный
+        events:
+          maxItems: 99999
+          type: array
+          description: Массив данных о событиях
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEventReq'
+        LRList:
+          maxItems: 99999
+          type: array
+          description: Массив данных с согласованием линейного руководителя
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeLinearLeaderReq'
+        FRList:
+          maxItems: 99999
+          type: array
+          description: Массив данных с согласованием функционального руководителя
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeFunctionalLeaderReq'
+      description: Запрос событий списка сотрудников
+      nullable: true
+    SalarychangePostStaffListEventDtoOut:
+      required:
+        - responsible
+      type: object
+      properties:
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код предложения пересмотра заработной платы
+          nullable: true
+        action:
+          maxLength: 255
+          type: string
+          description: Доступное действие
+          nullable: true
+        listType:
+          maxLength: 255
+          type: string
+          description: Тип листа
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        additionalFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Дополнительный фонд
+          nullable: true
+        responsible:
+          maxLength: 8
+          type: string
+          description: Ответственный
+        events:
+          maxItems: 99999
+          type: array
+          description: Массив данных о событиях
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEvent'
+        finishReviewActive:
+          type: boolean
+          description: Признак активного ревью
+          nullable: true
+        LRList:
+          maxItems: 99999
+          type: array
+          description: Массив данных с согласованием линейного руководителя
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeLinearLeader'
+        FRList:
+          maxItems: 99999
+          type: array
+          description: Массив данных с согласованием функционального руководителя
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeFunctionalLeader'
+      description: Дто ответа на запрос обработки действий со списком
+    SalarychangeAttachmentReq:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификатор
+          nullable: true
+        attType:
+          maxLength: 255
+          type: string
+          description: Тип вложения
+          nullable: true
+        attTypeText:
+          maxLength: 255
+          type: string
+          description: Название типа вложения
+          nullable: true
+        fileName:
+          maxLength: 255
+          type: string
+          description: Наименование вложения
+          nullable: true
+        base64:
+          maxLength: 999999999
+          type: string
+          description: Содержимое вложения
+          nullable: true
+        singBase64:
+          maxLength: 999999999
+          type: string
+          description: Файл подписи
+          nullable: true
+        cert:
+          maxLength: 255
+          type: string
+          description: Сертификат
+          nullable: true
+        action:
+          maxLength: 255
+          type: string
+          description: Действие
+          nullable: true
+      description: Вложенная структура
+      nullable: true
+    SalarychangePostReportTaskRequest:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+        taskNumber:
+          maxLength: 255
+          type: string
+          description: Номер задачи
+          nullable: true
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код предложения пересмотра заработной платы
+          nullable: true
+        listType:
+          maxLength: 255
+          type: string
+          description: Тип листа
+          nullable: true
+        status:
+          maxLength: 255
+          type: string
+          description: Статус
+          nullable: true
+        search:
+          maxLength: 255
+          type: string
+          description: Поиск
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: Уникальный идентификационный номер
+          nullable: true
+        attachment:
+          $ref: '#/components/schemas/SalarychangeAttachmentReq'
+      description: Запрос отчета
+      nullable: true
+    SalarychangeAttachment:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификатор
+          nullable: true
+        attType:
+          maxLength: 255
+          type: string
+          description: Тип вложения
+          nullable: true
+        attTypeText:
+          maxLength: 255
+          type: string
+          description: Название типа вложения
+          nullable: true
+        fileName:
+          maxLength: 255
+          type: string
+          description: Наименование вложения
+          nullable: true
+        base64:
+          maxLength: 999999999
+          type: string
+          description: Содержимое вложения
+          nullable: true
+        singBase64:
+          maxLength: 999999999
+          type: string
+          description: Файл подписи
+          nullable: true
+        cert:
+          maxLength: 255
+          type: string
+          description: Сертификат
+          nullable: true
+        action:
+          maxLength: 255
+          type: string
+          description: Действие
+          nullable: true
+      description: Вложенная структура
+      nullable: true
+    SalarychangePostReportTaskDtoOut:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер отчёта
+          nullable: true
+        taskNumber:
+          maxLength: 255
+          type: string
+          description: Номер задачи
+          nullable: true
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код предложения пересмотра заработной платы
+          nullable: true
+        listType:
+          maxLength: 255
+          type: string
+          description: Тип листа
+          nullable: true
+        status:
+          maxLength: 255
+          type: string
+          description: Статус
+          nullable: true
+        search:
+          maxLength: 255
+          type: string
+          description: Поиск
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: Универсальный идентификационный номер
+          nullable: true
+        attachment:
+          $ref: '#/components/schemas/SalarychangeAttachment'
+      description: Дто ответа на запрос на печать отчёта
+    SalarychangeNoDepUser:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Табельный номер сотрудника
+          nullable: true
+        fullName:
+          maxLength: 255
+          type: string
+          description: ФИО
+          nullable: true
+        firstName:
+          maxLength: 255
+          type: string
+          description: Имя
+          nullable: true
+        lastName:
+          maxLength: 255
+          type: string
+          description: Фамилия
+          nullable: true
+        middleName:
+          maxLength: 255
+          type: string
+          description: Отчество
+          nullable: true
+        photo:
+          maxLength: 4096
+          type: string
+          description: Ссылка на фото
+          nullable: true
+        position:
+          maxLength: 255
+          type: string
+          description: Должность
+          nullable: true
+        department:
+          maxLength: 255
+          type: string
+          description: Информация о департаменте
+          nullable: true
+        manager:
+          type: boolean
+          description: Признак менеджера
+          nullable: true
+      description: "Данные сотрудника, полные, без департамента"
+      nullable: true
+    SalarychangePostDelegationRequest:
+      type: object
+      properties:
+        uuid:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код предложения пересмотра заработной платы
+          nullable: true
+        beginDate:
+          maximum: 9007199254740991
+          minimum: -99999999999999
+          type: integer
+          description: Начальная дата
+          format: int64
+          nullable: true
+        endDate:
+          maximum: 9007199254740991
+          minimum: -99999999999999
+          type: integer
+          description: Конечная дата
+          format: int64
+          nullable: true
+        delegationName:
+          maxLength: 255
+          type: string
+          description: Наименование делегирования
+          nullable: true
+        createdOn:
+          maximum: 9007199254740991
+          minimum: -99999999999999
+          type: integer
+          description: Дата создания
+          format: int64
+          nullable: true
+        status:
+          maxLength: 255
+          type: string
+          description: Статус
+          nullable: true
+        statusName:
+          maxLength: 255
+          type: string
+          description: Наименование статуса
+          nullable: true
+        action:
+          maxLength: 255
+          type: string
+          description: Доступное действие
+          nullable: true
+        employeeFrom:
+          maxLength: 8
+          type: string
+          description: Расположения сотрудника
+          nullable: true
+        listType:
+          maxLength: 2
+          type: string
+          description: Тип листа
+          nullable: true
+        events:
+          maxItems: 99999
+          type: array
+          description: Массив с данными о событиями
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEventReq'
+        listUuid:
+          maxLength: 36
+          type: string
+          nullable: true
+        listT:
+          maxLength: 128
+          type: string
+          nullable: true
+        indefinetely:
+          type: boolean
+          description: Признак срочного делегирования
+          nullable: true
+        includeInList:
+          type: boolean
+          description: Признак включения в список
+          nullable: true
+        employee:
+          $ref: '#/components/schemas/SalarychangeNoDepUser'
+      description: Запрос делегатов
+      nullable: true
+    SalarychangePostDelegationDtoOut:
+      type: object
+      properties:
+        uuid:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код предложения пересмотра заработной платы
+          nullable: true
+        beginDate:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Дата начала
+          format: int64
+          nullable: true
+        endDate:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Дата окончания
+          format: int64
+          nullable: true
+        delegationName:
+          maxLength: 255
+          type: string
+          description: Наименование делегирования
+          nullable: true
+        createdOn:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Дата создания
+          format: int64
+          nullable: true
+        status:
+          maxLength: 255
+          type: string
+          description: Статус
+          nullable: true
+        statusName:
+          maxLength: 255
+          type: string
+          description: Наименование статуса
+          nullable: true
+        action:
+          maxLength: 255
+          type: string
+          description: Доступное действие
+          nullable: true
+        employeeFrom:
+          maxLength: 8
+          type: string
+          description: Расположения сотрудника
+          nullable: true
+        listType:
+          maxLength: 2
+          type: string
+          description: Тип листа
+          nullable: true
+        events:
+          maxItems: 99999
+          type: array
+          description: Массив данных с информацией о событии
+          items:
+            $ref: '#/components/schemas/SalarychangeEvent'
+        employee:
+          $ref: '#/components/schemas/SalarychangeNoDepUser'
+        listUuid:
+          maxLength: 36
+          type: string
+          nullable: true
+        listT:
+          maxLength: 128
+          type: string
+          nullable: true
+        indefinetely:
+          type: boolean
+          description: Признак срочного делегирования
+          nullable: true
+        includeInList:
+          type: boolean
+          description: Признак включения в список
+          nullable: true
+      description: Дто ответа на запрос создания делегирования
+    SalarychangeReferenceTabDtoOut:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификатор
+          nullable: true
+        waitTime:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Время ожидания
+          format: int32
+          nullable: true
+          example: 3000
+        uuid:
+          maxLength: 255
+          type: string
+          description: uid списка откуда осуществляем перемещение
+          nullable: true
+        dependencyCode:
+          maxLength: 4
+          type: string
+          description: Роль пользователя
+          nullable: true
+        listType:
+          maxLength: 2
+          type: string
+          description: Тип списка
+          nullable: true
+        settings:
+          maxItems: 99999
+          type: array
+          description: Массив с данными настроек
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeSettings'
+      description: Дто ответа на запрос доступных вкладок
+    SalarychangeSettings:
+      type: object
+      properties:
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код зависимости
+          nullable: true
+          example: OZP
+        tabs:
+          maxItems: 99999
+          type: array
+          description: Массив с данными вкладок
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeTabs'
+      description: Массив с данными настроек
+      nullable: true
+    SalarychangeTabs:
+      type: object
+      properties:
+        code:
+          maxLength: 255
+          type: string
+          description: Код вкладки
+          nullable: true
+          example: LR
+        value:
+          maxLength: 255
+          type: string
+          description: Наименование вкладки
+          nullable: true
+          example: Линейный руководитель
+        status:
+          maxItems: 99999
+          type: array
+          description: Массив с данными статуса вкладок
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeTabsStatus'
+      description: Массив с данными вкладок
+      nullable: true
+    SalarychangeTabsStatus:
+      type: object
+      properties:
+        code:
+          maxLength: 255
+          type: string
+          description: Код статуса вкладки
+          nullable: true
+          example: "03"
+        value:
+          maxLength: 255
+          type: string
+          description: Наименование статуса вкладки
+          nullable: true
+          example: Согласование ЛР
+      description: Массив с данными статуса вкладок
+      nullable: true
+    SalarychangeStaffSearchDtoOut:
+      type: object
+      properties:
+        value:
+          maxItems: 99999
+          type: array
+          description: Массив с данными юзеров
+          nullable: true
+          items:
+            $ref: '#/components/schemas/StaffEmployee'
+      description: Дто ответа на запрос поиска сотрудников
+    StaffEmployee:
+      type: object
+      properties:
+        id:
+          maxLength: 8
+          type: string
+          description: Табельный номер
+          nullable: true
+          example: '''000000'''
+        fullName:
+          maxLength: 132
+          type: string
+          description: ФИО
+          nullable: true
+          example: Иванов Иван Иванович
+        firstName:
+          maxLength: 40
+          type: string
+          description: Имя
+          nullable: true
+          example: Иван
+        lastName:
+          maxLength: 40
+          type: string
+          description: Фамилия
+          nullable: true
+          example: Иванов
+        middleName:
+          maxLength: 255
+          type: string
+          description: Отчество
+          nullable: true
+          example: Иванович
+        photo:
+          maxLength: 4096
+          type: string
+          description: Ссылка на фото
+          nullable: true
+          example: /sap/opu/odata4/sap/zhrbc/default/sap/zhrbc_0720_react_utils/0001/IUserPhoto('00152285')/content
+        position:
+          maxLength: 255
+          type: string
+          description: Должность
+          nullable: true
+          example: Специалист
+        department:
+          maxLength: 255
+          type: string
+          description: Департамент
+          nullable: true
+          example: Филиал 1
+        searchOption:
+          maxLength: 255
+          type: string
+          description: Параметр поиска
+          nullable: true
+        delegateId:
+          maxLength: 8
+          type: string
+          description: Идентификатор делегирования
+          nullable: true
+        departmentsPath:
+          maxItems: 99999
+          type: array
+          description: "Информация о департаменте, типе занятости и окладе"
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeDepartmentsPath'
+      description: Массив с данными юзеров
+    SalarychangeStaffDuty:
+      required:
+        - dependencyCode
+        - fullName
+        - id
+        - uuid
+      type: object
+      properties:
+        dependencyCode:
+          maxLength: 4
+          type: string
+          description: Код зависимости
+        listType:
+          maxLength: 255
+          type: string
+          description: Тип списка
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: Guid
+        id:
+          maxLength: 8
+          type: string
+          description: Идентификатор
+        fullName:
+          maxLength: 132
+          type: string
+          description: Полное имя
+          example: Лимитова Декрета Петровна
+        firstName:
+          maxLength: 40
+          type: string
+          description: Имя
+          nullable: true
+          example: Декрета
+        lastName:
+          maxLength: 40
+          type: string
+          description: Фамилия
+          nullable: true
+          example: Лимитова
+        middleName:
+          maxLength: 40
+          type: string
+          description: Отчество
+          nullable: true
+          example: Петровна
+        photo:
+          maxLength: 4096
+          type: string
+          description: Фото
+          nullable: true
+          example: /sap/opu/odata4/sap/zhrbc/default/sap/zhrbc_0720_react_utils/0001/IUserPhoto('00000011')/content
+        position:
+          maxLength: 200
+          type: string
+          description: Должность
+          nullable: true
+          example: Главный специалист по развитию персонала
+        department:
+          maxLength: 200
+          type: string
+          description: Департамент
+          nullable: true
+        manager:
+          maxLength: 40
+          type: boolean
+          description: Признак менеджера
+          nullable: true
+          example: false
+        departmentsPath:
+          maxLength: 40
+          maxItems: 99999
+          type: array
+          description: Массив с данными отдела сотрудника
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeDepartmentsPath'
+      description: Данные об ответственном сотруднике
+    SalarychangeStaffDutyDto:
+      type: object
+      properties:
+        value:
+          maxItems: 99999
+          uniqueItems: true
+          type: array
+          description: Массив ответственных сотрудников
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeStaffDuty'
+      description: Дто ответа на запрос поиска ответственного сотрудника
+    SalarychangeCondition:
+      type: object
+      properties:
+        empId:
+          maxLength: 255
+          type: string
+          description: Табельный номер
+          nullable: true
+        city:
+          maxLength: 255
+          type: string
+          description: Город
+          nullable: true
+        trmName:
+          maxLength: 255
+          type: string
+          description: Наименование ТРМ
+          nullable: true
+        unitInd:
+          maxLength: 255
+          type: string
+          description: Значение
+          nullable: true
+        rangeMin:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Минимальный диапазон
+          format: double
+          nullable: true
+        rangeMid:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Средний диапазон
+          format: double
+          nullable: true
+        rangeMax:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Максимальный диапазон
+          format: double
+          nullable: true
+        salaryBase:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Базовый пересмотр
+          format: double
+          nullable: true
+        wage:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Заработная плата
+          format: double
+          nullable: true
+        rksn:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: РКСН
+          format: double
+          nullable: true
+        rewardRange:
+          maxLength: 100
+          type: string
+          description: Диапазон возвнаграждения
+          nullable: true
+        salaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Новый лимит
+          format: double
+          nullable: true
+        salary:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Зарплата
+          format: double
+          nullable: true
+        unitCR:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Значение
+          format: double
+          nullable: true
+        employeeCR:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Сотрудник
+          format: double
+          nullable: true
+        salaryBaseOut:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Выход из заработной платы
+          format: double
+          nullable: true
+        wageNI:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          format: double
+          nullable: true
+        salaryNI:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          format: double
+          nullable: true
+        salaryUnitLimitNI:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          format: double
+          nullable: true
+      description: Данные об условиях
+      nullable: true
+    SalarychangeInfo:
+      type: object
+      properties:
+        empId:
+          maxLength: 255
+          type: string
+          description: Табельный номер
+          nullable: true
+        partText:
+          maxLength: 255
+          type: string
+          description: Наименование
+          nullable: true
+        hireDate:
+          maximum: 9007199254740991
+          minimum: -99999999999999
+          type: integer
+          description: Дата приёма
+          format: int64
+          nullable: true
+        lastIncreaseDate:
+          maximum: 9007199254740991
+          minimum: -99999999999999
+          type: integer
+          description: Дата прошлого повышения
+          format: int64
+          nullable: true
+        lastIncreasePercent:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Прошлое повышение процента
+          format: double
+          nullable: true
+        ued:
+          maxLength: 255
+          type: string
+          description: Оценка
+          nullable: true
+        discipAction:
+          maxLength: 255
+          type: string
+          description: Дисциплинарное действие
+          nullable: true
+      description: Данные об информации по пересмотру
+      nullable: true
+    SalarychangeStaffDetailDtoOut:
+      type: object
+      properties:
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код предложения пересмотра заработной платы
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        listType:
+          maxLength: 255
+          type: string
+          description: Тип листа
+          nullable: true
+        empId:
+          maxLength: 255
+          type: string
+          description: Табельный номер
+          nullable: true
+        posId:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер предложения
+          nullable: true
+        action:
+          maxLength: 255
+          type: string
+          description: Доступное действие
+          nullable: true
+        grade:
+          maxLength: 255
+          type: string
+          description: Уровень
+          nullable: true
+        status:
+          maxLength: 255
+          type: string
+          description: Статус
+          nullable: true
+        statusName:
+          maxLength: 255
+          type: string
+          description: Наименование статуса
+          nullable: true
+        drpInfoText:
+          maxLength: 255
+          type: string
+          description: Текстовая информация
+          nullable: true
+        drpInfoStatus:
+          maxLength: 255
+          type: string
+          description: Статус текстовой информации
+          nullable: true
+        isDelegate:
+          type: boolean
+          description: Значение наличия делегирования
+          nullable: true
+        events:
+          maxItems: 99999
+          type: array
+          description: Массив данных с событиями
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEvent'
+        comments:
+          maxItems: 99999
+          type: array
+          description: Массив данных с комментариями
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeComment'
+        conditions:
+          $ref: '#/components/schemas/SalarychangeCondition'
+        employee:
+          $ref: '#/components/schemas/SalarychangeUser'
+        helpInfo:
+          $ref: '#/components/schemas/SalarychangeInfo'
+        offerDRP:
+          $ref: '#/components/schemas/SalarychangeOffer'
+        offerFun:
+          $ref: '#/components/schemas/SalarychangeOffer'
+        offerLin:
+          $ref: '#/components/schemas/SalarychangeOffer'
+        responsible:
+          maxItems: 99999
+          type: array
+          description: Массив данных по ответственному сотруднику
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeUser'
+        emplFrom:
+          maxLength: 8
+          type: string
+          description: "ТН руководителя, за которого осуществляеся делегирование"
+          nullable: true
+      description: Дто ответа на запрос информации о сотруднике
+    SalarychangeStaffDelegation:
+      type: object
+      properties:
+        uuid:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код предложения пересмотра заработной платы
+          nullable: true
+        beginDate:
+          maximum: 9007199254740991
+          minimum: -99999999999999
+          type: integer
+          description: Дата начала
+          format: int64
+          nullable: true
+        endDate:
+          maximum: 9007199254740991
+          minimum: -99999999999999
+          type: integer
+          description: Дата окончания
+          format: int64
+          nullable: true
+        delegationName:
+          maxLength: 255
+          type: string
+          description: Наименование делегирования
+          nullable: true
+        createdOn:
+          maximum: 9007199254740991
+          minimum: -99999999999999
+          type: integer
+          description: Дата создания
+          format: int64
+          nullable: true
+        status:
+          maxLength: 255
+          type: string
+          description: Статус
+          nullable: true
+        statusName:
+          maxLength: 255
+          type: string
+          description: Наименование статуса
+          nullable: true
+        action:
+          maxLength: 255
+          type: string
+          description: Описание действия
+          nullable: true
+        employeeFrom:
+          maxLength: 8
+          type: string
+          description: Расположения сотрудника
+          nullable: true
+        listType:
+          maxLength: 2
+          type: string
+          description: Тип листа
+          nullable: true
+        events:
+          maxItems: 99999
+          type: array
+          description: Массив с данными о событиях
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEvent'
+        employee:
+          $ref: '#/components/schemas/SalarychangeUser'
+        listUuid:
+          maxLength: 36
+          type: string
+          nullable: true
+        listT:
+          maxLength: 128
+          type: string
+          nullable: true
+        indefinetely:
+          type: boolean
+          description: Признак окончания длительности
+          nullable: true
+        includeInList:
+          type: boolean
+          description: Признак включенности в список
+          nullable: true
+      description: Данные об делегировании сотрудников
+      nullable: true
+    SalarychangeStaffDelegationListDtoOut:
+      type: object
+      properties:
+        value:
+          maxItems: 99999
+          type: array
+          description: Данные об делегировании сотрудников
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeStaffDelegation'
+      description: Дто ответа на запрос получения списка делегирования
+    SalarychangeStaffChiefDto:
+      required:
+        - listType
+        - uuid
+      type: object
+      properties:
+        uuid:
+          maxLength: 255
+          type: string
+          description: Guid
+          example: 0210a901-4fd0-1fe0-8f8d-3de08e4241f4
+        listType:
+          maxLength: 2
+          type: string
+          description: Тип листа
+          example: LR
+        manyEmpls:
+          type: boolean
+          description: Признак множества
+          nullable: true
+          example: false
+        employeeList:
+          maxItems: 99999
+          uniqueItems: true
+          type: array
+          description: Массив данных о сотруднике
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeUser'
+        listT:
+          maxLength: 128
+          type: string
+          description: Наименование списка
+          nullable: true
+      description: Дто ответа на запрос выбора руководителя для делегирования
+    SalarychangeStaffListDtoOut:
+      required:
+        - responsible
+      type: object
+      properties:
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код списка
+          nullable: true
+        action:
+          maxLength: 255
+          type: string
+          description: Доступное действие
+          nullable: true
+        listType:
+          maxLength: 255
+          type: string
+          description: Тип листа
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: Уникальный идентификационный номер
+          nullable: true
+        additionalFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Дополнительный фонд
+          format: double
+          nullable: true
+        finishReviewActive:
+          type: boolean
+          description: Признак активного ревью
+          nullable: true
+        responsible:
+          maxLength: 8
+          type: string
+          description: Ответственный
+        events:
+          maxItems: 99999
+          type: array
+          description: Массив данных с событиями
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEvent'
+        FRList:
+          maxItems: 99999
+          type: array
+          description: Массив данных с согласованием функционального руководителя
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeFunctionalLeader'
+        LRList:
+          maxItems: 99999
+          type: array
+          description: Массив данных с согласованием линейного руководителя
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeLinearLeader'
+      description: Дто ответа на запрос изменения предложений
+    SalarychangeStaffListDetailDtoOut:
+      type: object
+      properties:
+        dependencyCode:
+          maxLength: 255
+          type: string
+          description: Код предложения пересмотра заработной платы
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        listType:
+          maxLength: 255
+          type: string
+          description: Тип листа
+          nullable: true
+        name:
+          maxLength: 255
+          type: string
+          description: Наименование работы
+          nullable: true
+        salaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Лимит суммы
+          format: double
+          nullable: true
+        payrollFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Фонд
+          format: double
+          nullable: true
+        additionalFund:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Дополнительный фонд
+          format: double
+          nullable: true
+        newSalaryUnitLimit:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Новый лимит суммы
+          format: double
+          nullable: true
+        balance:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: number
+          description: Баланс
+          format: double
+          nullable: true
+        count:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Расчёт
+          format: int32
+          nullable: true
+        event:
+          maxLength: 255
+          type: string
+          description: Событие
+          nullable: true
+        editName:
+          type: boolean
+          description: Признак редактирования
+          nullable: true
+        activeMassMode:
+          type: boolean
+          description: Кнопка «Внести предложения»
+          nullable: true
+        activeMoveMode:
+          type: boolean
+          description: кнопка «Переместить»
+          nullable: true
+        checkboxActive:
+          type: boolean
+          description: Чек-бокс выбора записи в разрезе ТН/ШЕ
+          nullable: true
+        toUuid:
+          maxLength: 255
+          type: string
+          description: guid списка для перемещения
+          nullable: true
+        activeFinishMode:
+          maxLength: 255
+          type: string
+          description: Кнопка «Завершить пересмотр»
+          nullable: true
+        emplList:
+          maxItems: 99999
+          type: array
+          description: Массив данных о предложении
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeEmployee'
+      description: Дто ответа на запрос получения конкретного списка на пересмотр
+    SalarychangeCode:
+      type: object
+      properties:
+        code:
+          maxLength: 255
+          type: string
+          description: Код должности/города/ТРМ
+          nullable: true
+        name:
+          maxLength: 255
+          type: string
+          description: Наименование должности/города/ТРМ
+          nullable: true
+        emplFrom:
+          maxLength: 8
+          type: string
+          description: "ТН руководителя, за которого осуществляеся делегирование"
+          nullable: true
+      description: Массив данных о городах
+      nullable: true
+    SalarychangeStaffDependencyDtoOut:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Табельный номер сотрудника
+          nullable: true
+        waitTime:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Время ожидания
+          format: int64
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: uid списка откуда осуществляем перемещение
+          nullable: true
+        dependencyCode:
+          maxLength: 4
+          type: string
+          description: Роль пользователя
+          nullable: true
+        listType:
+          maxLength: 2
+          type: string
+          description: Тип списка
+          nullable: true
+        dependencyList:
+          maxItems: 99999
+          type: array
+          description: Массив данных с структурой подчинения сотрудников
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeCode'
+      description: Дто ответа на запрос получения информации о структуре подчинения
+        сотрудников
+    SalarychangeAmount:
+      type: object
+      properties:
+        code:
+          maxLength: 255
+          type: string
+          description: Код вида пагинации
+          nullable: true
+        amount:
+          maxLength: 255
+          type: string
+          description: Значение вида пагинации
+          nullable: true
+      description: Массив данных с видами пагинации
+      nullable: true
+    SalarychangeInfoText:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификатор инфотекста
+          nullable: true
+        text:
+          maxLength: 255
+          type: string
+          description: Текст
+          nullable: true
+      description: Справочник информационных текстов
+      nullable: true
+    SalarychangeStaffDependencyExpDtoOut:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Индентификационный номер
+          nullable: true
+        waitTime:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Время ожидания
+          format: int64
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: uid списка откуда осуществляем перемещение
+          nullable: true
+        dependencyCode:
+          maxLength: 4
+          type: string
+          description: Роль пользователя
+          nullable: true
+        listType:
+          maxLength: 2
+          type: string
+          description: Тип списка
+          nullable: true
+        baseBonus:
+          maxItems: 99999
+          type: array
+          description: Массив информации с типом базового бонуса
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeCode'
+        discipAction:
+          maxItems: 99999
+          type: array
+          description: Массив данных с видами дисципларного действия
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeCode'
+        drpInfo:
+          maxItems: 99999
+          type: array
+          description: Массив данных с видами ответов
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeCode'
+        paging:
+          maxItems: 99999
+          type: array
+          description: Массив данных с видами пагинации
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeAmount'
+        part:
+          maxItems: 99999
+          type: array
+          description: Массив данных с действиями
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeCode'
+        ued:
+          maxItems: 99999
+          type: array
+          description: Массив данных с оценкой
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeCode'
+        unitInd:
+          maxItems: 99999
+          type: array
+          description: Массив данных с видами значений
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeCode'
+        statusDrp:
+          maxItems: 99999
+          uniqueItems: true
+          type: array
+          description: Массив с данными ДРП
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeStatusDrpCode'
+        infoText:
+          maxItems: 99999
+          uniqueItems: true
+          type: array
+          description: Справочник информационных текстов
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeInfoText'
+      description: Формирование списков с расширение выдачи информации
+    SalarychangeStatusDrpCode:
+      type: object
+      properties:
+        code:
+          maxLength: 255
+          type: string
+          description: Код ДРП
+          nullable: true
+        value:
+          maxLength: 255
+          type: string
+          description: Наименование ДРП
+          nullable: true
+      description: Массив данных о ДРП
+      nullable: true
+    SalarychangeReportTaskStatusDtoOut:
+      type: object
+      properties:
+        taskNumber:
+          maxLength: 255
+          type: string
+          description: Номер задачи
+          nullable: true
+        inProcessing:
+          type: boolean
+          description: Признак нахождения в процессе
+          nullable: true
+      description: Дто ответа на запрос определения статуса задачи печати
+    SalarychangeReferenceRefDtoOut:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        waitTime:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Время ожидания
+          format: int32
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: uid списка откуда осуществляем перемещение
+          nullable: true
+        dependencyCode:
+          maxLength: 4
+          type: string
+          description: Роль пользователя
+          nullable: true
+        listType:
+          maxLength: 2
+          type: string
+          description: Тип списка
+          nullable: true
+      description: Дто ответа на запрос получения списка справочников
+    SalarychangeReferenceTrmDtoOut:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        waitTime:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Время ожидания
+          format: int64
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: uid списка откуда осуществляем перемещение
+          nullable: true
+        dependencyCode:
+          maxLength: 4
+          type: string
+          description: Роль пользователя
+          nullable: true
+        listType:
+          maxLength: 2
+          type: string
+          description: Тип списка
+          nullable: true
+        trm:
+          maxItems: 99999
+          type: array
+          description: Массив данных о ТРМ
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeCode'
+      description: Дто ответа на запрос получения справочника ТРМ
+    SalarychangeReferenceStaffPosition:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        waitTime:
+          maximum: 9007199254740991
+          minimum: -99999999999999
+          type: integer
+          description: Время ожидания
+          format: int64
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: uid списка откуда осуществляем перемещение
+          nullable: true
+        dependencyCode:
+          maxLength: 4
+          type: string
+          description: Роль пользователя
+          nullable: true
+        listType:
+          maxLength: 2
+          type: string
+          description: Тип списка
+          nullable: true
+        position:
+          maxItems: 99999
+          type: array
+          description: Массив данных о должностях
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeCode'
+      description: Массив с данными справочника должностей
+      nullable: true
+    SalarychangeReferenceStaffPositionDtoOut:
+      type: object
+      properties:
+        value:
+          maxItems: 99999
+          type: array
+          description: Массив с данными справочника должностей
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeReferenceStaffPosition'
+      description: Дто ответа на запрос получения справочника должностей
+    SalarychangeReferenceDelegationDtoOut:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        waitTime:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Время ожидания
+          format: int32
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: uid списка откуда осуществляем перемещение
+          nullable: true
+        dependencyCode:
+          maxLength: 4
+          type: string
+          description: Роль пользователя
+          nullable: true
+        listType:
+          maxLength: 2
+          type: string
+          description: Тип списка
+          nullable: true
+        delegStatus:
+          maxItems: 99999
+          type: array
+          description: Массив данных со статусом делегирования
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeStatus'
+      description: Дто ответа на запрос формирования статусов делегирования
+    SalarychangeStatus:
+      type: object
+      properties:
+        statusName:
+          maxLength: 255
+          type: string
+          description: Наименование статуса делегирования
+          nullable: true
+        status:
+          maxLength: 255
+          type: string
+          description: Статус делегирования
+          nullable: true
+      description: Массив с данными о статусе
+      nullable: true
+    SalarychangeReferenceCityDtoOut:
+      type: object
+      properties:
+        id:
+          maxLength: 255
+          type: string
+          description: Идентификационный номер
+          nullable: true
+        waitTime:
+          maximum: 99999999999999
+          minimum: -99999999999999
+          type: integer
+          description: Время ожидания
+          format: int64
+          nullable: true
+        uuid:
+          maxLength: 255
+          type: string
+          description: uid списка откуда осуществляем перемещение
+          nullable: true
+        dependencyCode:
+          maxLength: 4
+          type: string
+          description: Роль пользователя
+          nullable: true
+        listType:
+          maxLength: 2
+          type: string
+          description: Тип списка
+          nullable: true
+        city:
+          maxItems: 99999
+          type: array
+          description: Массив данных о городах
+          nullable: true
+          items:
+            $ref: '#/components/schemas/SalarychangeCode'
+      description: Дто ответа на запрос получения справочника городов
+    DelegationSettingOut:
+      required:
+        - id
+      type: object
+      properties:
+        id:
+          maxLength: 1
+          type: string
+          description: Идентификатор настройки делегирования
+        listDelegationActive:
+          type: boolean
+          description: Флаг активации отображения делегирования
+          nullable: true
+      description: DTO ответа на запрос получения настроек делегирования
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
