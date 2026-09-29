@@ -1,19 +1,40 @@
-    private Map<Integer, List<CandidateEventEntity>> getCandidateEventsMap(
-            List<CandidateEventEntity> candidateEventEntities,
-            List<Integer> candidateIdList
+ private CandidateStatusEntity getCandidateStatusByEventCodeAndStatusCode(
+            CandidateEventEntity lastCandidateEvent,
+            List<CandidateStageEntity> candidateStages,
+            List<CandidateStatusEntity> candidateStatuses,
+            List<CandidateStageStatusEntity> candidateStageStatuses
     ) {
-        Map<Integer, List<CandidateEventEntity>> candidateEventEntityMap = new HashMap<>();
-        List<CandidateEventEntity> candidateEventsList = new ArrayList<>();
 
-        for (Integer candidateId : candidateIdList) {
-            for (CandidateEventEntity candidateEventEntity : candidateEventEntities) {
-                if (candidateEventEntity.getCandidateId().getId().equals(candidateId)) {
-                    candidateEventsList.add(candidateEventEntity);
+        String eventCode = lastCandidateEvent.getEventCode();
+        String statusCode = lastCandidateEvent.getStatusCode();
+
+
+        CandidateStageEntity candidateStage = getCandidateStageByEventCode(
+                candidateStages,
+                eventCode);
+
+        Integer stageId = candidateStage.getId();
+
+        List<Integer> statusIdList = candidateStatuses.stream()
+                .filter(status -> status.getCode() != null)
+                .filter(status -> status.getCode().equals(statusCode))
+                .map(CandidateStatusEntity::getId)
+                .toList();
+
+        List<CandidateStageStatusEntity> candidateStageStatusesFilteredByStageId = candidateStageStatuses.stream()
+                .filter(stageStatus -> stageStatus.getStageId().equals(stageId))
+                .toList();
+
+        for (CandidateStageStatusEntity stageStatus : candidateStageStatusesFilteredByStageId) {
+            for (Integer id : statusIdList) {
+                if (id.equals(stageStatus.getStatusId())) {
+                    return candidateStatuses.stream()
+                            .filter(status -> status.getId().equals(id))
+                            .findFirst()
+                            .orElse(null);
                 }
             }
-            candidateEventEntityMap.put(candidateId, candidateEventsList);
-            candidateEventsList = new ArrayList<>();
         }
 
-        return candidateEventEntityMap;
+        return null;
     }
