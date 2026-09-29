@@ -1,27 +1,19 @@
- @Query(value = "select * from srhr_requisition.candidates cd where cd.vacancy_id = :vacancyId " +
-            "and cast(:search as text) IS NULL or cd.full_name ILIKE :search", nativeQuery = true)
-    List<CandidateEntity> findAllByVacancyIdAndSearchString(
-            @Param("vacancyId") Integer vacancyId,
-            @Param("search") String searchString
-    );
+    private Map<Integer, List<CandidateEventEntity>> getCandidateEventsMap(
+            List<CandidateEventEntity> candidateEventEntities,
+            List<Integer> candidateIdList
+    ) {
+        Map<Integer, List<CandidateEventEntity>> candidateEventEntityMap = new HashMap<>();
+        List<CandidateEventEntity> candidateEventsList = new ArrayList<>();
 
+        for (Integer candidateId : candidateIdList) {
+            for (CandidateEventEntity candidateEventEntity : candidateEventEntities) {
+                if (candidateEventEntity.getCandidateId().getId().equals(candidateId)) {
+                    candidateEventsList.add(candidateEventEntity);
+                }
+            }
+            candidateEventEntityMap.put(candidateId, candidateEventsList);
+            candidateEventsList = new ArrayList<>();
+        }
 
-private Map<Integer, List<CandidateEventEntity>> createCandidateEventsMapByVacancyId(Integer vacancyId) {
-        List<CandidateEntity> candidates = candidateRepository
-                .findAllByVacancyId(vacancyId);
-
-        List<Integer> candidateIdList = candidates.stream()
-                .map(CandidateEntity::getId)
-                .distinct()
-                .toList();
-
-        List<CandidateEventEntity> candidateEventEntities =
-                candidateEventRepository.findAllByCandidateIds(candidateIdList);
-
-        return getCandidateEventsMap(candidateEventEntities, candidateIdList);
+        return candidateEventEntityMap;
     }
-
-    @Query(value = "select * from srhr_requisition.candidates cd where cd.vacancy_id = :vacancyId", nativeQuery = true)
-    List<CandidateEntity> findAllByVacancyId (
-            @Param("vacancyId") Integer vacancyId
-    );
