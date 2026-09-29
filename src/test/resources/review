@@ -1,45 +1,19 @@
-private CandidateStatusEntity getCandidateStatusByEventCodeAndStatusCode(
-        CandidateEventEntity lastCandidateEvent,
-        List<CandidateStageEntity> candidateStages,
-        List<CandidateStatusEntity> candidateStatuses,
-        List<CandidateStageStatusEntity> candidateStageStatuses
-) {
-    // Получаем коды события и статуса из последнего события кандидата.
-    String eventCode = lastCandidateEvent.getEventCode();
-    String statusCode = lastCandidateEvent.getStatusCode();
+       if (searchString != null && !searchString.isEmpty()) {
+            candidates = candidateRepository
+                    .findAllByVacancyIdAndSearchString(vacancyId, searchString);
+        } else {
+            candidates = candidateRepository
+                    .findAllByVacancyId(vacancyId);
+        }
 
-    // Находим этап кандидата по коду события.
-    CandidateStageEntity candidateStage = getCandidateStageByEventCode(
-            candidateStages,
-            eventCode
+@Query(value = "select * from srhr_requisition.candidates cd where cd.vacancy_id = :vacancyId " +
+            "and cast(:search as text) IS NULL or cd.full_name ILIKE :search", nativeQuery = true)
+    List<CandidateEntity> findAllByVacancyIdAndSearchString(
+            @Param("vacancyId") Integer vacancyId,
+            @Param("search") String searchString
     );
 
-    // Если этап не найден, определить статус для него невозможно.
-    if (candidateStage == null) {
-        return null;
-    }
-
-    // Получаем ID найденного этапа.
-    Integer stageId = candidateStage.getId();
-
-    // Перебираем связи между этапами и статусами.
-    for (CandidateStageStatusEntity stageStatus : candidateStageStatuses) {
-
-        // Пропускаем связи, которые относятся к другому этапу.
-        if (!Objects.equals(stageStatus.getStageId(), stageId)) {
-            continue;
-        }
-
-        // Ищем статус с нужным кодом и ID из связи с этапом.
-        for (CandidateStatusEntity status : candidateStatuses) {
-            if (status.getCode() != null
-                    && status.getCode().equals(statusCode)
-                    && Objects.equals(status.getId(), stageStatus.getStatusId())) {
-                return status;
-            }
-        }
-    }
-
-    // Если подходящий статус не найден, возвращаем null.
-    return null;
-}
+   @Query(value = "select * from srhr_requisition.candidates cd where cd.vacancy_id = :vacancyId", nativeQuery = true)
+    List<CandidateEntity> findAllByVacancyId (
+            @Param("vacancyId") Integer vacancyId
+    );
