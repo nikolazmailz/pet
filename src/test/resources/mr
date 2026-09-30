@@ -43,3 +43,7 @@ https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition-rest
 
 bugfix/SRHR-2318 пропущен знак $
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-easup-integration/pulls/2745271
+
+
+bugfix/SRHR-2319 emplFrom нельзя передовать как null
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-easup-integration/pulls/2746735
