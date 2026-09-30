@@ -1,0 +1,77 @@
+package ru.ntdev.srhr.common.dto.api.response.salarychange.employee;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import ru.ntdev.srhr.common.dto.api.response.salarychange.filter.SalarychangeFilter;
+import ru.ntdev.srhr.common.dto.api.response.salarychange.user.SalarychangeUser;
+
+import java.math.BigDecimal;
+
+@Data
+@Schema(description = "Данные о сотруднике", example = "", nullable = true)
+public class SalarychangeEmployee {
+    @Schema(description = "Табельный номер", maxLength = 255, required = false, nullable =  true)
+    private String empId;
+    @Schema(description = "Идентификационный номер предложения", maxLength = 255, required = false, nullable =  true)
+    private String posId;
+    @Schema(description = "Уровень", maxLength = 255, required = false, nullable =  true)
+    private String grade;
+    @Schema(description = "Базовый расчёт", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
+    private Double countBase;
+    @Schema(description = "Фактический расчёт", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
+    private Double countFact;
+    @Schema(description = "Значение", maxLength = 255, required = false, nullable =  true)
+    private String unitInd;
+    @Schema(description = "Лимит значения пересмотра", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
+    private Double salaryUnitLimit;
+    @Schema(description = "Лимит значения пересмотра в процента", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
+    private Double salaryUnitLimitPercent;
+    @Schema(description = "Пересмотр", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
+    private Double salary;
+    @Schema(description = "Пересмотр а процентах", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
+    private Double salaryPercent;
+    @Schema(description = "Минимальный диапазон", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
+    private Double rangeMin;
+    @Schema(description = "Средний диапазон", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
+    private Double rangeMid;
+    @Schema(description = "Максимальный диапазон", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
+    private Double rangeMax;
+    @Schema(description = "Предложение", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
+    private BigDecimal offerUnit;
+    @Schema(description = "Предложение в процентах", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
+    private Double offerUnitPercent;
+    @Schema(description = "Предлагаемые изменения", maxLength = 255, required = false, nullable =  true)
+    private String offerUnitMode;
+    @Schema(description = "Сумма", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
+    private BigDecimal offerEmployee;
+    @Schema(description = "Сумма в процентах", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
+    private Double offerEmployeePercent;
+    @Schema(description = "Предлагаемые изменения", maxLength = 255, required = false, nullable =  true)
+    private String offerEmployeeMode;
+    @Schema(description = "Текстовая информация", maxLength = 255, required = false, nullable =  true)
+    private String drpInfoText;
+    @Schema(description = "Статус текстовой информации", maxLength = 255, required = false, nullable =  true)
+    private String drpInfoStatus;
+    @Schema(description = "Предложение от ДРП", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
+    private Integer offerUnitDRP;
+    @Schema(description = "Предложение сотруднику от ДРП", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
+    private Integer offerEmployeeDRP;
+    @Schema(description = "Значение наличия комментария", required = false, nullable =  true)
+    private Boolean hasComments;
+    @Schema(description = "Значение наличия делегирования", required = false, nullable =  true)
+    private Boolean isDelegate;
+    @Schema(description = "Флаг корректировки оклада (ШЕ)", required = false, nullable =  true)
+    private Boolean corrOklUnitFlag;
+    @Schema(description = "Флаг корректироваки оклада (ТН)", required = false, nullable =  true)
+    private Boolean corrOklEmployeeFlag;
+    @Schema(description = "Данные о сотруднике", required = false, nullable =  true)
+    private SalarychangeUser employee;
+    @Schema(description = "Чек-бокс выбора записи в разрезе ТН/ШЕ", required = false, nullable =  true)
+    private Boolean checkboxActive;
+    @Schema(description = "Данные о фильтрации", required = false, nullable =  true)
+    @JsonProperty("add")
+    private SalarychangeFilter additionalFilters;
+    @Schema(description = "ТН руководителя, за которого осуществляеся делегирование", maxLength = 8, required = false, nullable =  true)
+    private String emplFrom;
+}
