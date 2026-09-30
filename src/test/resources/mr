@@ -35,3 +35,8 @@ search- параметр поиска (Необязательный).
 
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-salarychange-rest/pulls/2741637
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-easup-integration/pulls/2741638
+
+
+bugfix/SRHR-2313 не правильно формируется тело ошибки
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-mod-commons/pulls/2743380
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition-rest/pulls/2743382
