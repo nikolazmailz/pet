@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   title: HR сервис "Личный кабинет руководителя"
   description: Сервисы HR
-  version: 6.5.0
+  version: 9.0.0
 servers:
   - url: /
     description: Default Server URL
