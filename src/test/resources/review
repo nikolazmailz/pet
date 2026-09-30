@@ -1,19 +1,192 @@
-       if (searchString != null && !searchString.isEmpty()) {
-            candidates = candidateRepository
-                    .findAllByVacancyIdAndSearchString(vacancyId, searchString);
-        } else {
-            candidates = candidateRepository
-                    .findAllByVacancyId(vacancyId);
+public void processRequisitionIntegration(List<Requisition> requisitions, DataIntegrationEntity dataIntegrationEntity) {
+
+        if (requisitions == null || requisitions.isEmpty()) {
+            log.warn("Получен пустой список заявок для интеграции.");
+            return;
         }
 
-@Query(value = "select * from srhr_requisition.candidates cd where cd.vacancy_id = :vacancyId " +
-            "and cast(:search as text) IS NULL or cd.full_name ILIKE :search", nativeQuery = true)
-    List<CandidateEntity> findAllByVacancyIdAndSearchString(
-            @Param("vacancyId") Integer vacancyId,
-            @Param("search") String searchString
-    );
+        Map<String, String> restoredRequisitionsMap = new HashMap<>();
+        List<RequisitionEntity> requisitionEntitiesToInsert = new ArrayList<>();
+        List<RequisitionEntity> requisitionEntitiesToUpdate = new ArrayList<>();
+        List<StructureUnitEntity> structureUnitEntitiesToInsert = new ArrayList<>();
+        List<ApproverEntity> approverEntitiesToInsert = new ArrayList<>();
 
-   @Query(value = "select * from srhr_requisition.candidates cd where cd.vacancy_id = :vacancyId", nativeQuery = true)
-    List<CandidateEntity> findAllByVacancyId (
-            @Param("vacancyId") Integer vacancyId
-    );
+        List<StatusMappingEntity>statusMappingEntities = entityService.getRequisitionStatusMappingList();
+        Map<String, String> easupToLkrStatusMapping = statusMappingEntities.stream()
+                .collect(Collectors.toMap(StatusMappingEntity::getEasupCode, StatusMappingEntity::getLkrCode));
+
+
+        List<List<Requisition>> chunks = ListUtils.partition(requisitions, jdbcBatchSize);
+        for (List<Requisition> requisitionListChunk : chunks) {
+            List<String> requisitionGuids = requisitionListChunk.stream().map(Requisition::getGuid).toList();
+            List<RequisitionEntity> requsitionEntitiesList = entityService.findAllRequisitionEntitiesByGuids(requisitionGuids);
+
+            for (Requisition item: requisitionListChunk) {
+                RequisitionEntity entity = requsitionEntitiesList.stream().filter(ent -> item.getGuid().equals(ent.getGuid()))
+                        .findFirst()
+                        .orElse(null);
+                RequisitionEntity processedEntity = processRequisition(item, dataIntegrationEntity, entity, easupToLkrStatusMapping, restoredRequisitionsMap);
+
+                List<StructureUnitEntity> structureUnitEntities = processStructureUnits(item, processedEntity);
+                List<ApproverEntity> approverEntities = processApprovers(item, processedEntity);
+
+                if (entity == null) {
+                    requisitionEntitiesToInsert.add(processedEntity);
+                } else {
+                    requisitionEntitiesToUpdate.add(processedEntity);
+                }
+                structureUnitEntitiesToInsert.addAll(structureUnitEntities);
+                approverEntitiesToInsert.addAll(approverEntities);
+
+                // 1. Получаем все существующие ApproverEntity для текущих requisitionGuids
+                List<ApproverEntity> existingApproverEntities = entityService.findApproverEntitiesByGuids(requisitionGuids);
+
+                // 2. Фильтруем те, что есть в existing, но отсутствуют в approverEntitiesToInsert (сравнение по pernr и delegatorPernr)
+                List<ApproverEntity> approverEntitiesToDelete = existingApproverEntities.stream()
+                        .filter(existing -> approverEntitiesToInsert.stream()
+                                .noneMatch(inserted -> Objects.equals(existing.getPernr(), inserted.getPernr()) &&
+                                        Objects.equals(existing.getDelegatorPernr(), inserted.getDelegatorPernr())))
+                        .toList();
+
+                // 3. Удаляем
+                if (!approverEntitiesToDelete.isEmpty()) {
+                    entityService.deleteApproverEntities(approverEntitiesToDelete);
+                }
+
+                // 4. Получаем все существующие StructureUnitEntity для текущих requisitionGuids
+                List<StructureUnitEntity> existingStructureUnitEntities = entityService.findStructureUnitEntitiesByGuids(requisitionGuids);
+
+                // 5. Фильтруем те, что есть в existing, но отсутствуют в structureUnitEntitiesToInsert (сравнение по orderNumber, pathId, typeDesc, pathName)
+                List<StructureUnitEntity> structureUnitEntitiesToDelete = existingStructureUnitEntities.stream()
+                        .filter(existing -> structureUnitEntitiesToInsert.stream()
+                                .noneMatch(inserted -> Objects.equals(existing.getOrderNumber(), inserted.getOrderNumber()) &&
+                                        Objects.equals(existing.getPathId(), inserted.getPathId()) &&
+                                        Objects.equals(existing.getTypeDesc(), inserted.getTypeDesc()) &&
+                                        Objects.equals(existing.getPathName(), inserted.getPathName())))
+                        .toList();
+
+                // 6. Удаляем
+                if (!structureUnitEntitiesToDelete.isEmpty()) {
+                    entityService.deleteStructureUnitEntities(structureUnitEntitiesToDelete);
+                }
+
+            }
+
+            log.debug("Количество заявок на вставку: {}",requisitionEntitiesToInsert.size());
+            log.debug("Количество заявок на обновление: {}",requisitionEntitiesToUpdate.size());
+
+            log.debug("Заявки на вставку: {}", requisitionEntitiesToInsert);
+            log.debug("Заявки на обновление: {}", requisitionEntitiesToUpdate);
+
+            Map<String, String> structUnitIdMap = new HashMap<>();
+
+            for (RequisitionEntity requisitionEntity : requisitionEntitiesToInsert) {
+                if (requisitionEntity.getStructUnitId() != null && requisitionEntity.getGuid() != null) {
+                    structUnitIdMap.put(requisitionEntity.getGuid(), requisitionEntity.getStructUnitId());
+                }
+            }
+
+            Map<String, String> structUnitIdToUpdateMap = new HashMap<>();
+
+            for (RequisitionEntity requisitionEntity : requisitionEntitiesToUpdate) {
+                if (requisitionEntity.getStructUnitId() != null && requisitionEntity.getGuid() != null) {
+                    structUnitIdToUpdateMap.put(requisitionEntity.getGuid(), requisitionEntity.getStructUnitId());
+                }
+            }
+
+            structUnitIdMap.putAll(structUnitIdToUpdateMap);
+
+            requisitionRepositoryImpl.batchUpdateChunked(requisitionEntitiesToUpdate, jdbcBatchSize);
+            requisitionRepositoryImpl.batchInsert(requisitionEntitiesToInsert, jdbcBatchSize);
+            requisitionEntitiesToUpdate.clear();
+            requisitionEntitiesToInsert.clear();
+
+            structureUnitRepositoryImpl.batchUpsert(structureUnitEntitiesToInsert, jdbcBatchSize);
+            structureUnitEntitiesToInsert.clear();
+
+            approverRepositoryImpl.batchUpsert(approverEntitiesToInsert, jdbcBatchSize);
+            approverEntitiesToInsert.clear();
+
+            OrgUnitsPathsRequestDto requestDto = new OrgUnitsPathsRequestDto();
+            Set<String> uniqueStructUnitIds = new HashSet<>();
+
+            for (Map.Entry<String, String> entry : structUnitIdMap.entrySet()) {
+                uniqueStructUnitIds.add(entry.getValue());
+            }
+
+            List<String> structUnitIdList = new ArrayList<>(uniqueStructUnitIds);
+
+            requestDto.setOrgUnitIdList(structUnitIdList);
+
+            log.debug("Список идентификаторов подразделений для поиска в осрс: {}", structUnitIdList);
+
+            OrgUnitsPathsDto orgUnitsPathsDto;
+
+            try {
+                HttpEntity<OrgUnitsPathsRequestDto> requestEntity =
+                        new HttpEntity<>(requestDto);
+                orgUnitsPathsDto = commonRestTemplate.exchange(
+                        osrfIntegrationServiceUrl + "/org-units-path",
+                        HttpMethod.POST,
+                        requestEntity,
+                        OrgUnitsPathsDto.class).getBody();
+            } catch (Exception e) {
+                log.error("Не удалось сделать запрос к реестру справочнков, ошибка: [{}]", e.getMessage());
+                orgUnitsPathsDto = new OrgUnitsPathsDto();
+                orgUnitsPathsDto.setStructUnitList(new ArrayList<>());
+            }
+
+            List<RequisitionStructureUnit> requisitionStructureUnitListForUpdate = new ArrayList<>();
+            List<RequisitionStructureUnitPath> requisitionStructureUnitPathListForInsert = new ArrayList<>();
+            List<String> requisitionGuidsToStructUnitPathForDelete = new ArrayList<>();
+
+            List<StructUnit> structUnitList = orgUnitsPathsDto.getStructUnitList();
+
+            if (structUnitList.isEmpty()) {
+                log.warn("Данные из реестра справочников не получены");
+            }
+
+            log.debug("Данные, полученные из osrf-integration: {}", structUnitList);
+
+            Long start = System.currentTimeMillis();
+
+            List<String> requisitionGuidList;
+
+            for (StructUnit unit : structUnitList) {
+                if (!structUnitIdMap.containsValue(unit.getStructUnitId())) {
+                    log.error("Не найдено структурное подразделение с id {}", unit.getStructUnitId());
+                } else {
+                    requisitionGuidList = getRequisitionGuid(structUnitIdMap, unit.getStructUnitId());
+
+                    requisitionGuidsToStructUnitPathForDelete.addAll(requisitionGuidList);
+
+                    List<RequisitionStructureUnitPath> requisitionStructureUnitPaths =
+                            fillRequisitionStructureUnitPath(requisitionGuidList, unit);
+
+                    requisitionStructureUnitPathListForInsert.addAll(requisitionStructureUnitPaths);
+
+                    List<RequisitionStructureUnit> requisitionStructureUnits =
+                            fillRequisitionStructureUnit(requisitionGuidList, unit);
+
+                    requisitionStructureUnitListForUpdate.addAll(requisitionStructureUnits);
+                }
+
+            }
+
+            log.debug("Количество записей заявок на обновление: {}", requisitionStructureUnitListForUpdate.size());
+
+            log.debug("Количество записей структурных единиц на обновление: {}", requisitionStructureUnitPathListForInsert.size());
+
+            requisitionRepositoryImpl.batchUpdate(requisitionStructureUnitListForUpdate, jdbcBatchSize);
+            structureUnitRepositoryImpl.batchDelete(requisitionGuidsToStructUnitPathForDelete, jdbcBatchSize);
+            structureUnitRepositoryImpl.batchInsertFromOsrf(requisitionStructureUnitPathListForInsert, jdbcBatchSize);
+
+            Long end = System.currentTimeMillis();
+
+            log.debug("Обработка пачки айди подразделений в {} занимает {} ms", jdbcBatchSize, end - start);
+
+        }
+
+        logRestoredRequisitions(restoredRequisitionsMap, restoredRequisitionsMap.size());
+
+    }
