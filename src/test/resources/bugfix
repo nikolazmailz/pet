@@ -1,77 +1,134 @@
-package ru.ntdev.srhr.common.dto.api.response.salarychange.employee;
+package ru.ntdev.srhr.common.dto.api.request.salarychange;
+
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import ru.ntdev.srhr.common.dto.api.request.salarychange.user.SalarychangeEmployeeReq;
+
+import java.util.List;
+
+@Data
+@Schema(description = "Редактирование списка сотрудников", name = "SalarychangePostStaffMultiListRebaseRequest", nullable = true)
+public class SalarychangePostStaffMultiListRebaseRequest {
+    @Schema(description = "Код предложения пересмотра заработной платы", maxLength = 255, required = false, nullable = true)
+    private String dependencyCode = "";
+    @Schema(description = "Идентификационный номер", maxLength = 255, required = false, nullable = true)
+    private String uuid = "00000000-0000-0000-0000-000000000000";
+    @Schema(description = "Тип листа", maxLength = 255, required = false, nullable = true)
+    private String listType = "";
+    @Schema(description = "Наименование работы", maxLength = 255, required = false, nullable = true)
+    private String name = "";
+    @Schema(description = "Лимит суммы", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable = true)
+    private Double salaryUnitLimit = 0.0;
+    @Schema(description = "Фонд", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable = true)
+    private Double payrollFund = 0.0;
+    @Schema(description = "Дополнительный фонд", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable = true)
+    private Double additionalFund = 0.0;
+    @Schema(description = "Новый лимит суммы", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable = true)
+    private Double newSalaryUnitLimit = 0.0;
+    @Schema(description = "Баланс", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable = true)
+    private Double balance = 0.0;
+    @Schema(description = "Расчёт", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable = true)
+    private Integer count = 0;
+    @Schema(description = "Событие", maxLength = 255, required = false, nullable = true)
+    private String event = "";
+    @Schema(description = "Признак редактирования", required = false, nullable =  true)
+    private Boolean editName = false;
+    @Schema(description = "Кнопка «Внести предложения»", required = false, nullable =  true)
+    private Boolean activeMassMode = false;
+    @Schema(description = "кнопка «Переместить»", required = false, nullable =  true)
+    private Boolean activeMoveMode = false;
+    @Schema(description = "Чек-бокс выбора записи в разрезе ТН/ШЕ", required = false, nullable =  true)
+    private Boolean checkboxActive = false;
+    @Schema(description = "guid списка для перемещения", maxLength = 255, required = false, nullable =  true)
+    private String toUuid = "00000000-0000-0000-0000-000000000000";
+    @Schema(description = "Кнопка «Завершить пересмотр»", maxLength = 255, required = false, nullable =  true)
+    private String activeFinishMode = "";
+    @ArraySchema(
+            maxItems = 99999,
+            arraySchema = @Schema(
+                    description = "Массив данных о предложениях",
+                    example = "",
+                    required = false, nullable = true
+            )
+    )
+    private List<SalarychangeEmployeeReq> emplList;
+}
+
+
+
+package ru.ntdev.srhr.common.dto.api.request.salarychange.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import ru.ntdev.srhr.common.dto.api.response.salarychange.filter.SalarychangeFilter;
-import ru.ntdev.srhr.common.dto.api.response.salarychange.user.SalarychangeUser;
 
 import java.math.BigDecimal;
 
 @Data
 @Schema(description = "Данные о сотруднике", example = "", nullable = true)
-public class SalarychangeEmployee {
+public class SalarychangeEmployeeReq {
     @Schema(description = "Табельный номер", maxLength = 255, required = false, nullable =  true)
-    private String empId;
+    private String empId = "";
     @Schema(description = "Идентификационный номер предложения", maxLength = 255, required = false, nullable =  true)
-    private String posId;
+    private String posId = "";
     @Schema(description = "Уровень", maxLength = 255, required = false, nullable =  true)
-    private String grade;
+    private String grade = "";
     @Schema(description = "Базовый расчёт", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
-    private Double countBase;
+    private Double countBase = 0.0;
     @Schema(description = "Фактический расчёт", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
-    private Double countFact;
+    private Double countFact = 0.0;
     @Schema(description = "Значение", maxLength = 255, required = false, nullable =  true)
-    private String unitInd;
+    private String unitInd = "";
     @Schema(description = "Лимит значения пересмотра", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
-    private Double salaryUnitLimit;
+    private Double salaryUnitLimit = 0.0;
     @Schema(description = "Лимит значения пересмотра в процента", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
-    private Double salaryUnitLimitPercent;
+    private Double salaryUnitLimitPercent = 0.0;
     @Schema(description = "Пересмотр", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
-    private Double salary;
+    private Double salary = 0.0;
     @Schema(description = "Пересмотр а процентах", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
-    private Double salaryPercent;
+    private Double salaryPercent = 0.0;
     @Schema(description = "Минимальный диапазон", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
-    private Double rangeMin;
+    private Double rangeMin = 0.0;
     @Schema(description = "Средний диапазон", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
-    private Double rangeMid;
+    private Double rangeMid = 0.0;
     @Schema(description = "Максимальный диапазон", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
-    private Double rangeMax;
+    private Double rangeMax = 0.0;
     @Schema(description = "Предложение", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
-    private BigDecimal offerUnit;
+    private BigDecimal offerUnit = BigDecimal.valueOf(0);
     @Schema(description = "Предложение в процентах", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
-    private Double offerUnitPercent;
+    private Double offerUnitPercent = 0.0;
     @Schema(description = "Предлагаемые изменения", maxLength = 255, required = false, nullable =  true)
-    private String offerUnitMode;
+    private String offerUnitMode = "";
     @Schema(description = "Сумма", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
-    private BigDecimal offerEmployee;
+    private BigDecimal offerEmployee = BigDecimal.valueOf(0);
     @Schema(description = "Сумма в процентах", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
-    private Double offerEmployeePercent;
+    private Double offerEmployeePercent = 0.0;
     @Schema(description = "Предлагаемые изменения", maxLength = 255, required = false, nullable =  true)
-    private String offerEmployeeMode;
+    private String offerEmployeeMode = "";
     @Schema(description = "Текстовая информация", maxLength = 255, required = false, nullable =  true)
-    private String drpInfoText;
+    private String drpInfoText = "";
     @Schema(description = "Статус текстовой информации", maxLength = 255, required = false, nullable =  true)
-    private String drpInfoStatus;
+    private String drpInfoStatus = "";
     @Schema(description = "Предложение от ДРП", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
-    private Integer offerUnitDRP;
+    private Integer offerUnitDRP = 0;
     @Schema(description = "Предложение сотруднику от ДРП", maximum = "99999999999999", minimum = "-99999999999999", required = false, nullable =  true)
-    private Integer offerEmployeeDRP;
+    private Integer offerEmployeeDRP = 0;
     @Schema(description = "Значение наличия комментария", required = false, nullable =  true)
-    private Boolean hasComments;
+    private Boolean hasComments = false;
     @Schema(description = "Значение наличия делегирования", required = false, nullable =  true)
-    private Boolean isDelegate;
+    private Boolean isDelegate = false;
     @Schema(description = "Флаг корректировки оклада (ШЕ)", required = false, nullable =  true)
-    private Boolean corrOklUnitFlag;
+    private Boolean corrOklUnitFlag = false;
     @Schema(description = "Флаг корректироваки оклада (ТН)", required = false, nullable =  true)
-    private Boolean corrOklEmployeeFlag;
+    private Boolean corrOklEmployeeFlag = false;
     @Schema(description = "Данные о сотруднике", required = false, nullable =  true)
-    private SalarychangeUser employee;
+    private SalarychangeUserReq employee = new SalarychangeUserReq();
     @Schema(description = "Чек-бокс выбора записи в разрезе ТН/ШЕ", required = false, nullable =  true)
     private Boolean checkboxActive;
     @Schema(description = "Данные о фильтрации", required = false, nullable =  true)
     @JsonProperty("add")
-    private SalarychangeFilter additionalFilters;
+    private SalarychangeFilterReq additionalFilters = new SalarychangeFilterReq();
     @Schema(description = "ТН руководителя, за которого осуществляеся делегирование", maxLength = 8, required = false, nullable =  true)
     private String emplFrom;
 }
