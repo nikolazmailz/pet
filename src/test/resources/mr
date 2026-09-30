@@ -40,3 +40,6 @@ https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-easup-integratio
 bugfix/SRHR-2313 не правильно формируется тело ошибки
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-mod-commons/pulls/2743380
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-requisition-rest/pulls/2743382
+
+bugfix/SRHR-2318 пропущен знак $
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-easup-integration/pulls/2745271
