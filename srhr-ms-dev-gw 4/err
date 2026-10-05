@@ -1,1 +1,6 @@
 https://passport.api.vtb.ru
+
+logging:
+  level:
+    ru.vtb.epa.sso.aal.validation: DEBUG
+    ru.ntdev.srhr.common.epa: DEBUG
