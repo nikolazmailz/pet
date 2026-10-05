@@ -1,7 +1,4 @@
 curl -s http://srhr-ms-mock-service:8180/__admin/requests \
-  | jq '.requests[:10][] | {
-      url: .request.url,
-      method: .request.method,
-      status: .response.status,
-      body: .response.body
-    }'
+  | tr ',' '\n' \
+  | grep -E '"url"|"status"|"body"' \
+  | head -50
