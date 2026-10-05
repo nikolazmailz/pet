@@ -1,37 +1,138 @@
-at io.netty.channel.unix.Socket.finishConnect(Socket.java:359) ~[netty-transport-native-unix-common-4.1.101.Final.jar!/:4.1.101.Final]
-at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.doFinishConnect(AbstractEpollChannel.java:710) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
-at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.finishConnect(AbstractEpollChannel.java:687) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
-at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.epollOutReady(AbstractEpollChannel.java:567) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
-at io.netty.channel.epoll.EpollEventLoop.processReady(EpollEventLoop.java:499) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
-at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:407) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
-at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) ~[netty-common-4.1.101.Final.jar!/:4.1.101.Final]
-at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[netty-common-4.1.101.Final.jar!/:4.1.101.Final]
-at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[netty-common-4.1.101.Final.jar!/:4.1.101.Final]
-at java.base/java.lang.Thread.run(Thread.java:840) ~[na:na]
-2026-10-05T16:08:59.688+03:00 INFO 1 --- [srhr-ms-dev-gw] [or-http-epoll-4] r.v.s.d.gw.filter.RequestLoggingFilter : Gateway response: method=GET, path=/ui-api-web/cross/srhr/userinfo/v1/account/info-salary, route=userinfo, status=500, durationMs=9
-2026-10-05T16:08:59.762+03:00 INFO 1 --- [srhr-ms-dev-gw] [or-http-epoll-4] r.v.s.d.gw.filter.RequestLoggingFilter : Gateway request: method=GET, path=/ui-api-web/cross/srhr/paystub/v1/paystub/period, route=paystub
-2026-10-05T16:08:59.781+03:00 INFO 1 --- [srhr-ms-dev-gw] [or-http-epoll-4] r.v.s.d.gw.filter.RequestLoggingFilter : Gateway response: method=GET, path=/ui-api-web/cross/srhr/paystub/v1/paystub/period, route=paystub, status=401, durationMs=19
-2026-10-05T16:10:55.727+03:00 INFO 1 --- [srhr-ms-dev-gw] [or-http-epoll-4] r.v.s.d.gw.filter.RequestLoggingFilter : Gateway request: method=GET, path=/ui-api-web/cross/srhr/userinfo/v1/account/info-salary, route=userinfo
-2026-10-05T16:10:55.734+03:00 ERROR 1 --- [srhr-ms-dev-gw] [or-http-epoll-4] a.w.r.e.AbstractErrorWebExceptionHandler : [e4444d3c-5] 500 Server Error for HTTP GET "/ui-api-web/cross/srhr/userinfo/v1/account/info-salary"
-io.netty.channel.AbstractChannel$AnnotatedConnectException: finishConnect(..) failed: Connection refused: localhost/127.0.0.1:8081
-Suppressed: reactor.core.publisher.FluxOnAssembly$OnAssemblyException:
-Error has been observed at the following site(s):
-*__checkpoint ⇢ org.springframework.cloud.gateway.filter.WeightCalculatorWebFilter [DefaultWebFilterChain]
-*__checkpoint ⇢ HTTP GET "/ui-api-web/cross/srhr/userinfo/v1/account/info-salary" [ExceptionHandlingWebHandler]
-Original Stack Trace:
-Caused by: java.net.ConnectException: finishConnect(..) failed: Connection refused
-at io.netty.channel.unix.Errors.newConnectException0(Errors.java:166) ~[netty-transport-native-unix-common-4.1.101.Final.jar!/:4.1.101.Final]
-at io.netty.channel.unix.Errors.handleConnectErrno(Errors.java:131) ~[netty-transport-native-unix-common-4.1.101.Final.jar!/:4.1.101.Final]
-at io.netty.channel.unix.Socket.finishConnect(Socket.java:359) ~[netty-transport-native-unix-common-4.1.101.Final.jar!/:4.1.101.Final]
-at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.doFinishConnect(AbstractEpollChannel.java:710) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
-at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.finishConnect(AbstractEpollChannel.java:687) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
-at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.epollOutReady(AbstractEpollChannel.java:567) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
-at io.netty.channel.epoll.EpollEventLoop.processReady(EpollEventLoop.java:499) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
-at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:407) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
-at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) ~[netty-common-4.1.101.Final.jar!/:4.1.101.Final]
-at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[netty-common-4.1.101.Final.jar!/:4.1.101.Final]
-at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[netty-common-4.1.101.Final.jar!/:4.1.101.Final]
-at java.base/java.lang.Thread.run(Thread.java:840) ~[na:na]
-2026-10-05T16:10:55.738+03:00 INFO 1 --- [srhr-ms-dev-gw] [or-http-epoll-4] r.v.s.d.gw.filter.RequestLoggingFilter : Gateway response: method=GET, path=/ui-api-web/cross/srhr/userinfo/v1/account/info-salary, route=userinfo, status=500, durationMs=10
-2026-10-05T16:10:55.819+03:00 INFO 1 --- [srhr-ms-dev-gw] [or-http-epoll-4] r.v.s.d.gw.filter.RequestLoggingFilter : Gateway request: method=GET, path=/ui-api-web/cross/srhr/paystub/v1/paystub/period, route=paystub
-2026-10-05T16:10:56.241+03:00 INFO 1 --- [srhr-ms-dev-gw] [or-http-epoll-4] r.v.s.d.gw.filter.RequestLoggingFilter : Gateway response: method=GET, path=/ui-api-web/cross/srhr/paystub/v1/paystub/period, route=paystub, status=401, durationMs=422
+sh-5.2$ printenv
+KUBERNETES_SERVICE_PORT_HTTPS=443
+SRHR_MS_PAYSTUB_REST_PORT_8180_TCP_PROTO=tcp
+SRHR_MS_DEV_GW_INGRESS_PORT_10081_TCP=tcp://1.8.7.240:10081
+EGRESS_API_GATEWAY_PORT_80_TCP_PROTO=tcp
+KUBERNETES_SERVICE_PORT=443
+TSLG_AGENT_SVC_METRIC_PORT_2020_TCP_PROTO=tcp
+SRHR_MS_DEV_GW_PORT_8180_TCP_PORT=8180
+SRHR_MS_PAYSTUB_REST_SERVICE_HOST=1.8.25.186
+SRHR_MS_MOCK_SERVICE_INGRESS_PORT_10081_TCP=tcp://1.8.132.158:10081
+SRHR_MS_DEV_GW_INGRESS_PORT_10081_TCP_ADDR=1.8.7.240
+PAYSTUB_SERVICE_URI=http://srhr-ms-paystub-rest:8180
+SRHR_INFORMATION_ABOUT_SALARY_SERVICE_PORT=8080
+SRHR_MS_MOCK_SERVICE_PORT_8180_TCP=tcp://1.8.214.129:8180
+SRHR_MS_PAYSTUB_REST_INGRESS_PORT_10081_TCP=tcp://1.8.11.124:10081
+HOSTNAME=srhr-ms-dev-gw-587969fcc8-7m28s
+SRHR_MS_PAYSTUB_PORT_8180_TCP_ADDR=1.8.222.217
+LANGUAGE=en_US:en
+TSLG_AGENT_SVC_MAIN_PORT_5170_TCP_PORT=5170
+TSLG_AGENT_SVC_MAIN_PORT=tcp://1.8.165.55:5170
+SRHR_MS_PAYSTUB_REST_PORT_8180_TCP=tcp://1.8.25.186:8180
+TSLG_AGENT_SVC_MAIN_PORT_5170_TCP=tcp://1.8.165.55:5170
+SRHR_MS_MOCK_SERVICE_INGRESS_SERVICE_PORT_HTTPS_10081=10081
+SRHR_MS_MOCK_SERVICE_INGRESS_PORT_10081_TCP_PORT=10081
+SRHR_MS_MOCK_SERVICE_INGRESS_SERVICE_HOST=1.8.132.158
+JAVA_HOME=/opt/java/openjdk
+SECRET=NULL
+EGRESS_API_GATEWAY_SERVICE_PORT=80
+SRHR_MS_MOCK_SERVICE_INGRESS_PORT_10081_TCP_ADDR=1.8.132.158
+INGRESS_API_GATEWAY_PORT_443_TCP_PORT=443
+SRHR_INFORMATION_ABOUT_SALARY_SERVICE_HOST=1.8.94.241
+SRHR_MS_MOCK_SERVICE_PORT_8180_TCP_ADDR=1.8.214.129
+SRHR_MS_DEV_GW_INGRESS_PORT_10081_TCP_PORT=10081
+TSLG_AGENT_SVC_MAIN_SERVICE_HOST=1.8.165.55
+INGRESS_API_GATEWAY_PORT_80_TCP=tcp://1.8.106.202:80
+EGRESS_API_GATEWAY_PORT_443_TCP_ADDR=1.8.111.216
+SRHR_MS_DEV_GW_INGRESS_SERVICE_PORT=10081
+SRHR_MS_PAYSTUB_PORT_8180_TCP=tcp://1.8.222.217:8180
+SRHR_MS_PAYSTUB_REST_INGRESS_SERVICE_PORT=10081
+SRHR_MS_MOCK_SERVICE_INGRESS_PORT_10081_TCP_PROTO=tcp
+PWD=/home/jboss
+SRHR_MS_PAYSTUB_REST_INGRESS_SERVICE_HOST=1.8.11.124
+SRHR_MS_PAYSTUB_REST_INGRESS_PORT_10081_TCP_PROTO=tcp
+EGRESS_API_GATEWAY_PORT_443_TCP_PORT=443
+SRHR_MS_PAYSTUB_REST_INGRESS_PORT=tcp://1.8.11.124:10081
+SRHR_MS_PAYSTUB_PORT_8180_TCP_PORT=8180
+EGRESS_API_GATEWAY_SERVICE_PORT_HTTP2=80
+SRHR_MS_MOCK_SERVICE_PORT_8180_TCP_PROTO=tcp
+TSLG_AGENT_SVC_METRIC_PORT=tcp://1.8.90.198:2020
+_=/usr/bin/printenv
+EGRESS_API_GATEWAY_PORT_443_TCP_PROTO=tcp
+INGRESS_API_GATEWAY_PORT_80_TCP_PROTO=tcp
+EGRESS_API_GATEWAY_SERVICE_PORT_HTTPS=443
+SRHR_MS_DEV_GW_INGRESS_SERVICE_HOST=1.8.7.240
+SRHR_MS_PAYSTUB_SERVICE_PORT_HTTP=8180
+EGRESS_API_GATEWAY_SERVICE_HOST=1.8.111.216
+INGRESS_API_GATEWAY_PORT_443_TCP=tcp://1.8.106.202:443
+SRHR_INFORMATION_ABOUT_SALARY_INGRESS_PORT_10078_TCP_PROTO=tcp
+TSLG_AGENT_SVC_MAIN_PORT_5170_TCP_ADDR=1.8.165.55
+SRHR_MS_MOCK_SERVICE_SERVICE_PORT=8180
+HOME=/
+SRHR_MS_PAYSTUB_REST_PORT_8180_TCP_ADDR=1.8.25.186
+LANG=ru_RU.UTF-8
+SRHR_INFORMATION_ABOUT_SALARY_SERVICE_PORT_HTTP=8080
+KUBERNETES_PORT_443_TCP=tcp://1.8.0.1:443
+SRHR_MS_MOCK_SERVICE_INGRESS_SERVICE_PORT=10081
+INGRESS_API_GATEWAY_PORT_80_TCP_PORT=80
+TSLG_AGENT_SVC_MAIN_SERVICE_PORT=5170
+SRHR_MS_DEV_GW_SERVICE_PORT=8180
+SRHR_MS_DEV_GW_SERVICE_HOST=1.8.64.14
+SRHR_INFORMATION_ABOUT_SALARY_INGRESS_PORT=tcp://1.8.39.209:10078
+SRHR_MS_DEV_GW_INGRESS_PORT_10081_TCP_PROTO=tcp
+SRHR_MS_MOCK_SERVICE_PORT=tcp://1.8.214.129:8180
+SRHR_MS_PAYSTUB_REST_INGRESS_PORT_10081_TCP_PORT=10081
+EGRESS_API_GATEWAY_PORT_80_TCP=tcp://1.8.111.216:80
+EGRESS_API_GATEWAY_PORT_80_TCP_ADDR=1.8.111.216
+SRHR_MS_DEV_GW_PORT_8180_TCP=tcp://1.8.64.14:8180
+TSLG_AGENT_SVC_METRIC_PORT_2020_TCP_ADDR=1.8.90.198
+INGRESS_API_GATEWAY_PORT=tcp://1.8.106.202:80
+EGRESS_API_GATEWAY_PORT_443_TCP=tcp://1.8.111.216:443
+SRHR_MS_DEV_GW_INGRESS_SERVICE_PORT_HTTPS_10081=10081
+SRHR_INFORMATION_ABOUT_SALARY_INGRESS_SERVICE_HOST=1.8.39.209
+SRHR_MS_PAYSTUB_PORT_8180_TCP_PROTO=tcp
+INGRESS_API_GATEWAY_SERVICE_HOST=1.8.106.202
+EGRESS_API_GATEWAY_PORT_80_TCP_PORT=80
+SRHR_INFORMATION_ABOUT_SALARY_INGRESS_PORT_10078_TCP=tcp://1.8.39.209:10078
+SRHR_MS_DEV_GW_SERVICE_PORT_HTTP=8180
+EGRESS_API_GATEWAY_PORT=tcp://1.8.111.216:80
+SRHR_MS_DEV_GW_PORT=tcp://1.8.64.14:8180
+SRHR_MS_PAYSTUB_REST_INGRESS_SERVICE_PORT_HTTPS_10081=10081
+TERM=xterm
+SRHR_INFORMATION_ABOUT_SALARY_INGRESS_PORT_10078_TCP_ADDR=1.8.39.209
+SRHR_MS_PAYSTUB_REST_SERVICE_PORT=8180
+INGRESS_API_GATEWAY_SERVICE_PORT_HTTPS=443
+SRHR_MS_PAYSTUB_SERVICE_PORT=8180
+SRHR_MS_PAYSTUB_SERVICE_HOST=1.8.222.217
+SHLVL=1
+TSLG_AGENT_SVC_MAIN_SERVICE_PORT_MAIN=5170
+SRHR_MS_MOCK_SERVICE_SERVICE_HOST=1.8.214.129
+KUBERNETES_PORT_443_TCP_PROTO=tcp
+SRHR_INFORMATION_ABOUT_SALARY_INGRESS_PORT_10078_TCP_PORT=10078
+TSLG_AGENT_SVC_METRIC_SERVICE_PORT_HTTP=2020
+SRHR_INFORMATION_ABOUT_SALARY_PORT_8080_TCP_ADDR=1.8.94.241
+SRHR_MS_PAYSTUB_REST_INGRESS_PORT_10081_TCP_ADDR=1.8.11.124
+SRHR_MS_PAYSTUB_REST_SERVICE_PORT_HTTP=8180
+INGRESS_API_GATEWAY_SERVICE_PORT_HTTP2=80
+KUBERNETES_PORT_443_TCP_ADDR=1.8.0.1
+TSLG_AGENT_SVC_METRIC_SERVICE_HOST=1.8.90.198
+SRHR_MS_DEV_GW_INGRESS_PORT=tcp://1.8.7.240:10081
+SRHR_MS_DEV_GW_PORT_8180_TCP_PROTO=tcp
+INGRESS_API_GATEWAY_SERVICE_PORT=80
+INGRESS_API_GATEWAY_PORT_443_TCP_ADDR=1.8.106.202
+SRHR_INFORMATION_ABOUT_SALARY_INGRESS_SERVICE_PORT=10078
+SRHR_MS_MOCK_SERVICE_SERVICE_PORT_HTTP=8180
+TSLG_AGENT_SVC_METRIC_PORT_2020_TCP_PORT=2020
+SRHR_MS_PAYSTUB_REST_PORT=tcp://1.8.25.186:8180
+TSLG_AGENT_SVC_METRIC_PORT_2020_TCP=tcp://1.8.90.198:2020
+SRHR_INFORMATION_ABOUT_SALARY_PORT_8080_TCP=tcp://1.8.94.241:8080
+SRHR_INFORMATION_ABOUT_SALARY_PORT=tcp://1.8.94.241:8080
+SRHR_INFORMATION_ABOUT_SALARY_PORT_8080_TCP_PROTO=tcp
+SRHR_MS_DEV_GW_PORT_8180_TCP_ADDR=1.8.64.14
+KUBERNETES_SERVICE_HOST=1.8.0.1
+LC_ALL=ru_RU.UTF-8
+KUBERNETES_PORT=tcp://1.8.0.1:443
+SRHR_MS_PAYSTUB_PORT=tcp://1.8.222.217:8180
+KUBERNETES_PORT_443_TCP_PORT=443
+INGRESS_API_GATEWAY_PORT_443_TCP_PROTO=tcp
+SRHR_MS_MOCK_SERVICE_PORT_8180_TCP_PORT=8180
+SRHR_INFORMATION_ABOUT_SALARY_PORT_8080_TCP_PORT=8080
+SRHR_MS_PAYSTUB_REST_PORT_8180_TCP_PORT=8180
+INGRESS_API_GATEWAY_PORT_80_TCP_ADDR=1.8.106.202
+PATH=/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+SRHR_INFORMATION_ABOUT_SALARY_INGRESS_SERVICE_PORT_HTTPS_10078=10078
+TSLG_AGENT_SVC_MAIN_PORT_5170_TCP_PROTO=tcp
+TSLG_AGENT_SVC_METRIC_SERVICE_PORT=2020
+SRHR_MS_MOCK_SERVICE_INGRESS_PORT=tcp://1.8.132.158:10081
+JAVA_VERSION=jdk-17.0.18+8
+sh-5.2$ 
