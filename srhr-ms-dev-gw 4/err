@@ -14,3 +14,97 @@ curl -s http://srhr-ms-mock-service:8180/__admin/requests/unmatched \
 curl -s http://srhr-ms-mock-service:8180/__admin/mappings \
   | tr ',' '\n' \
   | grep -E '"name"|"url"|"urlPath"|"status"|"proxyBaseUrl"'
+
+
+
+sh-5.2$ curl -s http://srhr-ms-mock-service:8180/__admin/requests \
+  | tr ',' '\n' \
+  | grep -E '"url"|"status"|"body"' \
+  | head -50
+      "url" : "/"
+      "body" : ""
+      "status" : 404
+      "status" : 404
+      "body" : ""
+        "status" : 404
+        "status" : 404
+      "url" : "/"
+      "body" : ""
+      "status" : 404
+      "status" : 404
+      "body" : ""
+        "status" : 404
+        "status" : 404
+      "url" : "/"
+      "body" : ""
+      "status" : 404
+      "status" : 404
+      "body" : ""
+        "status" : 404
+        "status" : 404
+      "url" : "/"
+      "body" : ""
+      "status" : 404
+      "status" : 404
+      "body" : ""
+        "status" : 404
+        "status" : 404
+      "url" : "/functional-role/"
+      "body" : ""
+      "status" : 404
+      "status" : 404
+      "body" : ""
+        "status" : 404
+        "status" : 404
+      "url" : "/admin"
+      "body" : ""
+      "status" : 404
+      "status" : 404
+      "body" : ""
+        "status" : 404
+        "status" : 404
+      "url" : "/favicon.ico"
+      "body" : ""
+      "status" : 404
+      "status" : 404
+      "body" : ""
+        "status" : 404
+        "status" : 404
+      "url" : "/"
+sh-5.2$ 
+
+
+
+sh-5.2$ curl -s http://srhr-ms-mock-service:8180/__admin/requests/unmatched \
+  | tr ',' '\n' \
+  | grep -E '"url"|"method"|"status"' \
+  | head -50
+    "url" : "/"
+    "method" : "GET"
+    "url" : "/"
+    "method" : "GET"
+    "url" : "/"
+    "method" : "GET"
+    "url" : "/"
+    "method" : "GET"
+    "url" : "/functional-role/"
+    "method" : "GET"
+    "url" : "/admin"
+    "method" : "GET"
+    "url" : "/favicon.ico"
+    "method" : "GET"
+    "url" : "/"
+    "method" : "GET"
+sh-5.2$ 
+
+
+
+sh-5.2$ curl -s http://srhr-ms-mock-service:8180/__admin/mappings \
+  | tr ',' '\n' \
+  | grep -E '"name"|"url"|"urlPath"|"status"|"proxyBaseUrl"'
+    "name" : "EPA - получение access token"
+      "status" : 200
+      "status" : 200
+      "status" : 200
+      "status" : 200
+sh-5.2$ 
