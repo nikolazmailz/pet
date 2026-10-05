@@ -4,3 +4,20 @@ logging:
   level:
     ru.vtb.epa.sso.aal.validation: DEBUG
     ru.ntdev.srhr.common.epa: DEBUG
+
+
+
+ String token = signedJwt.serialize();
+
+ log.info(
+         "DEV JWT created: issuer={}, subject={}, audience={}, channel={}, realm={}, kid={}, expiresAt={}",
+         properties.getIssuer(),
+         profile.getSubject(),
+         properties.getAudience(),
+         profile.getChannel(),
+         profile.getRealm(),
+         keyId,
+         expiresAt
+ );
+
+ return token;
