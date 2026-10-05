@@ -1,23 +1,43 @@
-https://passport.api.vtb.ru
+srhr-ms-paystub-rest
 
-logging:
-  level:
-    ru.vtb.epa.sso.aal.validation: DEBUG
-    ru.ntdev.srhr.common.epa: DEBUG
+at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+at org.springframework.web.filter.ServerHttpObservationFilter.doFilterInternal(ServerHttpObservationFilter.java:109)
+at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:201)
+at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116)
+at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:174)
+at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:149)
+at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:167)
+at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:90)
+at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:482)
+at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:115)
+at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:93)
+at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:74)
+at org.apache.catalina.valves.RemoteIpValve.invoke(RemoteIpValve.java:735)
+at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:340)
+at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:391)
+at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63)
+at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:896)
+at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1744)
+at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52)
+at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1191)
+at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)
+at java.base/java.lang.Thread.run(Thread.java:840)
+Caused by: java.io.FileNotFoundException: http://srhr-ms-mock-service:8180/passport/oauth2/jwks
+at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:2048)
+at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1641)
+at com.nimbusds.jose.util.DefaultResourceRetriever.getInputStream(DefaultResourceRetriever.java:366)
+at com.nimbusds.jose.util.DefaultResourceRetriever.retrieveResource(DefaultResourceRetriever.java:269)
+at ru.vtb.epa.sso.aal.validation.jwt.impl.JwksResourceRetriever.retrieveResource(JwksResourceRetriever.java:32)
+at com.nimbusds.jose.jwk.source.RemoteJWKSet.updateJWKSetFromURL(RemoteJWKSet.java:304)
+... 47 common frames omitted
+05-10-2026 18:24:29.221 [] [] [http-nio-8180-exec-5] ERROR r.n.s.c.jwt.filter.JwtTokenFilter.doFilterInner: Произошла ошибка при аутентификации: [com.nimbusds.jose.RemoteKeySourceException: Couldn't retrieve remote JWK set: http://srhr-ms-mock-service:8180/passport/oauth2/jwks]
+05-10-2026 18:24:29.225 [] [] [http-nio-8180-exec-5] INFO r.n.s.m.p.r.c.PaystubController.?: Enter getPaystubPeriod
+05-10-2026 18:24:29.226 [] [] [http-nio-8180-exec-5] INFO r.n.s.m.p.r.c.PaystubController.?: HttpServletRequest.getHeaderNames() SecurityContextHolderAwareRequestWrapper[ org.springframework.security.web.header.HeaderWriterFilter$HeaderWriterRequest@2928f7e2]
+05-10-2026 18:24:29.226 [] [] [http-nio-8180-exec-5] INFO r.n.s.m.p.r.c.PaystubController.setSystemParams: HttpServletRequest.getHeaderNames() org.springframework.security.web.firewall.StrictHttpFirewall$StrictFirewalledRequest$2@50ab0bb0
+05-10-2026 18:24:29.227 [] [] [http-nio-8180-exec-5] WARN r.n.s.m.p.r.f.PaystubExceptionHandler.?: В запросе не удалось определить требуемые параметры аудита - requestType, sessionId или sessionCreatedAt.
+05-10-2026 18:24:29.227 [] [] [http-nio-8180-exec-5] WARN r.n.s.m.p.r.f.PaystubExceptionHandler.sendUnexpectedErrorAuditEvent: Неуспешное выполнение эндпоинта [SRHR_PAYSTUB_REST_GET_PERIOD]: [Рест сервис вернул null значение.]
 
-
-
- String token = signedJwt.serialize();
-
- log.info(
-         "DEV JWT created: issuer={}, subject={}, audience={}, channel={}, realm={}, kid={}, expiresAt={}",
-         properties.getIssuer(),
-         profile.getSubject(),
-         properties.getAudience(),
-         profile.getChannel(),
-         profile.getRealm(),
-         keyId,
-         expiresAt
- );
-
- return token;
