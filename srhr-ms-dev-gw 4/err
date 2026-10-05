@@ -1,2 +1,37 @@
-sh-5.2$ printenv EPA_SDK_HOSTNAME
-http://srhr-ms-mock-service:8180
+at io.netty.channel.unix.Socket.finishConnect(Socket.java:359) ~[netty-transport-native-unix-common-4.1.101.Final.jar!/:4.1.101.Final]
+at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.doFinishConnect(AbstractEpollChannel.java:710) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
+at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.finishConnect(AbstractEpollChannel.java:687) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
+at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.epollOutReady(AbstractEpollChannel.java:567) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
+at io.netty.channel.epoll.EpollEventLoop.processReady(EpollEventLoop.java:499) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
+at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:407) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
+at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) ~[netty-common-4.1.101.Final.jar!/:4.1.101.Final]
+at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[netty-common-4.1.101.Final.jar!/:4.1.101.Final]
+at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[netty-common-4.1.101.Final.jar!/:4.1.101.Final]
+at java.base/java.lang.Thread.run(Thread.java:840) ~[na:na]
+2026-10-05T16:08:59.688+03:00 INFO 1 --- [srhr-ms-dev-gw] [or-http-epoll-4] r.v.s.d.gw.filter.RequestLoggingFilter : Gateway response: method=GET, path=/ui-api-web/cross/srhr/userinfo/v1/account/info-salary, route=userinfo, status=500, durationMs=9
+2026-10-05T16:08:59.762+03:00 INFO 1 --- [srhr-ms-dev-gw] [or-http-epoll-4] r.v.s.d.gw.filter.RequestLoggingFilter : Gateway request: method=GET, path=/ui-api-web/cross/srhr/paystub/v1/paystub/period, route=paystub
+2026-10-05T16:08:59.781+03:00 INFO 1 --- [srhr-ms-dev-gw] [or-http-epoll-4] r.v.s.d.gw.filter.RequestLoggingFilter : Gateway response: method=GET, path=/ui-api-web/cross/srhr/paystub/v1/paystub/period, route=paystub, status=401, durationMs=19
+2026-10-05T16:10:55.727+03:00 INFO 1 --- [srhr-ms-dev-gw] [or-http-epoll-4] r.v.s.d.gw.filter.RequestLoggingFilter : Gateway request: method=GET, path=/ui-api-web/cross/srhr/userinfo/v1/account/info-salary, route=userinfo
+2026-10-05T16:10:55.734+03:00 ERROR 1 --- [srhr-ms-dev-gw] [or-http-epoll-4] a.w.r.e.AbstractErrorWebExceptionHandler : [e4444d3c-5] 500 Server Error for HTTP GET "/ui-api-web/cross/srhr/userinfo/v1/account/info-salary"
+io.netty.channel.AbstractChannel$AnnotatedConnectException: finishConnect(..) failed: Connection refused: localhost/127.0.0.1:8081
+Suppressed: reactor.core.publisher.FluxOnAssembly$OnAssemblyException:
+Error has been observed at the following site(s):
+*__checkpoint ⇢ org.springframework.cloud.gateway.filter.WeightCalculatorWebFilter [DefaultWebFilterChain]
+*__checkpoint ⇢ HTTP GET "/ui-api-web/cross/srhr/userinfo/v1/account/info-salary" [ExceptionHandlingWebHandler]
+Original Stack Trace:
+Caused by: java.net.ConnectException: finishConnect(..) failed: Connection refused
+at io.netty.channel.unix.Errors.newConnectException0(Errors.java:166) ~[netty-transport-native-unix-common-4.1.101.Final.jar!/:4.1.101.Final]
+at io.netty.channel.unix.Errors.handleConnectErrno(Errors.java:131) ~[netty-transport-native-unix-common-4.1.101.Final.jar!/:4.1.101.Final]
+at io.netty.channel.unix.Socket.finishConnect(Socket.java:359) ~[netty-transport-native-unix-common-4.1.101.Final.jar!/:4.1.101.Final]
+at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.doFinishConnect(AbstractEpollChannel.java:710) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
+at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.finishConnect(AbstractEpollChannel.java:687) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
+at io.netty.channel.epoll.AbstractEpollChannel$AbstractEpollUnsafe.epollOutReady(AbstractEpollChannel.java:567) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
+at io.netty.channel.epoll.EpollEventLoop.processReady(EpollEventLoop.java:499) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
+at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:407) ~[netty-transport-classes-epoll-4.1.101.Final.jar!/:4.1.101.Final]
+at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997) ~[netty-common-4.1.101.Final.jar!/:4.1.101.Final]
+at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74) ~[netty-common-4.1.101.Final.jar!/:4.1.101.Final]
+at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30) ~[netty-common-4.1.101.Final.jar!/:4.1.101.Final]
+at java.base/java.lang.Thread.run(Thread.java:840) ~[na:na]
+2026-10-05T16:10:55.738+03:00 INFO 1 --- [srhr-ms-dev-gw] [or-http-epoll-4] r.v.s.d.gw.filter.RequestLoggingFilter : Gateway response: method=GET, path=/ui-api-web/cross/srhr/userinfo/v1/account/info-salary, route=userinfo, status=500, durationMs=10
+2026-10-05T16:10:55.819+03:00 INFO 1 --- [srhr-ms-dev-gw] [or-http-epoll-4] r.v.s.d.gw.filter.RequestLoggingFilter : Gateway request: method=GET, path=/ui-api-web/cross/srhr/paystub/v1/paystub/period, route=paystub
+2026-10-05T16:10:56.241+03:00 INFO 1 --- [srhr-ms-dev-gw] [or-http-epoll-4] r.v.s.d.gw.filter.RequestLoggingFilter : Gateway response: method=GET, path=/ui-api-web/cross/srhr/paystub/v1/paystub/period, route=paystub, status=401, durationMs=422
