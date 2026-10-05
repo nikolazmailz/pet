@@ -2,3 +2,15 @@ curl -s http://srhr-ms-mock-service:8180/__admin/requests \
   | tr ',' '\n' \
   | grep -E '"url"|"status"|"body"' \
   | head -50
+
+
+
+curl -s http://srhr-ms-mock-service:8180/__admin/requests/unmatched \
+  | tr ',' '\n' \
+  | grep -E '"url"|"method"|"status"' \
+  | head -50
+
+
+curl -s http://srhr-ms-mock-service:8180/__admin/mappings \
+  | tr ',' '\n' \
+  | grep -E '"name"|"url"|"urlPath"|"status"|"proxyBaseUrl"'
