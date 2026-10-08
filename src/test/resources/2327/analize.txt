@@ -1,25 +1,5 @@
-    @Qualifier("modificatedLoggingRestTemplate")
-    private final RestTemplate loggingRestTemplate;
-
-@Override
-    public ResponseEntity<EstaffCandidateInfoDto> getCandidateInfo(SapSystemParamsDto systemParams, Long vacancyId, Long candidateId) {
-        CandidateInfoReq req = new CandidateInfoReq(
-                vacancyId,
-                candidateId,
-                systemParams.getTabNumber()
-        );
-        EstaffCandidateInfoRequest request = new EstaffCandidateInfoRequest(req);
-        String uri = createUri(estaffCandidateInfoUrl, systemParams);
-        HttpEntity<EstaffCandidateInfoRequest> requestEntity = new HttpEntity<>(request, ClientHttpHeaders.sap(systemParams));
-        return loggingRestTemplate.exchange(uri, HttpMethod.POST, requestEntity, EstaffCandidateInfoDto.class);
-    }
-
-    @Bean("modificatedLoggingRestTemplate")
-    public RestTemplate modificatedCommonClient(@Qualifier("loggingRestTemplate") RestTemplate loggingRestTemplate) {
-        loggingRestTemplate.getInterceptors().add(new EstaffErrorBodyHandlerFilter(true));
-        return loggingRestTemplate;
-    }
-
+ ResponseEntity<EstaffCandidateInfoDto> responseBody =
+                restTemplate.postForEntity(estaffUrl, request, EstaffCandidateInfoDto.class);
 
 @Data
 @AllArgsConstructor
