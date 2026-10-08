@@ -1,51 +1,49 @@
-@Data
-@AllArgsConstructor
-@Schema(description = "Массив параметров деталей ошибки от сервиса", name = "ServiceError")
-public class ServiceError {
-  @Schema(description = "Текст ошибки", example = "Ответ не найден", maxLength = 4000, required = false, nullable = true)
-  private String message;
-  @Schema(description = "Код ошибки", example = "", maxLength = 200, required = false, nullable = true)
-  private String code;
-  @Schema(description = "Трейс ошибки", example = "", maxLength = 200, required = false, nullable = true)
-  private String logId;
-  @ArraySchema(
-      maxItems = 99999,
-      uniqueItems = true,
-      arraySchema = @Schema(
-          description = "Массив с детализированными данными по ошибке от сервисов",
-          example = "",
-          required = false, nullable = true
-      )
-  )
-  private List<SapErrorDetails> details;
-
-  public ServiceError() {
-    this.message = "Дефолтный текст ошибки";
-    this.code = "";
-    this.logId = "";
-    this.details = new ArrayList<>();
-  }
-
-  public ServiceError(String message) {
-    this.message = message;
-    this.code = "";
-    this.logId = "";
-    this.details = new ArrayList<>();
-  }
-}    
+{
+...
+catch (HttpClientErrorException | HttpServerErrorException e) {
+            code = e.getStatusCode().toString();
+            handleHttpClientOrServerErrorException(
+                    e, dtoOut, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
+        }
 
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Schema(description = "Массив параметров деталей ошибки от сап", name = "SapErrorDetails")
+if (!candidateAllowed && !vacancyAllowed) {
+            entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.ERROR_REPLY);
+            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "CANDIDATE_INFO_VALIDATION_FAILED");
+        }
 
-public class SapErrorDetails {
-    @Schema(description = "Код ошибки", example = "'510'", maxLength = 255, required = false, nullable =  true)
-    private String code;
-    @Schema(description = "Текст ошибки", example = "Отсутствуют полномочия к данной группе", maxLength = 1000, required = false, nullable =  true)
-    private String message;
-    @Schema(description = "Уровень критичности", example = "Error", maxLength = 255, required = false, nullable =  true)
-    @JsonProperty("@SAP__common.Severity")
-    private String severity;
+        return finishProcessingMessage(start, systemParams, dtoOut, requestEntity, code);
+
 }
+
+
+protected void handleHttpClientOrServerErrorException(HttpStatusCodeException e, SapResponseDtoExtended dto, SapSystemParamsDto systemParams, String errorMessage) {
+        dto.setResponseCode(e.getStatusCode().toString());
+        dto.setErrorMessage(e.getMessage());
+        entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.ERROR_REPLY);
+        log.warn(errorMessage + ": [{}]", e.getMessage());
+        log.debug("Стектрейс: \n" + ExceptionUtils.getStackTrace(e));
+    }
+
+
+private String finishProcessingMessage(Long start, SapSystemParamsDto systemParams, SapResponseDtoExtended dto, RequisitionRequestEntity requestEntity, String code) throws Exception {
+        long end = System.currentTimeMillis();
+        long processingTime = end - start;
+
+        checkDtoUuid(systemParams, dto);
+
+        dto.setRolesList(systemParams.getRolesHeader());
+        dto.setTabNumber(systemParams.getTabNumber());
+
+
+        String messageOutcoming = mapper.writeValueAsString(dto);
+        RequisitionResponseEntity responseEntity = saveAndGetResponse(systemParams.getUuid(), requestEntity, messageOutcoming, processingTime, code);
+
+        if (code.equals("200")) {
+            entityService.deleteResponseByUidAndId(systemParams.getUuid(), responseEntity.getId().toString());
+            entityService.deleteRequestByUidAndId(systemParams.getUuid(), requestEntity.getId().toString());
+        }
+
+        messageOutcoming = checkMessageSize(dto, messageOutcoming);
+        return messageOutcoming;
+    }
