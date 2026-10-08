@@ -1,49 +1,520 @@
-{
-...
-catch (HttpClientErrorException | HttpServerErrorException e) {
-            code = e.getStatusCode().toString();
-            handleHttpClientOrServerErrorException(
-                    e, dtoOut, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
+@GetMapping(value = "/candidate-info", produces = "application/json")
+    @ResponseBody
+    @Operation(summary = "Получение информации по кандидату",
+            tags = "requisition-candidate-info",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Информация по кандидату получена",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = RequisitionGeneralCandidateDtoOut.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Информация не найдена",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = LkrErrorResponseDto.class))
+                    }),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Непредвиденная ошибка сервера",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = LkrErrorResponseDto.class))
+                    })
+    })
+    public ResponseEntity<Object> getCandidateInfo(
+            HttpServletRequest request,
+            @RequestParam(value = "vacancyId", required = true)
+            @Size(max = 20)
+            String vacancyId,
+            @RequestParam(value = "candidateId", required = true)
+            @Size(max = 20)
+            String candidateId
+    ) throws Exception {
+
+        MDC.put(MDCConstant.VACANCY_ID, vacancyId);
+        MDC.put(MDCConstant.CANDIDATE_ID, candidateId);
+
+        request.setAttribute("requestType", "requisition_candidate_info");
+        SapSystemParamsDto systemParams = setSystemParams(request);
+        RequisitionGeneralCandidateDto serviceDto = requisitionService.getCandidateInfo(systemParams, vacancyId, candidateId);
+        if (serviceDto != null) {
+            LogUtil.logResponse(systemParams.getAdLogin(), systemParams.getSessionId(), "GET", kafkaTopicNameFromEasup, serviceDto.getResponseCode(), serviceDto.getErrorMessage(), false, null, serviceDto.getTraceId());
+            if (serviceDto.getResponseCode().startsWith("2")) {
+                RequisitionGeneralCandidateDtoOut responseOut = new RequisitionGeneralCandidateDtoOut();
+                BeanUtils.copyProperties(serviceDto, responseOut);
+                responseOut = requisitionDtoMapper.cleanNulls(responseOut);
+                log.info("Успешное выполнение эндпоинта [SRHR_REQUISITION_GET_CANDIDATE_INFO]");
+                return new ResponseEntity<>(responseOut, HttpStatus.OK);
+            } else {
+                log.warn("Неуспешное выполнение эндпоинта [SRHR_REQUISITION_GET_CANDIDATE_INFO]: [{}]", serviceDto.getErrorMessage());
+                int httpStatusNumber = Integer.parseInt(serviceDto.getResponseCode().substring(0, 3));
+                throw new HttpResponseException(httpStatusNumber, serviceDto.getErrorMessage());
+            }
+        }
+        log.warn("Неуспешное выполнение эндпоинта [SRHR_REQUISITION_GET_CANDIDATE_INFO]: вернулось нулевое значение");
+        throw new HttpResponseException(404, ErrorResponse.CANDIDATE_INFO_NOT_FOUND);
+    }
+
+
+public RequisitionGeneralCandidateDto getCandidateInfo(SapSystemParamsDto systemParams, String vacancyId, String candidateId) throws JsonProcessingException, InterruptedException {
+        RequisitionRequestDto dto = fillBasicParams(systemParams);
+        dto.setRequestType("requisition_candidate_info");
+        dto.setVacancyId(vacancyId);
+        dto.setCandidateId(candidateId);
+        ObjectMapper mapper = new ObjectMapper();
+        String json = mapper.writeValueAsString(dto);
+        String message = getResponse(dto, json);
+        if (message != null) {
+            RequisitionGeneralCandidateDto returnedDto = mapper.readValue(message, RequisitionGeneralCandidateDto.class);
+            if (returnedDto.getFileUuid() == null || returnedDto.getFileUuid().isEmpty()) {
+                return returnedDto;
+            } else {
+                String storedMessage = getOutStoredMessage(systemParams.getAdLogin(), systemParams.getSessionId(), systemParams.getTraceId(), returnedDto.getFileUuid());
+                return mapper.readValue(storedMessage, RequisitionGeneralCandidateDto.class);
+            }
+        } else {
+            return null;
+        }
+    }
+
+public String getResponse(RequisitionRequestDto dto, String json) throws InterruptedException, JsonProcessingException {
+        //Проверяем размер сообщения, не превышает ли лимиты кафки
+        String checkedJson = checkMessageSize(dto, json);
+
+        redisAdapter.putToQueue(RequisitionRequestQueue, checkedJson);
+        final int giveUp = timeoutLimit;
+        int noRecordsCount = 0;
+        RedisResponse redisResponse;
+        String message = null;
+        while (noRecordsCount != giveUp) {
+            try {
+                redisResponse = redisAdapter.getObjectFromDb(dto.getUuid(), RedisResponse.class);
+                if (redisResponse != null) {
+                    message = redisResponse.getBody();
+                    break;
+                } else {
+                    noRecordsCount++;
+                    Thread.sleep(50);
+                }
+            } catch (Exception e) {
+                noRecordsCount++;
+                Thread.sleep(50);
+            }
         }
 
+        checkResponseToErrors(message);
 
-if (!candidateAllowed && !vacancyAllowed) {
-            entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.ERROR_REPLY);
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "CANDIDATE_INFO_VALIDATION_FAILED");
+        return message;
+    }
+
+private EstaffErrorBodyHandlerFilter filter;
+
+    private void checkResponseToErrors(String message) {
+        LkrException error = filter.getErrorFromEstaffResponse(message);
+        if (error != null) {
+            throw error;
+        }
+    }
+
+
+
+
+@Slf4j
+@RequiredArgsConstructor
+public class EstaffErrorBodyHandlerFilter implements ClientHttpRequestInterceptor {
+
+    private final ObjectMapper objectMapper;
+    private final Boolean throwLkrException;
+
+    public EstaffErrorBodyHandlerFilter(Boolean throwLkrException) {
+        this.throwLkrException = throwLkrException;
+        objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
+    }
+
+    public static LkrErrorResponseDto convertEstaffErrorToLkrResponse(EstaffMessage message) {
+        StringBuilder msgErrors = new StringBuilder();
+        List<LkrErrorDetail> details = message.getBody().getError().getDetails().stream()
+                .map(d -> {
+                    LkrErrorDetail detail = new LkrErrorDetail();
+                    detail.setCode(d.getCode());
+                    msgErrors.append(d.getMessage()).append(" ");
+                    return detail;
+                })
+                .toList();
+
+        LkrError error = new LkrError();
+        error.setMessage(msgErrors.toString());
+        error.setLogId(message.getHeaders().getLogId());
+        error.setDetails(details);
+
+        LkrErrorResponseDto response = new LkrErrorResponseDto();
+        response.setError(error);
+        return response;
+    }
+
+    @Override
+    public ClientHttpResponse intercept(HttpRequest request, byte[] body,
+                                        ClientHttpRequestExecution execution) throws IOException {
+
+        ClientHttpResponse response = execution.execute(request, body);
+        response.getStatusCode();
+
+        BufferingClientHttpResponseWrapper buffered = new BufferingClientHttpResponseWrapper(response);
+        String responseBody = StreamUtils.copyToString(buffered.getBody(), StandardCharsets.UTF_8);
+
+        LkrException error = getErrorFromEstaffResponse(responseBody);
+        if (error != null) {
+            log.error(error.getLoggedMessage());
+            if (throwLkrException) {
+                throw error;
+            }
         }
 
-        return finishProcessingMessage(start, systemParams, dtoOut, requestEntity, code);
+        return buffered;
+    }
+
+    @Nullable
+    public LkrException getErrorFromEstaffResponse(String responseBody) {
+        // проверяем что получили типизированное тело ответа от естафа
+        SapResponseDtoExtended estaffBody;
+        try {
+            estaffBody = objectMapper.readValue(responseBody, SapResponseDtoExtended.class);
+        } catch (JsonProcessingException e) {
+            estaffBody = null;
+        }
+
+        LkrException lkrException = null;
+        // если в ответе есть ошибка от естафа
+        if (estaffBody != null && estaffBody.getMessage() != null) {
+            StringBuilder logMessage = new StringBuilder();
+            logMessage.append("Получена ошибка от естафф: ");
+
+            String payload;
+            try {
+                LkrErrorResponseDto lkrErrorResponseDto = convertEstaffErrorToLkrResponse(estaffBody.getMessage());
+                payload = objectMapper.writeValueAsString(lkrErrorResponseDto);
+            } catch (Exception e) {
+                log.error("Не удалось распарсить ответ от естафф, ошибка = [{}]", e.getMessage());
+                payload = "Не получено";
+            }
+            logMessage.append("[estaff_response = ").append(payload).append("]");
+
+            String finalLoggedMessage;
+            if (log.isDebugEnabled()) {
+                finalLoggedMessage = LogUtil.getLogMsgWithLkrExtensions(logMessage.toString());
+            } else {
+                finalLoggedMessage = logMessage.toString();
+            }
+
+            lkrException = new LkrException();
+            lkrException.setLoggedMessage(finalLoggedMessage);
+            lkrException.setStatusCode(HttpStatusCode.valueOf(estaffBody.getMessage().getStatus()));
+            lkrException.setType(LkrErrorType.ESTAFF);
+            lkrException.setEstaffMessage(estaffBody.getMessage());
+        }
+
+        return lkrException;
+    }
+
 
 }
 
 
-protected void handleHttpClientOrServerErrorException(HttpStatusCodeException e, SapResponseDtoExtended dto, SapSystemParamsDto systemParams, String errorMessage) {
-        dto.setResponseCode(e.getStatusCode().toString());
-        dto.setErrorMessage(e.getMessage());
-        entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.ERROR_REPLY);
-        log.warn(errorMessage + ": [{}]", e.getMessage());
-        log.debug("Стектрейс: \n" + ExceptionUtils.getStackTrace(e));
+
+@Slf4j
+@ControllerAdvice
+@RequiredArgsConstructor
+class RequisitionExceptionHandler {
+
+    private final JacksonConfig jacksonConfig;
+    private final AuditSenderResolver auditSenderResolver;
+    private final ObjectMapper objectMapper;
+
+    @ExceptionHandler(value = Exception.class)
+    public ResponseEntity<Object>
+    defaultErrorHandler(HttpServletRequest req, Exception e) throws Exception {
+        ServiceError error = new ServiceError();
+        String requestType;
+        String sessionId;
+        ServiceErrorDto serviceErrorDto = new ServiceErrorDto();
+        LocalDateTime sessionCreatedAt;
+        String traceId = (req.getAttribute("traceId") != null) ? req.getAttribute("traceId").toString() : "undefined";
+        if (e.getMessage().contains("{\"error\"")) {
+            serviceErrorDto = getResentErrorDescription(e.getMessage(), traceId);
+        } else {
+            error.setMessage(e.getMessage());
+            error.setLogId(traceId);
+            serviceErrorDto.setError(error);
+        }
+        if (req.getAttribute("requestType") != null && req.getAttribute("sessionId") != null && req.getAttribute("sessionCreatedAt") != null) {
+            requestType = req.getAttribute("requestType").toString();
+            sessionId = req.getAttribute("sessionId").toString();
+            sessionCreatedAt = (LocalDateTime) req.getAttribute("sessionCreatedAt");
+        } else {
+            log.warn(ErrorResponse.ERROR_NOT_ALL_REQUIRED_AUDIT_PARAMS_MESSAGE);
+            requestType = (req.getAttribute("requestType") != null) ? req.getAttribute("requestType").toString() : "undefined";
+            sessionId = (req.getAttribute("sessionId") != null) ? req.getAttribute("sessionId").toString() : "undefined";
+            sessionCreatedAt = (req.getAttribute("sessionCreatedAt") != null) ? (LocalDateTime) req.getAttribute("sessionCreatedAt") : LocalDateTime.now();
+        }
+        sendUnexpectedErrorAuditEvent(requestType, sessionId, sessionCreatedAt, error.getMessage());
+        return getErrorResponseFromDeprecated(serviceErrorDto, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(value = MethodArgumentNotValidException.class)
+    public ResponseEntity<Object>
+    validationArgumentErrorHandler(MethodArgumentNotValidException e) {
+        List<FieldError> errorList = e.getFieldErrors();
+        String errorText = "";
+        for (FieldError error : errorList) {
+            errorText = errorText.concat(error.getDefaultMessage().concat(" "));
+        }
+        ServiceError error = new ServiceError(errorText, "422_ARG_NOT_VALID", null, new ArrayList<>());
+        ServiceErrorDto errorDto = new ServiceErrorDto(error);
+        return getErrorResponseFromDeprecated(errorDto, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
 
-private String finishProcessingMessage(Long start, SapSystemParamsDto systemParams, SapResponseDtoExtended dto, RequisitionRequestEntity requestEntity, String code) throws Exception {
-        long end = System.currentTimeMillis();
-        long processingTime = end - start;
+    @ExceptionHandler(value = ValidationException.class)
+    public ResponseEntity<Object>
+    validationErrorHandler(ValidationException e) {
+        ServiceError error = new ServiceError(e.getMessage(), "422_VALIDATION_ERROR", null, new ArrayList<>());
+        ServiceErrorDto errorDto = new ServiceErrorDto(error);
+        return getErrorResponseFromDeprecated(errorDto, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
 
-        checkDtoUuid(systemParams, dto);
+    @ExceptionHandler(value = HandlerMethodValidationException.class)
+    public ResponseEntity<Object>
+    validationMethodErrorHandler(HandlerMethodValidationException e) {
+        String validationErrors = "";
+        for (ParameterValidationResult validationResult : e.getAllValidationResults()) {
+            List<MessageSourceResolvable> validationErrorList = validationResult.getResolvableErrors();
+            validationErrors = validationErrors.concat(validationErrorList.stream().map(MessageSourceResolvable::toString)
+                    .collect(Collectors.joining(", ")));
+        }
+        ServiceError error = new ServiceError(validationErrors, "422_VALIDATION_ERROR", null, new ArrayList<>());
+        ServiceErrorDto errorDto = new ServiceErrorDto(error);
+        return getErrorResponseFromDeprecated(errorDto, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
 
-        dto.setRolesList(systemParams.getRolesHeader());
-        dto.setTabNumber(systemParams.getTabNumber());
+    @ExceptionHandler(value = MissingServletRequestParameterException.class)
+    public ResponseEntity<Object>
+    missingServletRequestParameterExceptionHandler(MissingServletRequestParameterException e) {
+        String absentParameter = e.getParameterName();
+        ServiceError error = new ServiceError(ErrorResponse.ERROR_MISSING_REQUIRED_GET_PARAMETER_MESSAGE + " " + absentParameter, "400_MISSING_PARAM", null, new ArrayList<>());
+        ServiceErrorDto errorDto = new ServiceErrorDto(error);
+        log.error(ErrorResponse.ERROR_MISSING_REQUIRED_GET_PARAMETER_MESSAGE + " [{}]", absentParameter);
+        return getErrorResponseFromDeprecated(errorDto, HttpStatus.BAD_REQUEST);
+    }
 
+    @ExceptionHandler(value = NullPointerException.class)
+    public ResponseEntity<Object>
+    nullPointerExceptionHandler(HttpServletRequest req, Exception e) throws Exception {
+        String requestType;
+        String sessionId;
+        LocalDateTime sessionCreatedAt;
+        ServiceError error = new ServiceError();
+        if (req.getAttribute("requestType") != null && req.getAttribute("sessionId") != null && req.getAttribute("sessionCreatedAt") != null) {
+            requestType = req.getAttribute("requestType").toString();
+            sessionId = req.getAttribute("sessionId").toString();
+            sessionCreatedAt = (LocalDateTime) req.getAttribute("sessionCreatedAt");
+        } else {
+            log.warn(ErrorResponse.ERROR_NOT_ALL_REQUIRED_AUDIT_PARAMS_MESSAGE);
+            requestType = (req.getAttribute("requestType") != null) ? req.getAttribute("requestType").toString() : "undefined";
+            sessionId = (req.getAttribute("sessionId") != null) ? req.getAttribute("sessionId").toString() : "undefined";
+            sessionCreatedAt = (req.getAttribute("sessionCreatedAt") != null) ? (LocalDateTime) req.getAttribute("sessionCreatedAt") : LocalDateTime.now();
+        }
+        error.setMessage(REST_RETURNED_NULL);
+        sendUnexpectedErrorAuditEvent(requestType, sessionId, sessionCreatedAt, REST_RETURNED_NULL);
+        return getErrorResponseFromDeprecated(new ServiceErrorDto(error), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
-        String messageOutcoming = mapper.writeValueAsString(dto);
-        RequisitionResponseEntity responseEntity = saveAndGetResponse(systemParams.getUuid(), requestEntity, messageOutcoming, processingTime, code);
-
-        if (code.equals("200")) {
-            entityService.deleteResponseByUidAndId(systemParams.getUuid(), responseEntity.getId().toString());
-            entityService.deleteRequestByUidAndId(systemParams.getUuid(), requestEntity.getId().toString());
+    @ExceptionHandler(value = HttpResponseException.class)
+    public ResponseEntity<Object>
+    httpResponseErrorHandler(HttpServletRequest req, HttpResponseException e) throws Exception {
+        ServiceError error = new ServiceError();
+        String requestType;
+        String sessionId;
+        ServiceErrorDto serviceErrorDto = new ServiceErrorDto();
+        LocalDateTime sessionCreatedAt;
+        String traceId = (req.getAttribute("traceId") != null) ? req.getAttribute("traceId").toString() : "undefined";
+        if (e.getMessage().contains("{\"error\"")) {
+            serviceErrorDto = getResentErrorDescription(e.getMessage(), traceId);
+        } else if (e.getReasonPhrase() != null) {
+            error.setMessage(e.getReasonPhrase());
+            error.setLogId(traceId);
+            serviceErrorDto.setError(error);
+        } else {
+            error.setMessage(e.getMessage());
+            error.setLogId(traceId);
+            serviceErrorDto.setError(error);
+        }
+        if (req.getAttribute("requestType") != null && req.getAttribute("sessionId") != null && req.getAttribute("sessionCreatedAt") != null) {
+            requestType = req.getAttribute("requestType").toString();
+            sessionId = req.getAttribute("sessionId").toString();
+            sessionCreatedAt = (LocalDateTime) req.getAttribute("sessionCreatedAt");
+        } else {
+            log.warn(ErrorResponse.ERROR_NOT_ALL_REQUIRED_AUDIT_PARAMS_MESSAGE);
+            requestType = (req.getAttribute("requestType") != null) ? req.getAttribute("requestType").toString() : "undefined";
+            sessionId = (req.getAttribute("sessionId") != null) ? req.getAttribute("sessionId").toString() : "undefined";
+            sessionCreatedAt = (req.getAttribute("sessionCreatedAt") != null) ? (LocalDateTime) req.getAttribute("sessionCreatedAt") : LocalDateTime.now();
         }
 
-        messageOutcoming = checkMessageSize(dto, messageOutcoming);
-        return messageOutcoming;
+        if (e.getStatusCode() == 403 || e.getStatusCode() == 401) {
+            sendForbiddenAuditEvent(requestType, sessionId, sessionCreatedAt);
+        } else if (e.getStatusCode() == 404) {
+            sendNotFoundAuditEvent(requestType, sessionId, sessionCreatedAt);
+            if (e.getMessage() == null) {
+                error.setMessage(ErrorResponse.PAYSTUB_NOT_FOUND);
+                serviceErrorDto.setError(error);
+            }
+        }
+        return getErrorResponseFromDeprecated(serviceErrorDto, HttpStatus.valueOf(e.getStatusCode()));
     }
+
+    @ExceptionHandler(value = LkrException.class)
+    public ResponseEntity<Object>
+    httpResponseErrorHandler(HttpServletRequest req, LkrException e) throws Exception {
+
+        // определение параметров аудита
+        String requestType;
+        String sessionId;
+        LocalDateTime sessionCreatedAt;
+        if (req.getAttribute("requestType") != null && req.getAttribute("sessionId") != null && req.getAttribute("sessionCreatedAt") != null) {
+            requestType = req.getAttribute("requestType").toString();
+            sessionId = req.getAttribute("sessionId").toString();
+            sessionCreatedAt = (LocalDateTime) req.getAttribute("sessionCreatedAt");
+        } else {
+            log.warn(ErrorResponse.ERROR_NOT_ALL_REQUIRED_AUDIT_PARAMS_MESSAGE);
+            requestType = (req.getAttribute("requestType") != null) ? req.getAttribute("requestType").toString() : "undefined";
+            sessionId = (req.getAttribute("sessionId") != null) ? req.getAttribute("sessionId").toString() : "undefined";
+            sessionCreatedAt = (req.getAttribute("sessionCreatedAt") != null) ? (LocalDateTime) req.getAttribute("sessionCreatedAt") : LocalDateTime.now();
+        }
+
+        // Отправка в аудит
+        if (e.getStatusCode().value() == 403 || e.getStatusCode().value() == 401) {
+            sendForbiddenAuditEvent(requestType, sessionId, sessionCreatedAt);
+        } else if (e.getStatusCode().value() == 404) {
+            sendNotFoundAuditEvent(requestType, sessionId, sessionCreatedAt);
+        } else {
+            sendUnexpectedErrorAuditEvent(requestType, sessionId, sessionCreatedAt, e.getLoggedMessage());
+        }
+
+        log.error(e.getLoggedMessage());
+        if (e.getType() == LkrErrorType.ESTAFF && e.getEstaffMessage() != null) {
+            return getEstaffErrorResponse(e.getEstaffMessage());
+        } else {
+            String traceId = (req.getAttribute("traceId") != null) ? req.getAttribute("traceId").toString() : "undefined";
+            return getDefaultErrorResponse(e.getStatusCode(), traceId);
+        }
+    }
+
+    private ResponseEntity<Object> getDefaultErrorResponse(HttpStatusCode status, String traceId) {
+        LkrErrorResponseDto responseDto = new LkrErrorResponseDto();
+        LkrError error = new LkrError();
+
+        error.setLogId(traceId);
+        responseDto.setError(error);
+        log.error("Поймана неожидаемая ошибка");
+        return new ResponseEntity<>(responseDto, status);
+    }
+
+    private ResponseEntity<Object> getEstaffErrorResponse(EstaffMessage estaffMessage) {
+        StringBuilder msgErrors = new StringBuilder();
+        List<LkrErrorDetail> details = estaffMessage.getBody().getError().getDetails().stream()
+                .map(d -> {
+                    LkrErrorDetail detail = new LkrErrorDetail();
+                    detail.setCode(d.getCode());
+                    msgErrors.append(d.getMessage()).append(" ");
+                    return detail;
+                })
+                .toList();
+
+        LkrError error = new LkrError();
+        error.setMessage(msgErrors.toString());
+        error.setLogId(estaffMessage.getHeaders().getLogId());
+        error.setDetails(details);
+
+        LkrErrorResponseDto response = new LkrErrorResponseDto();
+        response.setError(error);
+
+        return new ResponseEntity<>(response, HttpStatusCode.valueOf(estaffMessage.getStatus()));
+    }
+
+    private ResponseEntity<Object> getErrorResponseFromDeprecated(ServiceErrorDto deprecatedDto, HttpStatusCode status) {
+        LkrErrorResponseDto responseDto = new LkrErrorResponseDto();
+        LkrError error = new LkrError();
+        LkrErrorDetail lkrErrorDetail = new LkrErrorDetail();
+
+        lkrErrorDetail.setCode(deprecatedDto.getError().getCode());
+
+        error.setMessage(deprecatedDto.getError().getMessage());
+        error.setLogId(deprecatedDto.getError().getLogId());
+        error.setDetails(List.of(lkrErrorDetail));
+        responseDto.setError(error);
+
+        String logMessage = "Не указано";
+        try {
+            logMessage = objectMapper.writeValueAsString(deprecatedDto);
+        } catch (JsonProcessingException e) {
+            log.error("Не удалось сериализовать ДТО ошибки: {}", e.getMessage());
+        }
+        log.error("Возникла ошибка при выполнении запроса: {}", LogUtil.getLogMsgWithLkrExtensions(logMessage));
+
+        return new ResponseEntity<>(responseDto, status);
+    }
+
+    private ServiceErrorDto getResentErrorDescription(String resentError, String traceId) {
+        try {
+            int start = resentError.indexOf("{\"error\"");
+            String errorText = resentError.substring(start);
+            ObjectMapper mapper = jacksonConfig.objectMapper();
+            ServiceErrorDto serviceErrorResponse = mapper.readValue(errorText, ServiceErrorDto.class);
+            serviceErrorResponse.getError().setLogId(traceId);
+            return serviceErrorResponse;
+        } catch (Exception e) {
+            return new ServiceErrorDto(new ServiceError(e.getMessage(), "ERROR_HANDLER_EXCEPTION", traceId, new ArrayList<>()));
+        }
+    }
+
+    // Поменять когда появятся дто
+    public void sendUnexpectedErrorAuditEvent(String requestType, String sessionId, LocalDateTime sessionCreatedAt, String errorText) {
+        AuditSender sender = auditSenderResolver.resolve(requestType);
+        log.warn("Неуспешное выполнение эндпоинта: [{}]", errorText);
+        try {
+            sender.sendUnexpectedErrorEvent(sessionId, sessionCreatedAt);
+        } catch (Exception ex) {
+            log.error("Ошибка отправки события [{}] в аудит: [{}]", sender.eventErrorCode(), ex.getMessage());
+        }
+    }
+
+    public void sendForbiddenAuditEvent(String requestType, String sessionId, LocalDateTime sessionCreatedAt) {
+        AuditSender sender = auditSenderResolver.resolve(requestType);
+        try {
+            sender.sendForbiddenEvent(sessionId, sessionCreatedAt);
+        } catch (Exception ex) {
+            log.error("Ошибка отправки события [{}] в аудит: [{}]", sender.eventForbiddenCode(), ex.getMessage());
+        }
+    }
+
+    public void sendNotFoundAuditEvent(String requestType, String sessionId, LocalDateTime sessionCreatedAt) {
+        AuditSender sender = auditSenderResolver.resolve(requestType);
+        try {
+            sender.sendNotFoundEvent(sessionId, sessionCreatedAt);
+        } catch (Exception ex) {
+            log.error("Ошибка отправки события [{}] в аудит: [{}]", sender.eventNotFoundCode(), ex.getMessage());
+        }
+    }
+}
