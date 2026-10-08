@@ -1,0 +1,77 @@
+private ServiceErrorDto getServiceError(
+        HttpStatusCodeException e,
+        String traceId
+) {
+    String responseBody = e.getResponseBodyAsString();
+    ServiceErrorDto serviceErrorDto = null;
+
+    // Читаем тело ошибки интеграции.
+    if (responseBody != null && !responseBody.isBlank()) {
+        try {
+            serviceErrorDto = objectMapper
+                    .readerFor(ServiceErrorDto.class)
+                    .without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                    .readValue(responseBody);
+        } catch (JsonProcessingException parsingException) {
+            log.warn(
+                    "Не удалось разобрать тело ошибки интеграции: status={}, traceId={}",
+                    e.getStatusCode().value(),
+                    traceId,
+                    parsingException
+            );
+        }
+    }
+
+    // Формируем резервную ошибку, если тело не удалось распознать.
+    if (serviceErrorDto == null || serviceErrorDto.getError() == null) {
+        return new ServiceErrorDto(
+                new ServiceError(
+                        ErrorResponse.DEFAULT_ERROR_MESSAGE,
+                        Integer.toString(e.getStatusCode().value()),
+                        traceId,
+                        new ArrayList<>()
+                )
+        );
+    }
+
+    ServiceError error = serviceErrorDto.getError();
+    List<String> integrationMessages = new ArrayList<>();
+    List<SapErrorDetails> details = new ArrayList<>();
+
+    // Обрабатываем детали ошибки интеграции.
+    if (error.getDetails() != null) {
+        for (SapErrorDetails detail : error.getDetails()) {
+            if (detail == null) {
+                continue;
+            }
+
+            // Сохраняем исходное сообщение до его замены.
+            if (detail.getMessage() != null && !detail.getMessage().isBlank()) {
+                integrationMessages.add(detail.getMessage());
+            }
+
+            // Код интеграции сохраняем, сообщение заменяем константой.
+            detail.setMessage(ErrorResponse.DEFAULT_ERROR_MESSAGE);
+            details.add(detail);
+        }
+    }
+
+    // Собираем общее сообщение из исходных сообщений интеграции.
+    error.setMessage(
+            integrationMessages.isEmpty()
+                    ? ErrorResponse.DEFAULT_ERROR_MESSAGE
+                    : String.join("; ", integrationMessages)
+    );
+
+    // Устанавливаем обработанные детали и текущий traceId.
+    error.setDetails(details);
+    error.setLogId(traceId);
+
+    // При отсутствии верхнего кода используем HTTP-статус.
+    // Коды внутри details остаются такими, как пришли из интеграции.
+    if (error.getCode() == null || error.getCode().isBlank()) {
+        error.setCode(Integer.toString(e.getStatusCode().value()));
+    }
+
+    return serviceErrorDto;
+}

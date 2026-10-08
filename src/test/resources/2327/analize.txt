@@ -43,3 +43,19 @@ public class LkrErrorDetail {
         message = ErrorResponse.DEFAULT_ERROR_MESSAGE;
     }
 }
+
+{
+"error": E,
+"message*: "Ошибка валидации входных данных",
+ "detafls": [
+    {
+    "code": *ESTF-COMMON-VAL - 007*,
+    "message": "Вакансия не найдена"
+    }
+ ]"code": *ESTF-COMMON-VAL - 007* ,
+}
+
+error.details[i].message - всегда константа ErrorResponse.DEFAULT_ERROR_MESSAGE
+в error.details[i].code - тот код который пришел из интеграции(например "ESTF-COMMON-VAL-007")
+в error.message - надо собрать все error.details[i].message которые пришли из интеграции (например "Вакансия не найдена")
+в error.logId - как сейчас traceId
