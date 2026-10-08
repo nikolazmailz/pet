@@ -1,83 +1,227 @@
- ResponseEntity<EstaffCandidateInfoDto> responseBody =
-                restTemplate.postForEntity(estaffUrl, request, EstaffCandidateInfoDto.class);
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Schema(description = "Тело ответа из естафф при получении информации по кандидатам")
-public class EstaffCandidateInfoDto extends SapResponseDtoExtended {
+@Slf4j
+@ControllerAdvice
+@RequiredArgsConstructor
+class EasupIntegrationExceptionHandler {
 
-    @Schema(description = "Корневой объект успешного ответа", required = true, nullable = false)
-    private EstaffCandidateInfoData data;
+    private final AuditEventSenderCustom auditEventSender;
 
-}
-
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class SapResponseDtoExtended {
-    private String uuid;
-    private String responseCode;
-    private String errorMessage;
-    private String tabNumber;
-    private String adLogin;
-    private String sessionId;
-    private String channel;
-    private String rolesList;
-    private String traceId;
-    private String requestType;
-    private String requestTs;
-    private String responseTs;
-    private String realm;
-    private String fileUuid;
-
-    private EstaffMessage message;
-
-    public void setSystemParams(String adLogin, String sessionId, String channel) {
-        this.adLogin = adLogin;
-        this.sessionId = sessionId;
-        this.channel = channel;
+    private ServiceErrorDto getSapErrorDescription(String sapError) {
+        try {
+            int start = sapError.indexOf("{\"error\"");
+            String errorText = sapError.substring(start);
+            ObjectMapper mapper = new ObjectMapper();
+            SapErrorResponse sapErrorResponse = mapper.readValue(errorText, SapErrorResponse.class);
+            ServiceError error = new ServiceError();
+            error.setMessage(sapErrorResponse.getError().getMessage());
+            error.setDetails(sapErrorResponse.getError().getDetails());
+            return new ServiceErrorDto(error);
+        } catch (Exception e) {
+            return new ServiceErrorDto();
+        }
     }
-}
+
+    @ExceptionHandler(value = Exception.class)
+    public ResponseEntity<Object>
+    defaultErrorHandler(HttpServletRequest req, Exception e) throws Exception {
+        String requestType;
+        String sessionId;
+        String pernr;
+        String adlogin;
+        String traceId = (req.getAttribute("traceId") != null) ? req.getAttribute("traceId").toString() : "undefined";
+        ServiceErrorDto serviceError = new ServiceErrorDto();
+        LocalDateTime sessionCreatedAt = LocalDateTime.now();
+        if (e.getMessage().contains("SAP")) {
+            serviceError = getSapErrorDescription(e.getMessage());
+        } else {
+            serviceError = serviceError.setError(new ServiceError(e.getMessage(), "500", traceId, new ArrayList<>()));
+        }
+        if (req.getAttribute("requestType") != null && req.getAttribute("sessionId") != null && req.getAttribute("pernr") != null && req.getAttribute("adlogin") != null && req.getAttribute("traceId") != null) {
+            requestType = req.getAttribute("requestType").toString();
+            sessionId = req.getAttribute("sessionId").toString();
+            pernr = req.getAttribute("pernr").toString();
+            adlogin = req.getAttribute("adlogin").toString();
+            traceId = req.getAttribute("traceId").toString();
+        } else {
+            log.warn(ErrorResponse.ERROR_NOT_ALL_REQUIRED_AUDIT_PARAMS_MESSAGE);
+            requestType = (req.getAttribute("requestType") != null) ? req.getAttribute("requestType").toString() : "undefined";
+            sessionId = (req.getAttribute("sessionId") != null) ? req.getAttribute("sessionId").toString() : "undefined";
+            pernr = (req.getAttribute("pernr") != null) ? req.getAttribute("pernr").toString() : "undefined";
+            adlogin = (req.getAttribute("adlogin") != null) ? req.getAttribute("adlogin").toString() : "undefined";
+            traceId = (req.getAttribute("traceId") != null) ? req.getAttribute("traceId").toString() : "undefined";
+        }
+        LogUtil.logSapErrorResponse(pernr, sessionId, e.getMessage(), traceId, null);
+        sendUnexpectedErrorAuditEvent(requestType, sessionId, sessionCreatedAt, serviceError.getError().getMessage(), pernr, adlogin);
+        return new ResponseEntity<>(serviceError, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(value = HandlerMethodValidationException.class)
+    public ResponseEntity<Object>
+    validationMethodErrorHandler(HandlerMethodValidationException e) {
+        String validationErrors = "";
+        for (ParameterValidationResult validationResult : e.getAllValidationResults()) {
+            List<MessageSourceResolvable> validationErrorList = validationResult.getResolvableErrors();
+            validationErrors = validationErrors.concat(validationErrorList.stream().map(MessageSourceResolvable::toString)
+                    .collect(Collectors.joining(", ")));
+        }
+        ServiceError error = new ServiceError(validationErrors, String.valueOf(e.getStatusCode()), "undefined", new ArrayList<>());
+        ServiceErrorDto errorDto = new ServiceErrorDto(error);
+        return new ResponseEntity<>(errorDto, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    @ExceptionHandler(value = HttpServerErrorException.class)
+    public ResponseEntity<Object>
+    httpServerErrorHandler(HttpServletRequest req, HttpServerErrorException e) throws Exception {
+        String requestType;
+        String sessionId;
+        String pernr;
+        String adlogin;
+        String traceId = (req.getAttribute("traceId") != null) ? req.getAttribute("traceId").toString() : "undefined";
+        ServiceErrorDto serviceError = new ServiceErrorDto();
+        LocalDateTime sessionCreatedAt = LocalDateTime.now();
+        if (e.getMessage().contains("SAP")) {
+            serviceError = getSapErrorDescription(e.getMessage());
+        } else {
+            serviceError = serviceError.setError(new ServiceError(e.getMessage(), String.valueOf(e.getStatusCode()), traceId, new ArrayList<>()));
+        }
+        if (req.getAttribute("requestType") != null && req.getAttribute("sessionId") != null && req.getAttribute("pernr") != null && req.getAttribute("adlogin") != null && req.getAttribute("traceId") != null) {
+            requestType = req.getAttribute("requestType").toString();
+            sessionId = req.getAttribute("sessionId").toString();
+            pernr = req.getAttribute("pernr").toString();
+            adlogin = req.getAttribute("adlogin").toString();
+            traceId = req.getAttribute("traceId").toString();
+        } else {
+            log.warn(ErrorResponse.ERROR_NOT_ALL_REQUIRED_AUDIT_PARAMS_MESSAGE);
+            requestType = (req.getAttribute("requestType") != null) ? req.getAttribute("requestType").toString() : "undefined";
+            sessionId = (req.getAttribute("sessionId") != null) ? req.getAttribute("sessionId").toString() : "undefined";
+            pernr = (req.getAttribute("pernr") != null) ? req.getAttribute("pernr").toString() : "undefined";
+            adlogin = (req.getAttribute("adlogin") != null) ? req.getAttribute("adlogin").toString() : "undefined";
+            traceId = (req.getAttribute("traceId") != null) ? req.getAttribute("traceId").toString() : "undefined";
+        }
+        LogUtil.logSapErrorResponse(pernr, sessionId, e.getMessage(), traceId, e.getStatusCode().value());
+        if (e.getStatusCode().value() != 510) {
+            sendUnexpectedErrorAuditEvent(requestType, sessionId, sessionCreatedAt, serviceError.getError().getMessage(), pernr, adlogin);
+        }
+        return new ResponseEntity<>(serviceError, e.getStatusCode());
+    }
+
+    @ExceptionHandler(value = NullPointerException.class)
+    public ResponseEntity<Object>
+    nullPointerExceptionHandler(HttpServletRequest req, Exception e) throws Exception {
+        String requestType;
+        String sessionId;
+        String pernr;
+        String adlogin;
+        String traceId = (req.getAttribute("traceId") != null) ? req.getAttribute("traceId").toString() : "undefined";
+        ServiceErrorDto serviceError = new ServiceErrorDto();
+        LocalDateTime sessionCreatedAt = LocalDateTime.now();
+        if (req.getAttribute("requestType") != null && req.getAttribute("sessionId") != null && req.getAttribute("pernr") != null && req.getAttribute("adlogin") != null) {
+            requestType = req.getAttribute("requestType").toString();
+            sessionId = req.getAttribute("sessionId").toString();
+            pernr = req.getAttribute("pernr").toString();
+            adlogin = req.getAttribute("adlogin").toString();
+        } else {
+            log.warn(ErrorResponse.ERROR_NOT_ALL_REQUIRED_AUDIT_PARAMS_MESSAGE);
+            requestType = (req.getAttribute("requestType") != null) ? req.getAttribute("requestType").toString() : "undefined";
+            sessionId = (req.getAttribute("sessionId") != null) ? req.getAttribute("sessionId").toString() : "undefined";
+            pernr = (req.getAttribute("pernr") != null) ? req.getAttribute("pernr").toString() : "undefined";
+            adlogin = (req.getAttribute("adlogin") != null) ? req.getAttribute("adlogin").toString() : "undefined";
+        }
+        serviceError = serviceError.setError(new ServiceError(ErrorResponse.EASUP_RETURNED_NULL, "NPE", traceId, new ArrayList<>()));
+        sendNotFoundAuditEvent(requestType, sessionId, sessionCreatedAt, ErrorResponse.EASUP_RETURNED_NULL, pernr, adlogin);
+        return new ResponseEntity<>(serviceError, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(value = HttpResponseException.class)
+    public ResponseEntity<Object>
+    httpResponseErrorHandler(HttpServletRequest req, HttpResponseException e) throws Exception {
+        String requestType;
+        String sessionId;
+        LocalDateTime sessionCreatedAt = LocalDateTime.now();
+        String pernr;
+        String adlogin;
+        String traceId;
+        traceId = (req.getAttribute("traceId") != null) ? req.getAttribute("traceId").toString() : "undefined";
+        ServiceErrorDto serviceError = new ServiceErrorDto();
+        if (e.getMessage().contains("SAP")) {
+            serviceError = getSapErrorDescription(e.getMessage());
+        } else {
+            serviceError = serviceError.setError(new ServiceError(e.getMessage(), String.valueOf(e.getStatusCode()), traceId, new ArrayList<>()));
+        }
+        if (req.getAttribute("requestType") != null && req.getAttribute("sessionId") != null && req.getAttribute("pernr") != null && req.getAttribute("adlogin") != null && req.getAttribute("traceId") != null) {
+            requestType = req.getAttribute("requestType").toString();
+            sessionId = req.getAttribute("sessionId").toString();
+            pernr = req.getAttribute("pernr").toString();
+            adlogin = req.getAttribute("adlogin").toString();
+            traceId = req.getAttribute("traceId").toString();
+        } else {
+            log.warn(ErrorResponse.ERROR_NOT_ALL_REQUIRED_AUDIT_PARAMS_MESSAGE);
+            requestType = (req.getAttribute("requestType") != null) ? req.getAttribute("requestType").toString() : "undefined";
+            sessionId = (req.getAttribute("sessionId") != null) ? req.getAttribute("sessionId").toString() : "undefined";
+            pernr = (req.getAttribute("pernr") != null) ? req.getAttribute("pernr").toString() : "undefined";
+            adlogin = (req.getAttribute("adlogin") != null) ? req.getAttribute("adlogin").toString() : "undefined";
+            traceId = (req.getAttribute("traceId") != null) ? req.getAttribute("traceId").toString() : "undefined";
+        }
+        LogUtil.logSapErrorResponse(pernr, sessionId, e.getMessage(), traceId, e.getStatusCode());
+        if (e.getStatusCode() == 403 || e.getStatusCode() == 401) {
+            sendForbiddenAuditEvent(requestType, sessionId, sessionCreatedAt, serviceError.getError().getMessage(), pernr, adlogin);
+            return new ResponseEntity<>(serviceError, HttpStatus.valueOf(e.getStatusCode()));
+        } else if (e.getStatusCode() == 404) {
+            sendNotFoundAuditEvent(requestType, sessionId, sessionCreatedAt, serviceError.getError().getMessage(), pernr, adlogin);
+            serviceError = serviceError.setError(new ServiceError(ErrorResponse.EASUP_REQUEST_NOT_FOUND, String.valueOf(e.getStatusCode()), traceId, new ArrayList<>()));
+            return new ResponseEntity<>(serviceError, HttpStatus.valueOf(e.getStatusCode()));
+        } else {
+            sendLogs(requestType, pernr, serviceError.getError().getMessage());
+            return new ResponseEntity<>(serviceError, HttpStatus.valueOf(e.getStatusCode()));
+        }
+    }
+
+    @ExceptionHandler(value = HttpClientErrorException.class)
+    public ResponseEntity<Object>
+    httpClientErrorHandler(HttpServletRequest req, HttpClientErrorException e) throws Exception {
+        String requestType;
+        String sessionId;
+        LocalDateTime sessionCreatedAt = LocalDateTime.now();
+        String pernr;
+        String adlogin;
+        String traceId = (req.getAttribute("traceId") != null) ? req.getAttribute("traceId").toString() : "undefined";
+        if (req.getAttribute("requestType") != null) {
+            traceId = (req.getAttribute("traceId") != null) ? req.getAttribute("traceId").toString() : "undefined";
+        }
+        ServiceErrorDto serviceError = new ServiceErrorDto();
+        if (e.getMessage().contains("SAP")) {
+            serviceError = getSapErrorDescription(e.getMessage());
+        } else {
+            serviceError = serviceError.setError(new ServiceError(e.getMessage(), e.getStatusCode().toString(), traceId, new ArrayList<>()));
+        }
+        if (req.getAttribute("requestType") != null && req.getAttribute("sessionId") != null && req.getAttribute("pernr") != null && req.getAttribute("adlogin") != null && req.getAttribute("traceId") != null) {
+            requestType = req.getAttribute("requestType").toString();
+            sessionId = req.getAttribute("sessionId").toString();
+            pernr = req.getAttribute("pernr").toString();
+            adlogin = req.getAttribute("adlogin").toString();
+            traceId = req.getAttribute("traceId").toString();
+        } else {
+            log.warn(ErrorResponse.ERROR_NOT_ALL_REQUIRED_AUDIT_PARAMS_MESSAGE);
+            requestType = (req.getAttribute("requestType") != null) ? req.getAttribute("requestType").toString() : "undefined";
+            sessionId = (req.getAttribute("sessionId") != null) ? req.getAttribute("sessionId").toString() : "undefined";
+            pernr = (req.getAttribute("pernr") != null) ? req.getAttribute("pernr").toString() : "undefined";
+            adlogin = (req.getAttribute("adlogin") != null) ? req.getAttribute("adlogin").toString() : "undefined";
+            traceId = (req.getAttribute("traceId") != null) ? req.getAttribute("traceId").toString() : "undefined";
+        }
+        LogUtil.logSapErrorResponse(pernr, sessionId, e.getMessage(), traceId, e.getStatusCode().value());
+        if (e.getRawStatusCode() == 403 || e.getRawStatusCode() == 401) {
+            sendForbiddenAuditEvent(requestType, sessionId, sessionCreatedAt, serviceError.getError().getMessage(), pernr, adlogin);
+            return new ResponseEntity<>(serviceError, HttpStatus.valueOf(e.getRawStatusCode()));
+        } else if (e.getRawStatusCode() == 404) {
+            sendNotFoundAuditEvent(requestType, sessionId, sessionCreatedAt, serviceError.getError().getMessage(), pernr, adlogin);
+            serviceError = serviceError.setError(new ServiceError(ErrorResponse.EASUP_REQUEST_NOT_FOUND, e.getStatusCode().toString(), traceId, new ArrayList<>()));
+            return new ResponseEntity<>(serviceError, HttpStatus.valueOf(e.getRawStatusCode()));
+        } else {
+            sendLogs(requestType, pernr, serviceError.getError().getMessage());
+            return new ResponseEntity<>(serviceError, HttpStatus.valueOf(e.getRawStatusCode()));
+        }
+    }
 
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
-public class EstaffMessage {
-
-    private EstaffMessageBody body;
-    private EstaffMessageHeaders headers;
-    private Integer status;
-
-}
-
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
-public class EstaffMessageBody {
-
-    private EstaffError error;
-
-}
-
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
-public class EstaffError {
-
-    private String message;
-    private List<EstaffErrorDetail> details;
-
-}
-
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
-public class EstaffErrorDetail {
-
-    private String code;
-    private String message;
-
-}
+.....
+ }
