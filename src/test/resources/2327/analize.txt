@@ -1,107 +1,8 @@
-private String getCandidateInfo(RequisitionRequestEntity requestEntity, SapSystemParamsDto systemParams, String vacancyId, String candidateId) throws Exception {
-        long start = System.currentTimeMillis();
+    @Qualifier("modificatedLoggingRestTemplate")
+    private final RestTemplate loggingRestTemplate;
 
-        MDC.put(MDCConstant.VACANCY_ID, vacancyId);
-        MDC.put(MDCConstant.CANDIDATE_ID, candidateId);
-
-        RequisitionCandidateInfoDto dto = new RequisitionCandidateInfoDto();
-        RequisitionGeneralCandidateDto dtoOut = new RequisitionGeneralCandidateDto();
-        dto.setAdLogin(systemParams.getAdLogin());
-        dto.setSessionId(systemParams.getSessionId());
-        dto.setChannel(systemParams.getChannel());
-
-        // Валидация вакансии
-        boolean vacancyAllowed = true;
-        if (candidateInfoValidationState.equals("ENABLE")) {
-            try {
-                validateVacancy(requestEntity, systemParams, vacancyId);
-            } catch (Exception e) {
-                log.error("Произошла ошибка при валидации запроса [requisition_candidate_info], текст ошибки: {}", e.getMessage());
-                vacancyAllowed = false;
-            }
-        }
-
-        String code = "200";
-        boolean candidateAllowed = true;
-        try {
-            dto = candidateService.getCandidateInfo(systemParams, vacancyId, candidateId);
-            dto.setResponseCode(code);
-            entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.REPLY);
-
-            // Сохранение кэша информации по кандидату
-            if (dto != null) {
-                RequisitionCandidateInfoCacheDto cachedDto = new RequisitionCandidateInfoCacheDto();
-                cachedDto.setRefreshedAt(LocalDateTime.now());
-                cachedDto.setResumeId(dto.getCandidate().getResumeId());
-                cachedDto.setResumeFileName(dto.getCandidate().getResumeFileName());
-                cachedDto.setResumeContentType(dto.getCandidate().getResumeContentType());
-                String key = "candidateInfo:" + systemParams.getChannel() + ":" + vacancyId + ":" + candidateId;
-                redisAdapter.putObjectToDb(key, cachedDto, ttlCandidateInfo);
-            }
-            //TODO Добавить в условие && !vacancyAllowed в след. релизе.
-            // Ошиблись и попросили внести ранее, чем нужно
-
-            // Валидация доступа к кандидату
-            if (candidateInfoValidationState.equals("ENABLE")) {
-                try {
-                    validateCandidate(systemParams, dto);
-                } catch (Exception e) {
-                    log.error("Произошла ошибка при валидации запроса [requisition_candidate_info], текст ошибки: {}", e.getMessage());
-                    candidateAllowed = false;
-                }
-            }
-
-            dtoOut = mapperService.mapToGeneralCandidateInfoDto(dto);
-
-        } catch (LkrException e) {
-            code = e.getStatusCode().toString();
-            handleLkrException(e, dtoOut, systemParams);
-        } catch (HttpClientErrorException | HttpServerErrorException e) {
-            code = e.getStatusCode().toString();
-            handleHttpClientOrServerErrorException(
-                    e, dtoOut, systemParams, ErrorResponse.REQUISITION_INFO_NOT_FOUND);
-        } catch (Exception e) {
-            code = "500";
-            handleException(
-                    e, dtoOut, systemParams, ErrorResponse.REQUISITION_UNEXPECTED_ERROR);
-        }
-
-        if (!candidateAllowed && !vacancyAllowed) {
-            entityService.updateRequestStatus(systemParams.getUuid(), RequestStatusConstant.ERROR_REPLY);
-            throw new HttpClientErrorException(HttpStatus.FORBIDDEN, "CANDIDATE_INFO_VALIDATION_FAILED");
-        }
-
-        return finishProcessingMessage(start, systemParams, dtoOut, requestEntity, code);
-    }
-
-
-
-public RequisitionCandidateInfoDto getCandidateInfo(SapSystemParamsDto systemParams, String vacancyId, String candidateId) {
-        // Запрашиваем инфу в мастер-дате
-        ResponseEntity<EstaffCandidateInfoDto> response = masterDataIntegrationService.getCandidateInfo(
-                systemParams,
-                Long.valueOf(vacancyId),
-                Long.valueOf(candidateId)
-        );
-        EstaffCandidateInfoDto body = response.getBody();
-        if (body == null ||
-                body.getData() == null ||
-                body.getData().getCandidate() == null
-        ) {
-            throw new HttpServerErrorException(HttpStatus.NOT_FOUND, "CANDIDATE_INFO_NOT_FOUND");
-        }
-
-        // Предзаполнение ДТО
-        RequisitionCandidateInfo requisitionCandidate = createRequisitionCandidateInfo(systemParams, body);
-
-        // Дообогащение
-        enrichCandidateInfoByRequisitionsData(vacancyId, requisitionCandidate);
-
-        return new RequisitionCandidateInfoDto(requisitionCandidate);
-    }
-
-
- public ResponseEntity<EstaffCandidateInfoDto> getCandidateInfo(SapSystemParamsDto systemParams, Long vacancyId, Long candidateId) {
+@Override
+    public ResponseEntity<EstaffCandidateInfoDto> getCandidateInfo(SapSystemParamsDto systemParams, Long vacancyId, Long candidateId) {
         CandidateInfoReq req = new CandidateInfoReq(
                 vacancyId,
                 candidateId,
@@ -113,310 +14,90 @@ public RequisitionCandidateInfoDto getCandidateInfo(SapSystemParamsDto systemPar
         return loggingRestTemplate.exchange(uri, HttpMethod.POST, requestEntity, EstaffCandidateInfoDto.class);
     }
 
-
- private static final String estaffCandidateInfoUrl = "/candidate-info";
-
-
-@PostMapping("/candidate-info")
-    public ResponseEntity<?> getCandidateInfo(
-            HttpServletRequest httpServletRequest,
-            @RequestBody EstaffCandidateInfoRequest request
-    ) throws Exception {
-
-        MDC.put(MDCConstant.VACANCY_ID, request.getRequest().getVacancyId().toString());
-        MDC.put(MDCConstant.CANDIDATE_ID, request.getRequest().getCandidateId().toString());
-
-        SapSystemParamsDto systemParams = setSystemParams(httpServletRequest);
-        setAttributes(httpServletRequest, "estaff_candidate_info");
-        EstaffCandidateInfoDto dto = spoIntegrationService.getCandidateInfo(systemParams, request);
-        if (dto != null) {
-            log.info("Успешное выполнение эндпоинта [SRHR_ESTAFF_GET_CANDIDATE_INFO]");
-            return new ResponseEntity<>(dto, HttpStatus.OK);
-        } else {
-            log.warn("Неуспешное выполнение эндпоинта [SRHR_ESTAFF_GET_CANDIDATE_INFO]: вернулось нулевое значение");
-            throw new HttpResponseException(404, ErrorResponse.ESTAFF_REQUEST_NOT_FOUND);
-        }
+    @Bean("modificatedLoggingRestTemplate")
+    public RestTemplate modificatedCommonClient(@Qualifier("loggingRestTemplate") RestTemplate loggingRestTemplate) {
+        loggingRestTemplate.getInterceptors().add(new EstaffErrorBodyHandlerFilter(true));
+        return loggingRestTemplate;
     }
 
 
-public EstaffCandidateInfoDto getCandidateInfo(SapSystemParamsDto systemParams, EstaffCandidateInfoRequest request) throws JsonProcessingException {
-        if (localMode) {
-            log.info("EstaffServiceImpl : getCandidateInfo : Локальный режим");
-            return estaffMockService.getMockedCandidatesInfo(request.getRequest().getPernr());
-        }
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Schema(description = "Тело ответа из естафф при получении информации по кандидатам")
+public class EstaffCandidateInfoDto extends SapResponseDtoExtended {
 
-        String estaffUrl = tykHost + candidatesInfoUrl;
-        RestTemplate restTemplate = buildRestTemplate(systemParams);
-
-        ResponseEntity<EstaffCandidateInfoDto> responseBody =
-                restTemplate.postForEntity(estaffUrl, request, EstaffCandidateInfoDto.class);
-
-        log.debug("Ответ на эндпоинт candidate-info: {}", maskingObjectWriter.writeValueAsString(responseBody.getBody()));
-
-        return responseBody.getBody();
-    }
-
-
-private RestTemplate buildRestTemplate(SapSystemParamsDto systemParams) {
-        RestTemplate restTemplate = masterDataClient.buildRestTemplateWithRoles(systemParams);
-        masterDataClientSideMetricsInterceptor.setSystemName(SYSTEM_NAME);
-        List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
-        interceptors.add(masterDataClientSideMetricsInterceptor);
-        restTemplate.setInterceptors(interceptors);
-        return restTemplate;
-    }
-
-
-
-public class MasterDataClient {
-
-    private final MasterDataCertificateConfig masterDataCertificateConfig;
-    private final LogUtil logUtil;
-    private final AuthEpaRestTemplateInterceptorConfig authEpaRestTemplateInterceptorConfig;
-
-    @Value("${master-data.headers.service-id-header-name}") String serviceIdHeaderName;
-    @Value("${master-data.headers.service-id-header-staff-value}") String serviceIdHeaderStaffValue;
-    @Value("${master-data.headers.service-id-header-staff-mobile-value}") String serviceIdHeaderStaffMobileValue;
-    @Value("${app.rest.read-timeout}")
-    Integer masterDataReadTimeoutMs;
-    @Value("${app.rest.connect-timeout}")
-    Integer masterDataConnectTimeoutMs;
-
-    public MasterDataClient(
-            MasterDataCertificateConfig masterDataCertificateConfig,
-            LogUtil logUtil,
-            AuthEpaRestTemplateInterceptorConfig authEpaRestTemplateInterceptorConfig
-    ) {
-        this.masterDataCertificateConfig = masterDataCertificateConfig;
-        this.logUtil = logUtil;
-        this.authEpaRestTemplateInterceptorConfig = authEpaRestTemplateInterceptorConfig;
-    }
-
-    public RestTemplate buildRestTemplateWithRoles(SapSystemParamsDto systemParams) {
-
-        SSLContext sslContext = masterDataCertificateConfig.configureHttpClientSsl();
-
-        Header headerPernr = new BasicHeader("pernr", systemParams.getTabNumber());
-        Header headerSessionId = new BasicHeader("sessionId", systemParams.getSessionId());
-        Header headerCSRFToken = new BasicHeader("x-csrf-token", "fetch");
-        Header headerRoles = new BasicHeader("Roles", systemParams.getRolesHeader());
-        Header headerLogId = new BasicHeader("logId", systemParams.getTraceId());
-        Header headerServiceId;
-        if(systemParams.getRealm()!=null) {
-            headerServiceId = new BasicHeader(serviceIdHeaderName, chooseServiceIdBasedOnRealm(systemParams.getRealm()));
-        } else {
-            headerServiceId = new BasicHeader(serviceIdHeaderName, serviceIdHeaderStaffValue);
-        }
-        List<Header> headers = new ArrayList<>();
-            headers.add(headerPernr);
-            headers.add(headerSessionId);
-            headers.add(headerCSRFToken);
-            headers.add(headerRoles);
-            headers.add(headerLogId);
-            headers.add(headerServiceId);
-
-        return finishSettings(sslContext, headers);
-    }
-
-    public RestTemplate finishSettings(SSLContext sslContext, List<Header> headers) {
-        final SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
-        final Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory> create()
-                .register("https", sslsf)
-                .register("http", new PlainConnectionSocketFactory())
-                .build();
-
-        ConnectionConfig connectionConfig = ConnectionConfig.custom()
-                .setSocketTimeout(masterDataReadTimeoutMs, TimeUnit.MILLISECONDS)
-                .setConnectTimeout(masterDataConnectTimeoutMs, TimeUnit.MILLISECONDS)
-                .build();
-
-        final BasicHttpClientConnectionManager connectionManager =
-                new BasicHttpClientConnectionManager(socketFactoryRegistry);
-        connectionManager.setConnectionConfig(connectionConfig);
-
-        final HttpClient httpClient = HttpClients.custom()
-                .setDefaultHeaders(headers)
-                .setConnectionManager(connectionManager)
-                .build();
-        
-        Map<String,String> headersValue = new HashMap<>(headers.size());
-        for (Header header : headers ) {
-            headersValue.put(header.getName(),header.getValue());
-        }
-
-        RestTemplate restTemplate = new RestTemplateBuilder()
-                .defaultHeader(HttpHeaders.CONTENT_TYPE,"application/json;charset=UTF-8")
-                .defaultHeader("pernr", headersValue.get("pernr"))
-                .defaultHeader("sessionId", headersValue.get("sessionId"))
-                .defaultHeader("x-csrf-token", headersValue.get("x-csrf-token"))
-                .defaultHeader("Roles", headersValue.get("Roles"))
-                .defaultHeader("logId", headersValue.get("logId"))
-                .defaultHeader("Cookie", headersValue.get("Cookie"))
-                .defaultHeader(serviceIdHeaderName,headersValue.get(serviceIdHeaderName))
-                .setConnectTimeout(Duration.ofMillis(masterDataConnectTimeoutMs))
-                .setReadTimeout(Duration.ofMillis(masterDataReadTimeoutMs))
-                .build();
-
-        restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(httpClient));
-        List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
-        if (CollectionUtils.isEmpty(interceptors)) {
-            interceptors = new ArrayList<>();
-        }
-        interceptors.add(new SpoRequestInterceptor(logUtil));
-        interceptors.add(authEpaRestTemplateInterceptorConfig);
-        interceptors.add(new EstaffErrorBodyHandlerFilter(false));
-        restTemplate.setInterceptors(interceptors);
-
-        return restTemplate;
-    }
-
-    private String chooseServiceIdBasedOnRealm (String realm) {
-        switch (realm) {
-            case RealmConstant.STAFF_REALM:
-                return serviceIdHeaderStaffValue;
-            case RealmConstant.STAFF_MOBILE_REALM:
-                return serviceIdHeaderStaffMobileValue;
-            default:
-                return serviceIdHeaderStaffValue;
-        }
-    }
-}
-
-
-
-public class EstaffErrorBodyHandlerFilter implements ClientHttpRequestInterceptor {
-
-    private final ObjectMapper objectMapper;
-    private final Boolean throwLkrException;
-
-    public EstaffErrorBodyHandlerFilter(Boolean throwLkrException) {
-        this.throwLkrException = throwLkrException;
-        objectMapper = new ObjectMapper();
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        objectMapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false);
-    }
-
-    public static LkrErrorResponseDto convertEstaffErrorToLkrResponse(EstaffMessage message) {
-        StringBuilder msgErrors = new StringBuilder();
-        List<LkrErrorDetail> details = message.getBody().getError().getDetails().stream()
-                .map(d -> {
-                    LkrErrorDetail detail = new LkrErrorDetail();
-                    detail.setCode(d.getCode());
-                    msgErrors.append(d.getMessage()).append(" ");
-                    return detail;
-                })
-                .toList();
-
-        LkrError error = new LkrError();
-        error.setMessage(msgErrors.toString());
-        error.setLogId(message.getHeaders().getLogId());
-        error.setDetails(details);
-
-        LkrErrorResponseDto response = new LkrErrorResponseDto();
-        response.setError(error);
-        return response;
-    }
-
-    @Override
-    public ClientHttpResponse intercept(HttpRequest request, byte[] body,
-                                        ClientHttpRequestExecution execution) throws IOException {
-
-        ClientHttpResponse response = execution.execute(request, body);
-        response.getStatusCode();
-
-        BufferingClientHttpResponseWrapper buffered = new BufferingClientHttpResponseWrapper(response);
-        String responseBody = StreamUtils.copyToString(buffered.getBody(), StandardCharsets.UTF_8);
-
-        LkrException error = getErrorFromEstaffResponse(responseBody);
-        if (error != null) {
-            log.error(error.getLoggedMessage());
-            if (throwLkrException) {
-                throw error;
-            }
-        }
-
-        return buffered;
-    }
-
-    @Nullable
-    public LkrException getErrorFromEstaffResponse(String responseBody) {
-        // проверяем что получили типизированное тело ответа от естафа
-        SapResponseDtoExtended estaffBody;
-        try {
-            estaffBody = objectMapper.readValue(responseBody, SapResponseDtoExtended.class);
-        } catch (JsonProcessingException e) {
-            estaffBody = null;
-        }
-
-        LkrException lkrException = null;
-        // если в ответе есть ошибка от естафа
-        if (estaffBody != null && estaffBody.getMessage() != null) {
-            StringBuilder logMessage = new StringBuilder();
-            logMessage.append("Получена ошибка от естафф: ");
-
-            String payload;
-            try {
-                LkrErrorResponseDto lkrErrorResponseDto = convertEstaffErrorToLkrResponse(estaffBody.getMessage());
-                payload = objectMapper.writeValueAsString(lkrErrorResponseDto);
-            } catch (Exception e) {
-                log.error("Не удалось распарсить ответ от естафф, ошибка = [{}]", e.getMessage());
-                payload = "Не получено";
-            }
-            logMessage.append("[estaff_response = ").append(payload).append("]");
-
-            String finalLoggedMessage;
-            if (log.isDebugEnabled()) {
-                finalLoggedMessage = LogUtil.getLogMsgWithLkrExtensions(logMessage.toString());
-            } else {
-                finalLoggedMessage = logMessage.toString();
-            }
-
-            lkrException = new LkrException();
-            lkrException.setLoggedMessage(finalLoggedMessage);
-            lkrException.setStatusCode(HttpStatusCode.valueOf(estaffBody.getMessage().getStatus()));
-            lkrException.setType(LkrErrorType.ESTAFF);
-            lkrException.setEstaffMessage(estaffBody.getMessage());
-        }
-
-        return lkrException;
-    }
-
+    @Schema(description = "Корневой объект успешного ответа", required = true, nullable = false)
+    private EstaffCandidateInfoData data;
 
 }
 
 
-public class BufferingClientHttpResponseWrapper implements ClientHttpResponse {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class SapResponseDtoExtended {
+    private String uuid;
+    private String responseCode;
+    private String errorMessage;
+    private String tabNumber;
+    private String adLogin;
+    private String sessionId;
+    private String channel;
+    private String rolesList;
+    private String traceId;
+    private String requestType;
+    private String requestTs;
+    private String responseTs;
+    private String realm;
+    private String fileUuid;
 
-    private final ClientHttpResponse response;
-    private final byte[] body;
+    private EstaffMessage message;
 
-    public BufferingClientHttpResponseWrapper(ClientHttpResponse response) throws IOException {
-        this.response = response;
-        this.body = StreamUtils.copyToByteArray(response.getBody());
+    public void setSystemParams(String adLogin, String sessionId, String channel) {
+        this.adLogin = adLogin;
+        this.sessionId = sessionId;
+        this.channel = channel;
     }
+}
 
-    @Override
-    public InputStream getBody() {
-        return new ByteArrayInputStream(body);
-    }
 
-    @Override
-    public HttpHeaders getHeaders() {
-        return response.getHeaders();
-    }
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+public class EstaffMessage {
 
-    @Override
-    public HttpStatusCode getStatusCode() throws IOException {
-        return response.getStatusCode();
-    }
+    private EstaffMessageBody body;
+    private EstaffMessageHeaders headers;
+    private Integer status;
 
-    @Override
-    public String getStatusText() throws IOException {
-        return response.getStatusText();
-    }
+}
 
-    @Override
-    public void close() {
-        response.close();
-    }
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+public class EstaffMessageBody {
+
+    private EstaffError error;
+
+}
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+public class EstaffError {
+
+    private String message;
+    private List<EstaffErrorDetail> details;
+
+}
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+public class EstaffErrorDetail {
+
+    private String code;
+    private String message;
+
 }
