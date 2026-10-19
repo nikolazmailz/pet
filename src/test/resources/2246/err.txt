@@ -1,18 +1,45 @@
-public RoleListDto getRole(String adlogin, String channel, String sessionId, String traceId) {
-        String uri = String.format(integrationUrlGetRole, adlogin, channel);
-        uri = tsrmIntegrationServiceUrl+uri;
-        ResponseEntity<RoleListDto> tsrmResponse;
+    @Bean
+    @ConditionalOnMissingBean(name = "loggingRestTemplate")
+    public RestTemplate loggingRestTemplate(
+            RestTemplateBuilder builder,
+            CloseableHttpClient commonHttpClient) {
 
-        HttpEntity<Void> request =
-                new HttpEntity<>(ClientHttpHeaders.minimal(adlogin, sessionId, traceId));
-        tsrmResponse = loggingRestTemplate.exchange(uri, HttpMethod.GET, request, RoleListDto.class);
+        return builder
+                .requestFactory(() -> new HttpComponentsClientHttpRequestFactory(commonHttpClient))
+                .additionalInterceptors(new ClientLogInterceptor())
+                .build();
+    }
 
-        // после вызова exchange в MDC затирается traceId
-        MDC.put("traceId", traceId);
 
-        if (tsrmResponse.hasBody()) {
-                return tsrmResponse.getBody();
-        } else {
-            return null;
-        }
+public class ClientLogInterceptor implements ClientHttpRequestInterceptor {
+
+    @Override
+    public ClientHttpResponse intercept(HttpRequest request, byte[] body,
+                                        ClientHttpRequestExecution execution) throws IOException {
+        HttpHeaders headers = request.getHeaders();
+
+        String pernr = headers.getFirst("pernr");
+        String sessionId = headers.getFirst("sessionId");
+        String logId = headers.getFirst("logId");
+        String method = request.getMethod().name();
+        String uri = request.getURI().toString();
+
+        LogUtil.logRequest(pernr, sessionId, method, uri, false, null, logId);
+
+        ClientHttpResponse response = execution.execute(request, body);
+
+        LogUtil.logResponse(pernr, sessionId, method, uri,
+                String.valueOf(response.getStatusCode().value()), null, false, null, logId);
+        return response;
+    }
+}
+
+
+    public static HttpHeaders minimal(String pernr, String sessionId, String traceId) {
+        HttpHeaders h = new HttpHeaders();
+        h.setContentType(MediaType.APPLICATION_JSON);
+        h.set("pernr", pernr);
+        h.set("sessionId", sessionId);
+        h.set("logId", traceId);
+        return h;
     }
