@@ -25,59 +25,12 @@
       <username>${env.CRED_NEXUS_CI_USER}</username>
       <password>${env.CRED_NEXUS_CI_PASS}</password>
     </server>
-    <server>
+     <server>
       <id>tsau-maven-pub</id>
       <username>${env.CRED_NEXUS_CI_USER}</username>
       <password>${env.CRED_NEXUS_CI_PASS}</password>
     </server>
   </servers>
-  <profiles>
-    <profile>
-      <id>maven-public</id>
-      <!--Enable snapshots for the built in central repo to direct -->
-      <!--all requests to nexus via the mirror -->
-      <repositories>
-        <repository>
-          <id>central</id>
-          <url>https://central</url>
-        </repository>
-        <repository>
-          <id>srhr-maven</id>
-          <url>https://maven.repo-ci.sfera.inno.local/repository/srhr-maven/</url>
-        </repository>
-        <repository>
-          <id>srhr-maven-proxy-group</id>
-          <name>Shared maven libs repository</name>
-          <url>https://maven.repo-ci.sfera.inno.local/repository/srhr-maven-proxy-group/</url>
-        </repository>
-        <repository>
-          <id>tsau-maven-pub</id>
-          <name>tsau-maven-pub</name>
-          <url>https://maven.repo-ci.sfera.inno.local/repository/tsau-maven-pub/</url>
-          <releases>
-            <enabled>true</enabled>
-            <updatePolicy>always</updatePolicy>
-          </releases>
-          <snapshots>
-            <enabled>true</enabled>
-            <updatePolicy>always</updatePolicy>
-          </snapshots>
-        </repository>
-      </repositories>
-    </profile>
-    <profile>
-      <id>downloadSources</id>
-      <properties>
-        <downloadSources>true</downloadSources>
-        <downloadJavadocs>true</downloadJavadocs>
-      </properties>
-    </profile>
-  </profiles>
-  <activeProfiles>
-    <!--make the profile active all the time -->
-    <activeProfile>maven-public</activeProfile>
-    <activeProfile>downloadSources</activeProfile>
-  </activeProfiles>
   <mirrors>
     <mirror>
       <id>srhr-maven</id>
@@ -94,13 +47,10 @@
       <mirrorOf>central</mirrorOf>
       <url>https://maven.repo-ci.sfera.inno.local/repository/tsec-maven-pub/</url>
     </mirror>
-      <mirror>
+    <mirror>
           <id>tsau-maven-pub</id>
           <mirrorOf>central</mirrorOf>
           <url>https://maven.repo-ci.sfera.inno.local/repository/tsau-maven-pub/</url>
       </mirror>
   </mirrors>
 </settings>
-
-
-Could not find artifact ru.vtb.omni:tsau-audit-lib-core:pom:8.0.0.16 in srhr-maven (https://maven.repo-ci.sfera.inno.local/repository/srhr-maven/)
