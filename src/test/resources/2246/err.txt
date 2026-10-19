@@ -1,56 +1,18 @@
-<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
-  <servers>
-    <server>
-      <id>srhr-maven-lib</id>
-      <username>${env.CRED_NEXUS_CI_USER}</username>
-      <password>${env.CRED_NEXUS_CI_PASS}</password>
-    </server>
-    <server>
-      <id>srhr-maven-snapshot</id>
-      <username>${env.CRED_NEXUS_CI_USER}</username>
-      <password>${env.CRED_NEXUS_CI_PASS}</password>
-    </server>
-    <server>
-      <id>srhr-maven</id>
-      <username>${env.CRED_NEXUS_CI_USER}</username>
-      <password>${env.CRED_NEXUS_CI_PASS}</password>
-    </server>
-    <server>
-      <id>nexus-public</id>
-      <username>${env.CRED_NEXUS_CI_USER}</username>
-      <password>${env.CRED_NEXUS_CI_PASS}</password>
-    </server>
-    <server>
-      <id>srhr-maven-proxy-group</id>
-      <username>${env.CRED_NEXUS_CI_USER}</username>
-      <password>${env.CRED_NEXUS_CI_PASS}</password>
-    </server>
-     <server>
-      <id>tsau-maven-pub</id>
-      <username>${env.CRED_NEXUS_CI_USER}</username>
-      <password>${env.CRED_NEXUS_CI_PASS}</password>
-    </server>
-  </servers>
-  <mirrors>
-    <mirror>
-      <id>srhr-maven</id>
-      <url>https://maven.repo-ci.sfera.inno.local/repository/srhr-maven/</url>
-      <mirrorOf>central</mirrorOf>
-    </mirror>
-    <mirror>
-      <id>srhr-maven-proxy-group</id>
-      <mirrorOf>central</mirrorOf>
-      <url>https://maven.repo-ci.sfera.inno.local/repository/srhr-maven-proxy-group/</url>
-    </mirror>
-    <mirror>
-      <id>tsec-maven-pub</id>
-      <mirrorOf>central</mirrorOf>
-      <url>https://maven.repo-ci.sfera.inno.local/repository/tsec-maven-pub/</url>
-    </mirror>
-    <mirror>
-          <id>tsau-maven-pub</id>
-          <mirrorOf>central</mirrorOf>
-          <url>https://maven.repo-ci.sfera.inno.local/repository/tsau-maven-pub/</url>
-      </mirror>
-  </mirrors>
-</settings>
+public RoleListDto getRole(String adlogin, String channel, String sessionId, String traceId) {
+        String uri = String.format(integrationUrlGetRole, adlogin, channel);
+        uri = tsrmIntegrationServiceUrl+uri;
+        ResponseEntity<RoleListDto> tsrmResponse;
+
+        HttpEntity<Void> request =
+                new HttpEntity<>(ClientHttpHeaders.minimal(adlogin, sessionId, traceId));
+        tsrmResponse = loggingRestTemplate.exchange(uri, HttpMethod.GET, request, RoleListDto.class);
+
+        // после вызова exchange в MDC затирается traceId
+        MDC.put("traceId", traceId);
+
+        if (tsrmResponse.hasBody()) {
+                return tsrmResponse.getBody();
+        } else {
+            return null;
+        }
+    }
