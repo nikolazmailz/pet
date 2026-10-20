@@ -1,45 +1,24 @@
-    @Bean
-    @ConditionalOnMissingBean(name = "loggingRestTemplate")
-    public RestTemplate loggingRestTemplate(
-            RestTemplateBuilder builder,
-            CloseableHttpClient commonHttpClient) {
-
-        return builder
-                .requestFactory(() -> new HttpComponentsClientHttpRequestFactory(commonHttpClient))
-                .additionalInterceptors(new ClientLogInterceptor())
-                .build();
-    }
+audit:
+  kafka:
+    producer:
+      properties:
+        max.block.ms: 10000
+        default.api.timeout.ms: 10000
+        request.timeout.ms: 10000
 
 
-public class ClientLogInterceptor implements ClientHttpRequestInterceptor {
+audit:
+  kafka:
+    bootstrap-servers: localhost:39091
+    topic: audit-v2
+    properties:
+      slider.enable: "false"
 
-    @Override
-    public ClientHttpResponse intercept(HttpRequest request, byte[] body,
-                                        ClientHttpRequestExecution execution) throws IOException {
-        HttpHeaders headers = request.getHeaders();
+  standin-try-count-to-switch: 1
+  standin-period-min: 5
 
-        String pernr = headers.getFirst("pernr");
-        String sessionId = headers.getFirst("sessionId");
-        String logId = headers.getFirst("logId");
-        String method = request.getMethod().name();
-        String uri = request.getURI().toString();
-
-        LogUtil.logRequest(pernr, sessionId, method, uri, false, null, logId);
-
-        ClientHttpResponse response = execution.execute(request, body);
-
-        LogUtil.logResponse(pernr, sessionId, method, uri,
-                String.valueOf(response.getStatusCode().value()), null, false, null, logId);
-        return response;
-    }
-}
-
-
-    public static HttpHeaders minimal(String pernr, String sessionId, String traceId) {
-        HttpHeaders h = new HttpHeaders();
-        h.setContentType(MediaType.APPLICATION_JSON);
-        h.set("pernr", pernr);
-        h.set("sessionId", sessionId);
-        h.set("logId", traceId);
-        return h;
-    }
+  standin-kafka:
+    enabled: true
+    bootstrap-servers: localhost:49091
+    properties:
+      slider.enable: "false"
