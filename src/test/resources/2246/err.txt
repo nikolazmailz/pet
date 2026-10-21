@@ -31,12 +31,5 @@ vtb2�����hH60509f2b-cca0-4e53-9207-81bed8ac4919SUCCESSH5d5002d4-0533-4
 /dict127.0.0.1127.0.0.1internal,СправочникиVПолучение справочниковSUCCESSlСправочники успешно получены
 
 
-PS C:\Users\NPushkaryov\IdeaProjects\srhr-backend> git -T -p 7999 git@git.sfera.inno.local
-unknown option: -T
-usage: git [-v | --version] [-h | --help] [-C <path>] [-c <name>=<value>]
-           [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]
-           [-p | --paginate | -P | --no-pager] [--no-replace-objects] [--bare]
-           [--git-dir=<path>] [--work-tree=<path>] [--namespace=<name>]
-           [--config-env=<name>=<envvar>] <command> [<args>]
-PS C:\Users\NPushkaryov\IdeaProjects\srhr-backend>
+ssh -v -T -p 7999 git@git.sfera.inno.local 2>&1 | Select-String "identity file|Offering|Server accepts|Authenticated"
 
