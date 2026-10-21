@@ -32,4 +32,24 @@ vtb2�����hH60509f2b-cca0-4e53-9207-81bed8ac4919SUCCESSH5d5002d4-0533-4
 
 
 ssh -v -T -p 7999 git@git.sfera.inno.local 2>&1 | Select-String "identity file|Offering|Server accepts|Authenticated"
+PS C:\Users\NPushkaryov\IdeaProjects\srhr-backend> ssh -v -T -p 7999 git@git.sfera.inno.local 2>&1 | Select-String "identity file|Offering|Server accepts|Authenticated"
+
+debug1: identity file C:\\Users\\NPushkaryov/.ssh/id_rsa type 3
+debug1: identity file C:\\Users\\NPushkaryov/.ssh/id_rsa-cert type -1
+debug1: identity file C:\\Users\\NPushkaryov/.ssh/id_ecdsa type -1
+debug1: identity file C:\\Users\\NPushkaryov/.ssh/id_ecdsa-cert type -1
+debug1: identity file C:\\Users\\NPushkaryov/.ssh/id_ecdsa_sk type -1
+debug1: identity file C:\\Users\\NPushkaryov/.ssh/id_ecdsa_sk-cert type -1
+debug1: identity file C:\\Users\\NPushkaryov/.ssh/id_ed25519 type 3
+debug1: identity file C:\\Users\\NPushkaryov/.ssh/id_ed25519-cert type -1
+debug1: identity file C:\\Users\\NPushkaryov/.ssh/id_ed25519_sk type -1
+debug1: identity file C:\\Users\\NPushkaryov/.ssh/id_ed25519_sk-cert type -1
+debug1: identity file C:\\Users\\NPushkaryov/.ssh/id_xmss type -1
+debug1: identity file C:\\Users\\NPushkaryov/.ssh/id_xmss-cert type -1
+debug1: identity file C:\\Users\\NPushkaryov/.ssh/id_dsa type -1
+debug1: identity file C:\\Users\\NPushkaryov/.ssh/id_dsa-cert type -1
+debug1: Offering public key: C:\\Users\\NPushkaryov/.ssh/id_rsa ED25519 SHA256:VKu+Gq6uu6Y87AqAnZ3rgJyCFYA9Dew4nN2NIs7oiLY
+debug1: Offering public key: C:\\Users\\NPushkaryov/.ssh/id_ed25519 ED25519 SHA256:21pgztiZrttb40Po1AoSHBboEyPcx3ORVT4jY7jYrsg
+debug1: Server accepts key: C:\\Users\\NPushkaryov/.ssh/id_ed25519 ED25519 SHA256:21pgztiZrttb40Po1AoSHBboEyPcx3ORVT4jY7jYrsg
+Authenticated to git.sfera.inno.local ([10.169.7.247]:7999) using "publickey".
 
