@@ -3,6 +3,10 @@ SRHR-2374 Реализация эндпоинта получения линей�
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-mod-commons/pulls/2838132
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-delegation-management-rest/pulls/2838134
 
+SapSystemParamsResolver
+
+@SapSystemParams SapSystemParamsDto systemParams вместо HttpServletRequest request
+
 
   @Audit(value = "SRHR_ORG_STRUCTURE_LINEAR_GET")
     @GetMapping(value = "/org-structures/linear", produces = "application/json")
