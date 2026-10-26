@@ -2,3 +2,61 @@ SRHR-2374 Реализация эндпоинта получения линей�
 
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-mod-commons/pulls/2838132
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-delegation-management-rest/pulls/2838134
+
+
+  @Audit(value = "SRHR_ORG_STRUCTURE_LINEAR_GET")
+    @GetMapping(value = "/org-structures/linear", produces = "application/json")
+    @ResponseBody
+    @Operation(summary = "Получение линейной оргструктуры подразделений",
+            tags = "org-structure",
+            security = @SecurityRequirement(name = "bearerAuth"))
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Линейная оргструктура успешно возвращена",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = OrganizationLinearDtoOut.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Unauthorized",
+                    content = @Content
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Оргструктура не найдена",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = SrhrErrorDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Непредвиденная ошибка сервера",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = SrhrErrorDto.class))
+            )
+    })
+    public ResponseEntity<Object> getOrganizationLinear(
+            HttpServletRequest request
+    ) throws Exception {
+        request.setAttribute("requestType", "delegation_management_org_structure_linear");
+
+        SapSystemParamsDto systemParams = setSystemParams(request);
+        OrganizationLinearDto requisitionResponse = delegationManagementService.getOrganizationLinear(systemParams);
+
+        if (requisitionResponse != null) {
+            LogUtil.logResponse(systemParams.getAdLogin(), systemParams.getSessionId(), request.getMethod(), kafkaTopicNameFromEasup,
+                    requisitionResponse.getResponseCode(), requisitionResponse.getErrorMessage(), false, null, requisitionResponse.getTraceId());
+
+            if (requisitionResponse.getResponseCode().startsWith("2")) {
+                OrganizationLinearDtoOut responseOut = new OrganizationLinearDtoOut();
+                BeanUtils.copyProperties(requisitionResponse, responseOut);
+                responseOut = delegationManagementDtoMapper.cleanNulls(responseOut);
+                log.info("Успешное выполнение эндпоинта [SRHR_ORG_STRUCTURE_LINEAR_GET]");
+                return new ResponseEntity<>(responseOut, HttpStatus.OK);
+            } else {
+                log.warn("Неуспешное выполнение эндпоинта [SRHR_ORG_STRUCTURE_LINEAR_GET]: [{}]", requisitionResponse.getErrorMessage());
+                int httpStatusNumber = Integer.parseInt(requisitionResponse.getResponseCode().substring(0, 3));
+                throw new HttpResponseException(httpStatusNumber, requisitionResponse.getErrorMessage());
+            }
+        }
+
+        log.warn("Неуспешное выполнение эндпоинта [SRHR_ORG_STRUCTURE_LINEAR_GET]: вернулось нулевое значение");
+        throw new HttpResponseException(404, ErrorResponse.ORG_STRUCTURE_NOT_FOUND);
+    }
