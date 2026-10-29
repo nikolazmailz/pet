@@ -8,19 +8,29 @@ public class EasupVacationService {
     @Value("${easup.url.vacation}") String vacationUrl;
 
     public VacationResponse createVacation(SapSystemParamsDto params, VacationRequest body) {
-        RestTemplate rt = easupClient.forRole(params.getRole());
+Примеры вызовов
 
-        // 1. fetch CSRF — x-csrf-token: fetch, без кук
-        RequestEntity<Void> csrfRequest = RequestEntity.get(csrfUrl)
-                .headers(easupClient.requestHeaders(params))
-                .build();
-        ResponseEntity<Void> csrfResponse = rt.exchange(csrfRequest, Void.class);
-
-        // 2. боевой запрос — токен и set-cookie берутся из ответа шага 1
-        RequestEntity<VacationRequest> request = RequestEntity.post(vacationUrl)
-                .headers(easupClient.requestHeaders(params, csrfResponse.getHeaders()))
-                .body(body);
-        return rt.exchange(request, VacationResponse.class).getBody();
+Чтение, без токена:
+java
+RequestEntity<Void> request = RequestEntity.get(uri)
+        .headers(easupClient.requestHeaders(params))
+        .build();
+ScheduleHolidayRequestInfoDto dto = easupClient.forRole(params.getRole())
+        .exchange(request, ScheduleHolidayRequestInfoDto.class)
+        .getBody();
+Запись, клиент сам получает токен:
+java
+RequestEntity<ScheduleHolidayPostRequest> request = RequestEntity.post(uri)
+        .headers(easupClient.csrfHeaders(params, csrfUri))
+        .body(body);
+ScheduleHolidayPostRequestDto dto = easupClient.forRole(params.getRole())
+        .exchange(request, ScheduleHolidayPostRequestDto.class)
+        .getBody();
+Запись, токен и куки уже есть (мапа с ключами x-csrf-token и cookie):
+java
+RequestEntity<Body> request = RequestEntity.post(uri)
+        .headers(easupClient.requestHeaders(params, csrfHeadersMap))
+        .body(body);
     }
 }
 
