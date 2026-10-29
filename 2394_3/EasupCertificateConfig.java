@@ -18,13 +18,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Собирает {@link SSLContext} под роль из кейсторов в easup.ssl.*.
- * Контекст строится один раз на роль и кэшируется: раньше кейсторы читались с диска на каждый запрос.
- * <p>
- * Это {@code @Component}, а не {@code @Configuration}: класс не объявляет бинов,
- * а хранит состояние (кэш) и предоставляет метод для {@code EasupClient}.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor

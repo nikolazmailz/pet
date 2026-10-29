@@ -17,10 +17,6 @@ import java.security.KeyStore;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Собирает SSLContext под роль. Контекст строится один раз на роль и кэшируется:
- * раньше кейсторы читались с диска на каждый запрос.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
