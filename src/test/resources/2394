@@ -1,49 +1,241 @@
-@Service
+package ru.ntdev.srhr.ms.delegation.management.rest.filter;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ValidationException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.hc.client5.http.HttpResponseException;
+import org.springframework.context.MessageSourceResolvable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.method.ParameterValidationResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import ru.ntdev.srhr.common.audit.senders.AuditSender;
+import ru.ntdev.srhr.common.audit.senders.AuditSenderResolver;
+import ru.ntdev.srhr.common.dto.api.error.ErrorResponse;
+import ru.ntdev.srhr.common.dto.api.error.SrhrError;
+import ru.ntdev.srhr.common.dto.api.error.SrhrErrorDetail;
+import ru.ntdev.srhr.common.dto.api.error.SrhrErrorDto;
+import ru.ntdev.srhr.common.util.LogUtil;
+import ru.ntdev.srhr.ms.delegation.management.rest.config.JacksonConfig;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static ru.ntdev.srhr.common.dto.api.error.ErrorResponse.REST_RETURNED_NULL;
+
+@Slf4j
+@ControllerAdvice
 @RequiredArgsConstructor
-public class EasupVacationService {
+public class DelegationManagementExceptionHandler {
 
-    private final EasupClient easupClient;
+    private final JacksonConfig jacksonConfig;
+    private final AuditSenderResolver auditSenderResolver;
+    private final ObjectMapper objectMapper;
 
-    @Value("${easup.url.csrf}") String csrfUrl;
-    @Value("${easup.url.vacation}") String vacationUrl;
-
-    public VacationResponse createVacation(SapSystemParamsDto params, VacationRequest body) {
-Примеры вызовов
-
-Чтение, без токена:
-java
-RequestEntity<Void> request = RequestEntity.get(uri)
-        .headers(easupClient.requestHeaders(params))
-        .build();
-ScheduleHolidayRequestInfoDto dto = easupClient.forRole(params.getRole())
-        .exchange(request, ScheduleHolidayRequestInfoDto.class)
-        .getBody();
-Запись, клиент сам получает токен:
-java
-RequestEntity<ScheduleHolidayPostRequest> request = RequestEntity.post(uri)
-        .headers(easupClient.csrfHeaders(params, csrfUri))
-        .body(body);
-ScheduleHolidayPostRequestDto dto = easupClient.forRole(params.getRole())
-        .exchange(request, ScheduleHolidayPostRequestDto.class)
-        .getBody();
-Запись, токен и куки уже есть (мапа с ключами x-csrf-token и cookie):
-java
-RequestEntity<Body> request = RequestEntity.post(uri)
-        .headers(easupClient.requestHeaders(params, csrfHeadersMap))
-        .body(body);
+    @ExceptionHandler(value = Exception.class)
+    public ResponseEntity<Object>
+    defaultErrorHandler(HttpServletRequest req, Exception e) throws Exception {
+        String requestType;
+        String sessionId;
+        SrhrErrorDto serviceErrorDto;
+        LocalDateTime sessionCreatedAt;
+        String traceId = (req.getAttribute("traceId") != null) ? req.getAttribute("traceId").toString() : "undefined";
+        if (e.getMessage() != null && e.getMessage().contains("{\"error\"")) {
+            serviceErrorDto = getResentErrorDescription(e.getMessage(), traceId);
+        } else {
+            serviceErrorDto = SrhrErrorDto.of(e.getMessage(), "", traceId);
+        }
+        if (req.getAttribute("requestType") != null && req.getAttribute("sessionId") != null && req.getAttribute("sessionCreatedAt") != null) {
+            requestType = req.getAttribute("requestType").toString();
+            sessionId = req.getAttribute("sessionId").toString();
+            sessionCreatedAt = (LocalDateTime) req.getAttribute("sessionCreatedAt");
+        } else {
+            log.warn(ErrorResponse.ERROR_NOT_ALL_REQUIRED_AUDIT_PARAMS_MESSAGE);
+            requestType = (req.getAttribute("requestType") != null) ? req.getAttribute("requestType").toString() : "undefined";
+            sessionId = (req.getAttribute("sessionId") != null) ? req.getAttribute("sessionId").toString() : "undefined";
+            sessionCreatedAt = (req.getAttribute("sessionCreatedAt") != null) ? (LocalDateTime) req.getAttribute("sessionCreatedAt") : LocalDateTime.now();
+        }
+        sendUnexpectedErrorAuditEvent(requestType, sessionId, sessionCreatedAt, serviceErrorDto.getError().getMessage());
+        return buildErrorResponse(serviceErrorDto, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-}
+
+    @ExceptionHandler(value = MethodArgumentNotValidException.class)
+    public ResponseEntity<Object>
+    validationArgumentErrorHandler(MethodArgumentNotValidException e) {
+        List<FieldError> errorList = e.getFieldErrors();
+        String errorText = "";
+        for (FieldError error : errorList) {
+            errorText = errorText.concat(error.getDefaultMessage().concat(" "));
+        }
+        SrhrErrorDto errorDto = SrhrErrorDto.of(errorText, "422_ARG_NOT_VALID", null);
+        return buildErrorResponse(errorDto, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    @ExceptionHandler(value = ValidationException.class)
+    public ResponseEntity<Object>
+    validationErrorHandler(ValidationException e) {
+        SrhrErrorDto errorDto = SrhrErrorDto.of(e.getMessage(), "422_VALIDATION_ERROR", null);
+        return buildErrorResponse(errorDto, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    @ExceptionHandler(value = HandlerMethodValidationException.class)
+    public ResponseEntity<Object>
+    validationMethodErrorHandler(HandlerMethodValidationException e) {
+        String validationErrors = "";
+        for (ParameterValidationResult validationResult : e.getAllValidationResults()) {
+            List<MessageSourceResolvable> validationErrorList = validationResult.getResolvableErrors();
+            validationErrors = validationErrors.concat(validationErrorList.stream().map(MessageSourceResolvable::toString)
+                    .collect(Collectors.joining(", ")));
+        }
+        SrhrErrorDto errorDto = SrhrErrorDto.of(validationErrors, "422_VALIDATION_ERROR", null);
+        return buildErrorResponse(errorDto, HttpStatus.UNPROCESSABLE_ENTITY);
+    }
+
+    @ExceptionHandler(value = MissingServletRequestParameterException.class)
+    public ResponseEntity<Object>
+    missingServletRequestParameterExceptionHandler(MissingServletRequestParameterException e) {
+        String absentParameter = e.getParameterName();
+        SrhrErrorDto errorDto = SrhrErrorDto.of(ErrorResponse.ERROR_MISSING_REQUIRED_GET_PARAMETER_MESSAGE + " " + absentParameter, "400_MISSING_PARAM", null);
+        log.error(ErrorResponse.ERROR_MISSING_REQUIRED_GET_PARAMETER_MESSAGE + " [{}]", absentParameter);
+        return buildErrorResponse(errorDto, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(value = NullPointerException.class)
+    public ResponseEntity<Object>
+    nullPointerExceptionHandler(HttpServletRequest req, Exception e) throws Exception {
+        String requestType;
+        String sessionId;
+        LocalDateTime sessionCreatedAt;
+        String traceId = (req.getAttribute("traceId") != null) ? req.getAttribute("traceId").toString() : "undefined";
+        if (req.getAttribute("requestType") != null && req.getAttribute("sessionId") != null && req.getAttribute("sessionCreatedAt") != null) {
+            requestType = req.getAttribute("requestType").toString();
+            sessionId = req.getAttribute("sessionId").toString();
+            sessionCreatedAt = (LocalDateTime) req.getAttribute("sessionCreatedAt");
+        } else {
+            log.warn(ErrorResponse.ERROR_NOT_ALL_REQUIRED_AUDIT_PARAMS_MESSAGE);
+            requestType = (req.getAttribute("requestType") != null) ? req.getAttribute("requestType").toString() : "undefined";
+            sessionId = (req.getAttribute("sessionId") != null) ? req.getAttribute("sessionId").toString() : "undefined";
+            sessionCreatedAt = (req.getAttribute("sessionCreatedAt") != null) ? (LocalDateTime) req.getAttribute("sessionCreatedAt") : LocalDateTime.now();
+        }
+        sendUnexpectedErrorAuditEvent(requestType, sessionId, sessionCreatedAt, REST_RETURNED_NULL);
+        return buildErrorResponse(SrhrErrorDto.of(REST_RETURNED_NULL, "", traceId), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(value = HttpResponseException.class)
+    public ResponseEntity<Object>
+    httpResponseErrorHandler(HttpServletRequest req, HttpResponseException e) throws Exception {
+        String requestType;
+        String sessionId;
+        SrhrErrorDto serviceErrorDto;
+        LocalDateTime sessionCreatedAt;
+        String traceId = (req.getAttribute("traceId") != null) ? req.getAttribute("traceId").toString() : "undefined";
+        if (e.getMessage() != null && e.getMessage().contains("{\"error\"")) {
+            serviceErrorDto = getResentErrorDescription(e.getMessage(), traceId);
+        } else if (e.getReasonPhrase() != null) {
+            serviceErrorDto = SrhrErrorDto.of(e.getReasonPhrase(), "", traceId);
+        } else {
+            serviceErrorDto = SrhrErrorDto.of(e.getMessage(), "", traceId);
+        }
+        if (req.getAttribute("requestType") != null && req.getAttribute("sessionId") != null && req.getAttribute("sessionCreatedAt") != null) {
+            requestType = req.getAttribute("requestType").toString();
+            sessionId = req.getAttribute("sessionId").toString();
+            sessionCreatedAt = (LocalDateTime) req.getAttribute("sessionCreatedAt");
+        } else {
+            log.warn(ErrorResponse.ERROR_NOT_ALL_REQUIRED_AUDIT_PARAMS_MESSAGE);
+            requestType = (req.getAttribute("requestType") != null) ? req.getAttribute("requestType").toString() : "undefined";
+            sessionId = (req.getAttribute("sessionId") != null) ? req.getAttribute("sessionId").toString() : "undefined";
+            sessionCreatedAt = (req.getAttribute("sessionCreatedAt") != null) ? (LocalDateTime) req.getAttribute("sessionCreatedAt") : LocalDateTime.now();
+        }
+
+        if (e.getStatusCode() == 403 || e.getStatusCode() == 401) {
+            sendForbiddenAuditEvent(requestType, sessionId, sessionCreatedAt);
+        } else if (e.getStatusCode() == 404) {
+            sendNotFoundAuditEvent(requestType, sessionId, sessionCreatedAt);
+            if (e.getMessage() == null) {
+                serviceErrorDto = SrhrErrorDto.of(ErrorResponse.PAYSTUB_NOT_FOUND, "", traceId);
+            }
+        }
+        return buildErrorResponse(serviceErrorDto, HttpStatus.valueOf(e.getStatusCode()));
+    }
 
 
+    private ResponseEntity<Object> buildErrorResponse(SrhrErrorDto serviceErrorDto, HttpStatusCode status) {
+        String logMessage = "Не указано";
+        try {
+            logMessage = objectMapper.writeValueAsString(serviceErrorDto);
+        } catch (JsonProcessingException e) {
+            log.error("Не удалось сериализовать ДТО ошибки: {}", e.getMessage());
+        }
+        log.error("Возникла ошибка при выполнении запроса: {}", LogUtil.getLogMsgWithLkrExtensions(logMessage));
 
+        return new ResponseEntity<>(serviceErrorDto, status);
+    }
 
-    private String chooseServiceIdBasedOnRealm (String realm) {
-        switch (realm) {
-            case RealmConstant.STAFF_REALM:
-                return serviceIdHeaderStaffValue;
-            case RealmConstant.STAFF_MOBILE_REALM:
-                return serviceIdHeaderStaffMobileValue;
-            default:
-                return serviceIdHeaderStaffValue;
+    private SrhrErrorDto getResentErrorDescription(String resentError, String traceId) {
+        try {
+            int start = resentError.indexOf("{\"error\"");
+            String errorText = resentError.substring(start);
+            ObjectMapper mapper = jacksonConfig.objectMapper();
+            JsonNode errorNode = mapper.readTree(errorText).path("error");
+            SrhrError error = mapper
+                    .readerFor(SrhrError.class)
+                    .without(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                    .readValue(errorNode);
+
+            if (error.getDetails() == null || error.getDetails().isEmpty()) {
+                error.setDetails(new ArrayList<>(List.of(
+                        new SrhrErrorDetail(errorNode.path("code").asText(""), ErrorResponse.DEFAULT_ERROR_MESSAGE))));
+            }
+
+            if (error.getLogId() == null || error.getLogId().isBlank()) {
+                error.setLogId(traceId);
+            }
+            return new SrhrErrorDto(error);
+        } catch (Exception e) {
+            return SrhrErrorDto.of(e.getMessage(), "ERROR_HANDLER_EXCEPTION", traceId);
         }
     }
+
+    // Поменять когда появятся дто
+    public void sendUnexpectedErrorAuditEvent(String requestType, String sessionId, LocalDateTime sessionCreatedAt, String errorText) {
+        AuditSender sender = auditSenderResolver.resolve(requestType);
+        log.warn("Неуспешное выполнение эндпоинта: [{}]", errorText);
+        try {
+            sender.sendUnexpectedErrorEvent(sessionId, sessionCreatedAt);
+        } catch (Exception ex) {
+            log.error("Ошибка отправки события [{}] в аудит: [{}]", sender.eventErrorCode(), ex.getMessage());
+        }
+    }
+
+    public void sendForbiddenAuditEvent(String requestType, String sessionId, LocalDateTime sessionCreatedAt) {
+        AuditSender sender = auditSenderResolver.resolve(requestType);
+        try {
+            sender.sendForbiddenEvent(sessionId, sessionCreatedAt);
+        } catch (Exception ex) {
+            log.error("Ошибка отправки события [{}] в аудит: [{}]", sender.eventForbiddenCode(), ex.getMessage());
+        }
+    }
+
+    public void sendNotFoundAuditEvent(String requestType, String sessionId, LocalDateTime sessionCreatedAt) {
+        AuditSender sender = auditSenderResolver.resolve(requestType);
+        try {
+            sender.sendNotFoundEvent(sessionId, sessionCreatedAt);
+        } catch (Exception ex) {
+            log.error("Ошибка отправки события [{}] в аудит: [{}]", sender.eventNotFoundCode(), ex.getMessage());
+        }
+    }
+
+}
