@@ -1,18 +1,25 @@
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
+@Service
+@RequiredArgsConstructor
+public class EasupVacationService {
 
+    private final EasupClient easupClient;
 
-@Configuration
-public class SecurityConfig {
+    @Value("${easup.url.csrf}") String csrfUrl;
+    @Value("${easup.url.vacation}") String vacationUrl;
 
-    @Bean
-    public SecurityFilterChain FilterChain(HttpSecurity http) throws Exception {
-        http.authorizeRequests(authorizeRequests -> authorizeRequests.anyRequest()
-                        .permitAll())
-                .cors().disable()
-                .csrf().disable();
-        return http.build();
+    public VacationResponse createVacation(SapSystemParamsDto params, VacationRequest body) {
+        RestTemplate rt = easupClient.forRole(params.getRole());
+
+        // 1. fetch CSRF — x-csrf-token: fetch, без кук
+        RequestEntity<Void> csrfRequest = RequestEntity.get(csrfUrl)
+                .headers(easupClient.requestHeaders(params))
+                .build();
+        ResponseEntity<Void> csrfResponse = rt.exchange(csrfRequest, Void.class);
+
+        // 2. боевой запрос — токен и set-cookie берутся из ответа шага 1
+        RequestEntity<VacationRequest> request = RequestEntity.post(vacationUrl)
+                .headers(easupClient.requestHeaders(params, csrfResponse.getHeaders()))
+                .body(body);
+        return rt.exchange(request, VacationResponse.class).getBody();
     }
 }
