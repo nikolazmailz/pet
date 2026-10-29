@@ -27,62 +27,13 @@ public class EasupVacationService {
 
 
 
-
-
-    public ScheduleHolidayPostRequestDto getScheduleHolidayPostRequest(SapSystemParamsDto systemParams, ScheduleHolidayPostRequest request) throws Exception {
-        String url = sapGeneralUrl+sapUrlScheduleHolidayPostRequest+sapMandantParam;
-        ObjectMapper mapper = new ObjectMapper();
-        String requestBody;
-        ScheduleHolidayPostRequest postRequest = new ScheduleHolidayPostRequest();
-        RestTemplate restTemplate = easupClient.buildRestTemplateWithRoles(systemParams);
-        Map<String, List<String>> headerList = getCSRFTokenAndCookies(restTemplate);
-        if (headerList==null||headerList.isEmpty()) {
-            throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED, "Не были получены токен и куки для CSRF аутентификации.");
+    private String chooseServiceIdBasedOnRealm (String realm) {
+        switch (realm) {
+            case RealmConstant.STAFF_REALM:
+                return serviceIdHeaderStaffValue;
+            case RealmConstant.STAFF_MOBILE_REALM:
+                return serviceIdHeaderStaffMobileValue;
+            default:
+                return serviceIdHeaderStaffValue;
         }
-        RestTemplate restPostTemplate = easupClient.buildRestTemplateWithCSRFTokenWithRoles(systemParams, headerList);
-        BeanUtils.copyProperties(request, postRequest);
-        requestBody = mapper.writeValueAsString(postRequest);
-        ResponseEntity<String> responseBody = restPostTemplate.postForEntity(url, requestBody, String.class);
-        return mapper.readValue(responseBody.getBody(), ScheduleHolidayPostRequestDto.class);
-    }
-
-
-    private Map<String, List<String>> getCSRFTokenAndCookies(RestTemplate restTemplate) {
-        try {
-            String url = sapGeneralUrl+sapUrlCsrfToken+sapMandantParam;
-            String csrfToken;
-            Map<String, List<String>> headerMap = new HashMap<>();
-            ResponseEntity<String> responseBody = restTemplate.getForEntity(url, String.class);
-            Map<String, List<String>> responseMap = responseBody.getHeaders();
-            for (Map.Entry<String, List<String>> entry : responseMap.entrySet()) {
-                if ("x-csrf-token".equals(entry.getKey())) {
-                    csrfToken = entry.getValue().get(0);
-                    headerMap.put("x-csrf-token", List.of(csrfToken));
-                }
-                if ("set-cookie".equals(entry.getKey())&&!entry.getValue().isEmpty()) {
-                    headerMap.put("cookie", responseMap.get("set-cookie"));
-                }
-            }
-            return headerMap;
-        } catch (Exception e) {
-            log.error("Не удалось получить CSRF токен: [{}]", e.getMessage());
-        }
-        return null;
-    }
-
-
-
-
-    public ScheduleHolidayRequestInfoDto getScheduleHolidayRequestInfo(SapSystemParamsDto systemParams, String requestUuid, String expand) throws Exception {
-        String url = sapGeneralUrl+sapUrlScheduleHolidayGetRequestInfo;
-        if (!expand.equals("null")) {
-            String expandParam = String.format("$expand=%s&", expand);
-            url = addParamToUrl(url, expandParam);
-        }
-        url = url+sapMandantParam;
-        ObjectMapper mapper = new ObjectMapper();
-        RestTemplate restTemplate = easupClient.buildRestTemplateWithRoles(systemParams);
-        String uri = String.format(url, requestUuid);
-        ResponseEntity<String> responseBody = restTemplate.getForEntity(uri, String.class);
-        return mapper.readValue(responseBody.getBody(), ScheduleHolidayRequestInfoDto.class);
     }
