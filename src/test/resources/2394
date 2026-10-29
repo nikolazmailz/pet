@@ -1,3 +1,203 @@
 SRHR-2394 Реализация базового микросервиса srhr-ms-sys-org-structure и интерфейса
 
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-sys-org-structure/pulls/2852322
+
+
+package ru.ntdev.srhr.ms.sys.delegation.client;
+
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
+import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
+import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.config.Registry;
+import org.apache.hc.core5.http.config.RegistryBuilder;
+import org.apache.hc.core5.http.message.BasicHeader;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Scope;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestTemplate;
+import ru.ntdev.srhr.common.constant.RealmConstant;
+import ru.ntdev.srhr.common.dto.SapSystemParamsDto;
+import ru.ntdev.srhr.common.epa.config.AuthEpaRestTemplateInterceptorConfig;
+import ru.ntdev.srhr.common.util.LogUtil;
+import ru.ntdev.srhr.ms.sys.delegation.config.MasterDataCertificateConfig;
+import ru.ntdev.srhr.ms.sys.delegation.filter.SpoRequestInterceptor;
+
+import javax.net.ssl.SSLContext;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+@Component
+@Scope("prototype")
+public class SysDelegationClient {
+
+    private final MasterDataCertificateConfig masterDataCertificateConfig;
+    private final LogUtil logUtil;
+    private final AuthEpaRestTemplateInterceptorConfig authEpaRestTemplateInterceptorConfig;
+
+    @Value("${master-data.headers.service-id-header-name}") String serviceIdHeaderName;
+    @Value("${master-data.headers.service-id-header-staff-value}") String serviceIdHeaderStaffValue;
+    @Value("${master-data.headers.service-id-header-staff-mobile-value}") String serviceIdHeaderStaffMobileValue;
+    @Value("${app.rest.read-timeout}")
+    Integer masterDataReadTimeoutMs;
+    @Value("${app.rest.connect-timeout}")
+    Integer masterDataConnectTimeoutMs;
+
+    public SysDelegationClient(
+            MasterDataCertificateConfig masterDataCertificateConfig,
+            LogUtil logUtil,
+            AuthEpaRestTemplateInterceptorConfig authEpaRestTemplateInterceptorConfig
+    ) {
+        this.masterDataCertificateConfig = masterDataCertificateConfig;
+        this.logUtil = logUtil;
+        this.authEpaRestTemplateInterceptorConfig = authEpaRestTemplateInterceptorConfig;
+    }
+
+    public RestTemplate buildRestTemplateWithRoles(SapSystemParamsDto systemParams, String serviceId) {
+
+        SSLContext sslContext = masterDataCertificateConfig.configureHttpClientSsl();
+
+        Header headerPernr = new BasicHeader("pernr", systemParams.getTabNumber());
+        Header headerSessionId = new BasicHeader("sessionId", systemParams.getSessionId());
+        Header headerCSRFToken = new BasicHeader("x-csrf-token", "fetch");
+        Header headerRoles = new BasicHeader("Roles", systemParams.getRolesHeader());
+        Header headerLogId = new BasicHeader("logId", systemParams.getTraceId());
+        Header headerDelegationServiceId = new BasicHeader("X-Service-Id", serviceId);
+        Header headerServiceId;
+        if(systemParams.getRealm()!=null) {
+            headerServiceId = new BasicHeader(serviceIdHeaderName, chooseServiceIdBasedOnRealm(systemParams.getRealm()));
+        } else {
+            headerServiceId = new BasicHeader(serviceIdHeaderName, serviceIdHeaderStaffValue);
+        }
+        List<Header> headers = new ArrayList<>();
+            headers.add(headerPernr);
+            headers.add(headerSessionId);
+            headers.add(headerCSRFToken);
+            headers.add(headerRoles);
+            headers.add(headerLogId);
+            headers.add(headerServiceId);
+            headers.add(headerDelegationServiceId);
+
+        return finishSettings(sslContext, headers);
+    }
+
+    public RestTemplate finishSettings(SSLContext sslContext, List<Header> headers) {
+        final SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
+        final Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory> create()
+                .register("https", sslsf)
+                .register("http", new PlainConnectionSocketFactory())
+                .build();
+
+        ConnectionConfig connectionConfig = ConnectionConfig.custom()
+                .setSocketTimeout(masterDataReadTimeoutMs, TimeUnit.MILLISECONDS)
+                .setConnectTimeout(masterDataConnectTimeoutMs, TimeUnit.MILLISECONDS)
+                .build();
+
+        final BasicHttpClientConnectionManager connectionManager =
+                new BasicHttpClientConnectionManager(socketFactoryRegistry);
+        connectionManager.setConnectionConfig(connectionConfig);
+
+        final HttpClient httpClient = HttpClients.custom()
+                .setDefaultHeaders(headers)
+                .setConnectionManager(connectionManager)
+                .build();
+        
+        Map<String,String> headersValue = new HashMap<>(headers.size());
+        for (Header header : headers ) {
+            headersValue.put(header.getName(),header.getValue());
+        }
+
+        RestTemplate restTemplate = new RestTemplateBuilder()
+                .defaultHeader(HttpHeaders.CONTENT_TYPE,"application/json;charset=UTF-8")
+                .defaultHeader("pernr", headersValue.get("pernr"))
+                .defaultHeader("sessionId", headersValue.get("sessionId"))
+                .defaultHeader("x-csrf-token", headersValue.get("x-csrf-token"))
+                .defaultHeader("Roles", headersValue.get("Roles"))
+                .defaultHeader("logId", headersValue.get("logId"))
+                .defaultHeader("Cookie", headersValue.get("Cookie"))
+                .defaultHeader(serviceIdHeaderName,headersValue.get(serviceIdHeaderName))
+                .setConnectTimeout(Duration.ofMillis(masterDataConnectTimeoutMs))
+                .setReadTimeout(Duration.ofMillis(masterDataReadTimeoutMs))
+                .build();
+
+        restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(httpClient));
+        List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
+        if (CollectionUtils.isEmpty(interceptors)) {
+            interceptors = new ArrayList<>();
+        }
+        interceptors.add(new SpoRequestInterceptor(logUtil));
+        interceptors.add(authEpaRestTemplateInterceptorConfig);
+        restTemplate.setInterceptors(interceptors);
+
+        return restTemplate;
+    }
+
+    private String chooseServiceIdBasedOnRealm (String realm) {
+        switch (realm) {
+            case RealmConstant.STAFF_REALM:
+                return serviceIdHeaderStaffValue;
+            case RealmConstant.STAFF_MOBILE_REALM:
+                return serviceIdHeaderStaffMobileValue;
+            default:
+                return serviceIdHeaderStaffValue;
+        }
+    }
+}
+
+
+
+@Slf4j
+@Configuration
+public class MasterDataCertificateConfig {
+
+    @Value("${master-data.ssl.trust-store}") String spoTrustStorePath;
+    @Value("${master-data.ssl.trust-store-password}") String  spoTrustStorePass;
+    @Value("${master-data.ssl.trust-store-type}") String  spoTrustStoreType;
+    @Value("${master-data.ssl.key-store}") String spoKeyStorePath;
+    @Value("${master-data.ssl.key-store-password}") String spoKeyStorePass;
+    @Value("${master-data.ssl.key-store-type}") String spoKeyStoreType;
+    
+    public SSLContext configureHttpClientSsl() {
+
+        try {
+            final KeyStore trustStore;
+
+            final KeyStore keyStore;
+
+            final String keyStorePass;
+            trustStore = KeyStore.getInstance(spoTrustStoreType);
+            trustStore.load(new FileInputStream(ResourceUtils.getFile(spoTrustStorePath)), spoTrustStorePass.toCharArray());
+            keyStore = KeyStore.getInstance(spoKeyStoreType);
+            keyStore.load(new FileInputStream(ResourceUtils.getFile(spoKeyStorePath)), spoKeyStorePass.toCharArray());
+            keyStorePass = spoKeyStorePass;
+
+            return SSLContextBuilder.create()
+                    .loadKeyMaterial(keyStore, keyStorePass.toCharArray())
+                    .loadTrustMaterial(trustStore, TrustAllStrategy.INSTANCE)
+                    .build();
+
+        } catch (KeyStoreException|UnrecoverableKeyException|KeyManagementException exception) {
+            throw new RuntimeException("Ошибка чтения кейстора/получения ключа", exception);
+        } catch (CertificateException exception) {
+            throw new RuntimeException("Ошибка чтения сертификата", exception);
+        } catch (NoSuchAlgorithmException exception) {
+            throw new RuntimeException("Ошибка работы алгоритма шифрования", exception);
+        } catch (IOException exception) {
+            throw new RuntimeException("Ошибка чтения файла трастстора/кейстора", exception);
+        }
+    }
+}
