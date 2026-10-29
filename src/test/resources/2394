@@ -26,6 +26,9 @@ public class EasupVacationService {
 
 
 
+
+
+
     public ScheduleHolidayPostRequestDto getScheduleHolidayPostRequest(SapSystemParamsDto systemParams, ScheduleHolidayPostRequest request) throws Exception {
         String url = sapGeneralUrl+sapUrlScheduleHolidayPostRequest+sapMandantParam;
         ObjectMapper mapper = new ObjectMapper();
@@ -65,4 +68,21 @@ public class EasupVacationService {
             log.error("Не удалось получить CSRF токен: [{}]", e.getMessage());
         }
         return null;
+    }
+
+
+
+
+    public ScheduleHolidayRequestInfoDto getScheduleHolidayRequestInfo(SapSystemParamsDto systemParams, String requestUuid, String expand) throws Exception {
+        String url = sapGeneralUrl+sapUrlScheduleHolidayGetRequestInfo;
+        if (!expand.equals("null")) {
+            String expandParam = String.format("$expand=%s&", expand);
+            url = addParamToUrl(url, expandParam);
+        }
+        url = url+sapMandantParam;
+        ObjectMapper mapper = new ObjectMapper();
+        RestTemplate restTemplate = easupClient.buildRestTemplateWithRoles(systemParams);
+        String uri = String.format(url, requestUuid);
+        ResponseEntity<String> responseBody = restTemplate.getForEntity(uri, String.class);
+        return mapper.readValue(responseBody.getBody(), ScheduleHolidayRequestInfoDto.class);
     }
