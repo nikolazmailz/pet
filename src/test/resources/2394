@@ -1,18 +1,1 @@
-public interface AuditSender {
-    String SESSION_ID = "sessionId";
-    String SESSION_CREATED_AT = "sessionCreatedAt";
-
-    void sendNotFoundEvent(String sessionId, LocalDateTime createdAt);
-
-    void sendForbiddenEvent(String sessionId, LocalDateTime createdAt);
-
-    void sendUnexpectedErrorEvent(String sessionId, LocalDateTime createdAt);
-
-    boolean supports(String requestType);
-
-    String eventNotFoundCode();
-
-    String eventForbiddenCode();
-
-    String eventErrorCode();
-}
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-sys-org-structure/pulls/2852322
