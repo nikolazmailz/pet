@@ -1,18 +1,88 @@
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
+@Service
+@RequiredArgsConstructor
+public class EasupVacationService {
 
+    private final EasupClient easupClient;
 
-@Configuration
-public class SecurityConfig {
+    @Value("${easup.url.csrf}") String csrfUrl;
+    @Value("${easup.url.vacation}") String vacationUrl;
 
-    @Bean
-    public SecurityFilterChain FilterChain(HttpSecurity http) throws Exception {
-        http.authorizeRequests(authorizeRequests -> authorizeRequests.anyRequest()
-                        .permitAll())
-                .cors().disable()
-                .csrf().disable();
-        return http.build();
+    public VacationResponse createVacation(SapSystemParamsDto params, VacationRequest body) {
+        RestTemplate rt = easupClient.forRole(params.getRole());
+
+        // 1. fetch CSRF — x-csrf-token: fetch, без кук
+        RequestEntity<Void> csrfRequest = RequestEntity.get(csrfUrl)
+                .headers(easupClient.requestHeaders(params))
+                .build();
+        ResponseEntity<Void> csrfResponse = rt.exchange(csrfRequest, Void.class);
+
+        // 2. боевой запрос — токен и set-cookie берутся из ответа шага 1
+        RequestEntity<VacationRequest> request = RequestEntity.post(vacationUrl)
+                .headers(easupClient.requestHeaders(params, csrfResponse.getHeaders()))
+                .body(body);
+        return rt.exchange(request, VacationResponse.class).getBody();
     }
 }
+
+
+
+
+
+
+    public ScheduleHolidayPostRequestDto getScheduleHolidayPostRequest(SapSystemParamsDto systemParams, ScheduleHolidayPostRequest request) throws Exception {
+        String url = sapGeneralUrl+sapUrlScheduleHolidayPostRequest+sapMandantParam;
+        ObjectMapper mapper = new ObjectMapper();
+        String requestBody;
+        ScheduleHolidayPostRequest postRequest = new ScheduleHolidayPostRequest();
+        RestTemplate restTemplate = easupClient.buildRestTemplateWithRoles(systemParams);
+        Map<String, List<String>> headerList = getCSRFTokenAndCookies(restTemplate);
+        if (headerList==null||headerList.isEmpty()) {
+            throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED, "Не были получены токен и куки для CSRF аутентификации.");
+        }
+        RestTemplate restPostTemplate = easupClient.buildRestTemplateWithCSRFTokenWithRoles(systemParams, headerList);
+        BeanUtils.copyProperties(request, postRequest);
+        requestBody = mapper.writeValueAsString(postRequest);
+        ResponseEntity<String> responseBody = restPostTemplate.postForEntity(url, requestBody, String.class);
+        return mapper.readValue(responseBody.getBody(), ScheduleHolidayPostRequestDto.class);
+    }
+
+
+    private Map<String, List<String>> getCSRFTokenAndCookies(RestTemplate restTemplate) {
+        try {
+            String url = sapGeneralUrl+sapUrlCsrfToken+sapMandantParam;
+            String csrfToken;
+            Map<String, List<String>> headerMap = new HashMap<>();
+            ResponseEntity<String> responseBody = restTemplate.getForEntity(url, String.class);
+            Map<String, List<String>> responseMap = responseBody.getHeaders();
+            for (Map.Entry<String, List<String>> entry : responseMap.entrySet()) {
+                if ("x-csrf-token".equals(entry.getKey())) {
+                    csrfToken = entry.getValue().get(0);
+                    headerMap.put("x-csrf-token", List.of(csrfToken));
+                }
+                if ("set-cookie".equals(entry.getKey())&&!entry.getValue().isEmpty()) {
+                    headerMap.put("cookie", responseMap.get("set-cookie"));
+                }
+            }
+            return headerMap;
+        } catch (Exception e) {
+            log.error("Не удалось получить CSRF токен: [{}]", e.getMessage());
+        }
+        return null;
+    }
+
+
+
+
+    public ScheduleHolidayRequestInfoDto getScheduleHolidayRequestInfo(SapSystemParamsDto systemParams, String requestUuid, String expand) throws Exception {
+        String url = sapGeneralUrl+sapUrlScheduleHolidayGetRequestInfo;
+        if (!expand.equals("null")) {
+            String expandParam = String.format("$expand=%s&", expand);
+            url = addParamToUrl(url, expandParam);
+        }
+        url = url+sapMandantParam;
+        ObjectMapper mapper = new ObjectMapper();
+        RestTemplate restTemplate = easupClient.buildRestTemplateWithRoles(systemParams);
+        String uri = String.format(url, requestUuid);
+        ResponseEntity<String> responseBody = restTemplate.getForEntity(uri, String.class);
+        return mapper.readValue(responseBody.getBody(), ScheduleHolidayRequestInfoDto.class);
+    }
