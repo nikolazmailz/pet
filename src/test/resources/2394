@@ -4,3 +4,15 @@ https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-sys-org-structur
 
     @Value("${app.rest.connect-timeout}") private final int connectTimeoutMs;
     @Value("${app.rest.read-timeout}") private final int readTimeoutMs;
+
+
+   public void create(SapSystemParamsDto systemParamsDto, String serviceId) {
+        String spoUrl = String.format(serviceDelegationUrl);
+        String uri = tykHost + spoUrl;
+        RequestEntity<Void> request = RequestEntity.get(uri)
+                .headers(easupClient.requestHeaders(systemParamsDto, serviceId))
+                .build();
+
+        Object response = easupClient.restTemplate()
+                .exchange(request, Object.class).getBody();
+    }
