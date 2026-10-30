@@ -2,17 +2,76 @@ SRHR-2394 Реализация базового микросервиса srhr-ms
 
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-sys-org-structure/pulls/2852322
 
-    @Value("${app.rest.connect-timeout}") private final int connectTimeoutMs;
-    @Value("${app.rest.read-timeout}") private final int readTimeoutMs;
+@Slf4j
+@Configuration
+public class EasupCertificateConfig {
 
+    @Bean
+    public SSLContext sslContext(MasterDataProperties properties) {
+        MasterDataProperties.Ssl ssl = properties.getSsl();
+        try {
+            KeyStore trustStore = loadKeyStore(ssl.getTrustStore(), ssl.getTrustStorePassword(), ssl.getTrustStoreType());
+            KeyStore keyStore = loadKeyStore(ssl.getKeyStore(), ssl.getKeyStorePassword(), ssl.getKeyStoreType());
 
-   public void create(SapSystemParamsDto systemParamsDto, String serviceId) {
-        String spoUrl = String.format(serviceDelegationUrl);
-        String uri = tykHost + spoUrl;
-        RequestEntity<Void> request = RequestEntity.get(uri)
-                .headers(easupClient.requestHeaders(systemParamsDto, serviceId))
-                .build();
-
-        Object response = easupClient.restTemplate()
-                .exchange(request, Object.class).getBody();
+            return SSLContextBuilder.create()
+                    .loadKeyMaterial(keyStore, ssl.getKeyStorePassword().toCharArray())
+                    .loadTrustMaterial(trustStore, TrustAllStrategy.INSTANCE)
+                    .build();
+        } catch (GeneralSecurityException | IOException e) {
+            throw new IllegalStateException("Ошибка сборки SSLContext для master-data.ssl", e);
+        }
     }
+
+    private static KeyStore loadKeyStore(String path, String password, String type)
+            throws GeneralSecurityException, IOException {
+        KeyStore keyStore = KeyStore.getInstance(type);
+        try (InputStream in = new FileInputStream(ResourceUtils.getFile(path))) {
+            keyStore.load(in, password.toCharArray());
+        }
+        return keyStore;
+    }
+}
+
+
+@Getter
+@Setter
+@Component
+@ConfigurationProperties(prefix = "master-data")
+public class MasterDataProperties {
+
+    private Ssl ssl = new Ssl();
+    private Headers headers = new Headers();
+
+    @Getter
+    @Setter
+    public static class Ssl {
+        private String trustStore;
+        private String trustStorePassword;
+        private String trustStoreType;
+        private String keyStore;
+        private String keyStorePassword;
+        private String keyStoreType;
+    }
+
+    @Getter
+    @Setter
+    public static class Headers {
+        private String serviceIdHeaderName;
+        private String serviceIdHeaderStaffValue;
+        private String serviceIdHeaderStaffMobileValue;
+    }
+}
+
+
+master-data:
+  ssl:
+    key-store: ${MASTER_DATA_SSL_KEY_STORE:keystore.jks}
+    key-store-password: ${MASTER_DATA_SSL_KEY_STORE_PASSWORD:password}
+    trust-store: ${MASTER_DATA_SSL_TRUST_STORE:truststore.jks}
+    trust-store-password: ${MASTER_DATA_SSL_TRUST_STORE_PASSWORD:password}
+    key-store-type: ${MASTER_DATA_SSL_KEY_STORE_TYPE:JKS}
+    trust-store-type: ${MASTER_DATA_SSL_TRUST_STORE_TYPE:PKCS12}
+  headers:
+    service-id-header-name: ${MASTER_DATA_SERVICE_ID_HEADER_NAME:sessionservice}
+    service-id-header-staff-value: ${MASTER_DATA_SERVICE_ID_HEADER_STAFF_VALUE:if-iprt-service@test.vtb.ru}
+    service-id-header-staff-mobile-value: ${MASTER_DATA_SERVICE_ID_HEADER_STAFF_MOBILE_VALUE:msse-facade-ift@test.vtb.ru}
