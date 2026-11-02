@@ -1,15 +1,10 @@
- @Schema(description = "Уникальный идентификатор подразделения",
-            example = "80001122")
-    private String object;
-
-    @Schema(description = "Наименование подразделения",
-            example = "Департамент аналитики")
-    private String objectName;
-
-    @Schema(description = "Тип объекта организационной структуры",
-            example = "O")
-    private String objectType;
-
-    @Schema(description = "Идентификатор родительского подразделения. Значение '0' обозначает отсутствие родителя",
-            example = "0")
-    private String parentObject;
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
