@@ -1,30 +1,21 @@
-Добавить метод getOrgStructure() в существующий EasupService.
+@Data
+@Schema(description = "Организационная структура подразделений",
+        name = "OrgStructureDto", nullable = false)
+public class OrgStructureDto {
 
-Использовать существующие EasupClient, RestTemplate и easupClient.requestHeaders(systemParamsDto, serviceId).
+    private String employee;
+    private Long date;
+    private String dependencyType;
+    private List<OrganizationDto> organizationList;
+}
 
-Формировать URL через UriComponentsBuilder, передавая все три query-параметра.
+@Data
+@Schema(description = "Подразделение организационной структуры",
+        name = "OrganizationDto", nullable = false)
+public class OrganizationDto {
 
-Использовать RequestEntity.get() и RestTemplate.exchange().
-
-Возвращать десериализованный OrgStructureDto.
-
-Сохранить существующий механизм обработки ошибок.
-
-Не изменять существующие методы, не добавлять новые HTTP-клиенты и лишние абстракции.
-
-Соблюдать стиль проекта.
-
-Сигнатура метода
-
-public OrgStructureDto getOrgStructure(
-        SapSystemParamsDto systemParamsDto,
-        String serviceId,
-        String employee,
-        long date,
-        String dependencyType)
-
-DTO
-
-Все DTO создавать как обычные Java-классы с Lombok @Data и Swagger @Schema. Не использовать record.
-
-OrgStructureDto.java
+    private String object;
+    private String objectName;
+    private String objectType;
+    private String parentObject;
+}
