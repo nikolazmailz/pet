@@ -1,21 +1,15 @@
-@Data
-@Schema(description = "Организационная структура подразделений",
-        name = "OrgStructureDto", nullable = false)
-public class OrgStructureDto {
-
-    private String employee;
-    private Long date;
-    private String dependencyType;
-    private List<OrganizationDto> organizationList;
-}
-
-@Data
-@Schema(description = "Подразделение организационной структуры",
-        name = "OrganizationDto", nullable = false)
-public class OrganizationDto {
-
+ @Schema(description = "Уникальный идентификатор подразделения",
+            example = "80001122")
     private String object;
+
+    @Schema(description = "Наименование подразделения",
+            example = "Департамент аналитики")
     private String objectName;
+
+    @Schema(description = "Тип объекта организационной структуры",
+            example = "O")
     private String objectType;
+
+    @Schema(description = "Идентификатор родительского подразделения. Значение '0' обозначает отсутствие родителя",
+            example = "0")
     private String parentObject;
-}
