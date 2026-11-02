@@ -1,0 +1,19 @@
+{
+  "employee": "70169676",
+  "date": 1704067200,
+  "dependencyType": "L",
+  "organizationList": [
+    {
+      "object": "80001122",
+      "objectName": "Департамент аналитики",
+      "objectType": "O",
+      "parentObject": "0"
+    },
+    {
+      "object": "80001124",
+      "objectName": "Отдел статистики",
+      "objectType": "O",
+      "parentObject": "80001122"
+    }
+  ]
+}

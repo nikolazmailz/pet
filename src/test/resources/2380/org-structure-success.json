@@ -1,0 +1,24 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/org-structure",
+    "queryParameters": {
+      "employee": {
+        "equalTo": "70169676"
+      },
+      "date": {
+        "equalTo": "1704067200"
+      },
+      "dependencyType": {
+        "equalTo": "L"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "org-structure-response.json"
+  }
+}
