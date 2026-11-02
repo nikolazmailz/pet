@@ -1,9 +1,30 @@
-@Data
-@Schema(description = "Список вакансий", name = "VacancyStatusListItem", nullable = false)
-public class VacancyStatusListItem {
-    private String requisitionGuid;
-    private Long vacancyId;
-    private String vacancyStatusCode;
-    private String vacancyStatusName;
-    private Long lastStatusChangeDate;
-}
+Добавить метод getOrgStructure() в существующий EasupService.
+
+Использовать существующие EasupClient, RestTemplate и easupClient.requestHeaders(systemParamsDto, serviceId).
+
+Формировать URL через UriComponentsBuilder, передавая все три query-параметра.
+
+Использовать RequestEntity.get() и RestTemplate.exchange().
+
+Возвращать десериализованный OrgStructureDto.
+
+Сохранить существующий механизм обработки ошибок.
+
+Не изменять существующие методы, не добавлять новые HTTP-клиенты и лишние абстракции.
+
+Соблюдать стиль проекта.
+
+Сигнатура метода
+
+public OrgStructureDto getOrgStructure(
+        SapSystemParamsDto systemParamsDto,
+        String serviceId,
+        String employee,
+        long date,
+        String dependencyType)
+
+DTO
+
+Все DTO создавать как обычные Java-классы с Lombok @Data и Swagger @Schema. Не использовать record.
+
+OrgStructureDto.java
