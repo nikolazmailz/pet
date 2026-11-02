@@ -1,3 +1,29 @@
 SRHR-2380 Реализовать получение организационной структуры в srhr-ms-sys-org-structure
 
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-sys-org-structure/pulls/2863310
+
+@Query(value = "select * from srhr_sys_delegation.delegation p where p.id = :id", nativeQuery = true)
+    DelegationEntity findDelegationEntityById(
+            @Param("id") Long Id
+    );
+
+  @Override
+    public void saveServiceDelegation(ServiceDelegationRequest request) {
+
+        DelegationEntity delegation;
+        if (request.getId() != null) {
+            delegation = delegationRepository.findDelegationEntityById(request.getId());
+        } else {
+            delegation = new DelegationEntity();
+        }
+        if (delegation == null) {
+            delegation = new DelegationEntity();
+               delegation.setId(request.getId());
+        }
+        try {
+            delegation = mapperService.mapServiceDelegationRequestToDelegationEntity(request, delegation);
+            entityService.saveEntity(delegation);
+        } catch (Exception e) {
+            log.error("Произошла ошибка при попытке смаппить и сохранить сущность [delegation], текст ошибки: [{}]", e.getMessage());
+        }
+    }
