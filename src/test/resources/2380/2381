@@ -1,0 +1,52 @@
+
+    @GetMapping(value = "/org-structure", produces = "application/json")
+    public ResponseEntity<Object> getOrgStructureById(
+            @SapSystemParams SapSystemParamsDto sapSystemParamsDto
+    ) throws Exception {
+        sapSystemParamsDto.setRequestType("org_structure_by_id");
+        List<String> sapResponseDto = orgStructureService.getOrgStructureById(sapSystemParamsDto);
+        log.info("Успешное выполнение эндпоинта [SRHR_ORG_STRUCTURE_GET_BY_ID]");
+        if (sapResponseDto != null) {
+            return new ResponseEntity<>(sapResponseDto, HttpStatus.OK);
+        } else {
+            log.warn("Неуспешное выполнение эндпоинта [SRHR_ORG_STRUCTURE_GET_BY_ID]: вернулось нулевое значение");
+            throw new HttpResponseException(404, "ERROR_SRHR_ORG_STRUCTURE_GET_BY_ID");
+        }
+    }
+
+
+@Data
+@Schema(description = "DTO ответа на запрос получения линейной оргструктуры", name = "OrganizationLinearDtoOut")
+public class OrganizationLinearDtoOut {
+
+    @Schema(description = "Идентификатор сотрудника", example = "152285", maxLength = 255, required = true)
+    private String employee;
+
+    @ArraySchema(
+            maxItems = 99999,
+            arraySchema = @Schema(
+                    description = "Массив линейных подразделений",
+                    required = true
+            )
+    )
+    @JsonProperty("organizationLinearList")
+    private List<OrganizationUnit> organizationLinearList;
+}
+
+
+@Data
+@Schema(description = "Элемент линейной оргструктуры")
+public class OrganizationUnit {
+
+    @Schema(description = "Идентификатор объекта", example = "100001", maxLength = 255)
+    private String object;
+
+    @Schema(description = "Тип объекта", example = "LINEAR", maxLength = 255)
+    private String objectType;
+
+    @Schema(description = "Наименование объекта", example = "Департамент управления", maxLength = 255)
+    private String objectName;
+
+    @Schema(description = "Идентификатор родительского объекта", example = "100000", maxLength = 255)
+    private String parentObject;
+}
