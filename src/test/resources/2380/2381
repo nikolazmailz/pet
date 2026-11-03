@@ -50,3 +50,42 @@ public class OrganizationUnit {
     @Schema(description = "Идентификатор родительского объекта", example = "100000", maxLength = 255)
     private String parentObject;
 }
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class EasupService {
+
+    private final EasupClient easupClient;
+
+    @Value("${tyk.host}")
+    private String tykHost;
+
+    @Value("${sappo.org-structure-url}")
+    private String orgStructureUrl;
+
+    public OrgStructureDto getOrgStructure(
+            SapSystemParamsDto systemParamsDto,
+            String serviceId,
+            String employee,
+            long date,
+            String dependencyType) {
+
+        String uri = UriComponentsBuilder.fromUriString(tykHost + orgStructureUrl)
+                .queryParam("employee", employee)
+                .queryParam("date", date)
+                .queryParam("dependencyType", dependencyType)
+                .toUriString();
+
+        HttpHeaders headers = easupClient.requestHeaders(systemParamsDto, serviceId);
+        RequestEntity<Void> requestEntity = RequestEntity.get(uri).headers(headers).build();
+
+        try {
+            ResponseEntity<OrgStructureDto> response = easupClient.restTemplate().exchange(requestEntity, OrgStructureDto.class);
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("Ошибка при получении структуры организации: [{}]", e.getMessage());
+            throw e;
+        }
+    }
+}
