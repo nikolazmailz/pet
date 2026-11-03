@@ -1,5 +1,13 @@
-   assertEquals(serviceErrorDto.getError().getMessage(), "Линейная оргструктура не найдена для сотрудника: 70169676");
-     
+<properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+</properties>
 
-[ERROR]   OrgStructureControllerIntegrationTest.shouldReturnNoContentForLinearOrgStructure:66 expected: <ÐÐ¸Ð½ÐµÐ¹Ð½Ð°Ñ Ð¾ÑÐ³ÑÑÑÑÐºÑÑÑÐ° Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½Ð° Ð´Ð»Ñ ÑÐ¾ÑÑÑÐ´Ð½Ð¸ÐºÐ°: 70169676> but was: <Линейная оргструктура не найдена для сотрудника: 70169676>
-[INFO] 
+
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <configuration>
+        <encoding>UTF-8</encoding>
+    </configuration>
+</plugin>
