@@ -1,6 +1,5 @@
-
-SRHR-2381 Получение линейной организационный структуры подразделений
-SRHR-2382 Получение функциональной организационный структуры подразделений
-
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-sys-org-structure/pulls/2868709
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-mod-commons/pulls/2876154
+<dependency>
+    <groupId>com.wiremock</groupId>
+    <artifactId>wiremock-gui</artifactId>
+    <version>1.1.0</version>
+</dependency>
