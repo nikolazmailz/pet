@@ -3,28 +3,4 @@ SRHR-2381 Получение линейной организационный с�
 SRHR-2382 Получение функциональной организационный структуры подразделений
 
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-sys-org-structure/pulls/2868709
-
-
-@Component
-public class RequestMdcFilter extends OncePerRequestFilter {
-
-    @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
-
-        try {
-            MDC.put("traceId", UUID.randomUUID().toString());
-            MDC.put("pernr", request.getHeader("pernr"));
-            MDC.put("sessionId", request.getHeader("sessionId"));
-
-            filterChain.doFilter(request, response);
-        } finally {
-            MDC.clear();
-        }
-    }
-}
-
-
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-mod-commons/pulls/2876154
