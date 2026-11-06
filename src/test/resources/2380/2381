@@ -1,5 +1,18 @@
-<dependency>
-    <groupId>com.wiremock</groupId>
-    <artifactId>wiremock-gui</artifactId>
-    <version>1.1.0</version>
-</dependency>
+[INFO] Installing node version v20.11.0
+[INFO] Downloading https://nodejs.org/dist/v20.11.0/win-x64/node.exe to C:\Users\NPushkaryov\.m2\repository\com\github\eirslett\node\20.11.0\node-20.11.0-win-x64.exe
+[INFO] No proxies configured
+[INFO] No proxy was configured, downloading directly
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  38.210 s
+[INFO] Finished at: 2026-11-06T18:56:03+03:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal com.github.eirslett:frontend-maven-plugin:1.15.1:install-node-and-npm (install-node-and-npm) on project wiremock-gui: Could not download Node.js from: https://nodejs.org/dist/v20.11.0/win-x64/node.exe: Could not download https://nodejs.org/dist/v20.11.0/win-x64/node.exe: PKIX path validation failed: java.security.cert.CertPathValidatorException: signature check failed: Signature does not match. -> [Help 1]
+[ERROR]
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR]
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+PS C:\Users\NPushkaryov\IdeaProjects\wiremock-gui-main>
