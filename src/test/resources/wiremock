@@ -1,3 +1,11 @@
-COPY extensions/wiremock-gui-1.1.0.jar /var/wiremock/extensions/
-
-ENTRYPOINT ["/docker-entrypoint.sh", "--verbose", "--extensions", "com.wiremock.gui.WireMockGuiExtension"]
+PS C:\Users\NPushkaryov\IdeaProjects\srhr-ms-mock-service> docker compose up --build                                                  
+[+] Building 1.6s (3/3) FINISHED                                                                                                                               docker:desktop-linux
+ => [mock-service internal] load build definition from Dockerfile                                                                                                              0.0s
+ => => transferring dockerfile: 397B                                                                                                                                           0.0s
+ => ERROR [mock-service internal] load metadata for docker.repo-ci.sfera.inno.local/srhr-docker-lib/wiremock/wiremock:3.13.2                                                   1.5s
+ => [mock-service auth] sharing credentials for docker.repo-ci.sfera.inno.local                                                                                                0.0s
+------
+ > [mock-service internal] load metadata for docker.repo-ci.sfera.inno.local/srhr-docker-lib/wiremock/wiremock:3.13.2:
+------
+failed to solve: docker.repo-ci.sfera.inno.local/srhr-docker-lib/wiremock/wiremock:3.13.2: failed to resolve source metadata for docker.repo-ci.sfera.inno.local/srhr-docker-lib/wiremock/wiremock:3.13.2: unexpected status from HEAD request to https://docker.repo-ci.sfera.inno.local/v2/srhr-docker-lib/wiremock/wiremock/manifests/3.13.2: 401 
+PS C:\Users\NPushkaryov\IdeaProjects\srhr-ms-mock-service> 
