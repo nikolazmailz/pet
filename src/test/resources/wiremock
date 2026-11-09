@@ -1,1 +1,293 @@
-docker login docker.repo-ci.sfera.inno.local
+## srhr-ms-mock-service
+Заглушечный сервис для эмуляции внешних REST-интеграций для SRHR сервсиов на DEV-стенде.
+
+Сервис построен на базе WireMock и запускается в Docker.
+
+### Project Structure
+
+```text
+srhr-ms-mock-service/
+├── mappings/
+│   ├── tsrm/
+│   ├── easup/
+│   ├── filestorage/
+│   └── ...
+│
+├── __files/
+│   ├── tsrm/
+│   ├── easup/
+│   ├── filestorage/
+│   └── ...
+│
+├── Dockerfile
+├── docker-compose.yml
+└── README.md
+```
+
+### `mappings`
+
+Содержит описание HTTP-запросов и правил matching.
+
+Пример:
+
+```text
+mappings/tsrm/get-role.json
+```
+
+```json
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/functional-role/[^/]+/[^/]+"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "tsrm/get-role-response.json"
+  }
+}
+```
+
+### `__files`
+
+Содержит тела ответов.
+
+Пример:
+
+```text
+__files/tsrm/get-role-response.json
+```
+
+```json
+{
+  "roles": [
+    {
+      "roleId": "admin",
+      "attributeIds": [
+        "attr1",
+        "attr2",
+        "attr3"
+      ]
+    },
+    {
+      "roleId": "user"
+    }
+  ]
+}
+```
+
+Путь в `bodyFileName` указывается относительно директории `__files`.
+
+
+### Request Matching
+
+WireMock может выбирать ответ по:
+
+- HTTP method;
+- URL;
+- URL pattern;
+- query parameters;
+- headers;
+- JSON body;
+- form parameters;
+- cookies.
+
+examples:
+`match по HTTP method + точному URL path.`
+```json
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/users/123"
+  },
+  "response": {
+    "status": 200,
+    "jsonBody": {
+      "id": 123
+    }
+  }
+}
+```
+
+`URL pattern` /users/1
+```json
+{
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/users/[0-9]+"
+  },
+  "response": {
+    "status": 200
+  }
+}
+```
+
+`queryParameters` - GET /employees?department=IT&active=true
+```json
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/employees",
+    "queryParameters": {
+      "department": {
+        "equalTo": "IT"
+      },
+      "active": {
+        "equalTo": "true"
+      }
+    }
+  },
+  "response": {
+    "status": 200
+  }
+}
+```
+
+`headers`
+```json
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/profile",
+    "headers": {
+      "X-User-Login": {
+        "equalTo": "test-user"
+      },
+      "X-Channel": {
+        "matches": "WEB|MOBILE"
+      }
+    }
+  },
+  "response": {
+    "status": 200
+  }
+}
+```
+
+`body` для запроса
+```json
+{
+  "employeeId": "123",
+  "name": "Test"
+}
+```
+можно
+```json
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/search",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$[?(@.employeeId == '123')]"
+      }
+    ]
+  },
+  "response": {
+    "status": 200
+  }
+}
+```
+
+Можно матчить весь JSON целиком:
+```json
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/search",
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "employeeId": "123",
+          "active": true
+        },
+        "ignoreArrayOrder": true,
+        "ignoreExtraElements": true
+      }
+    ]
+  },
+  "response": {
+    "status": 200
+  }
+}
+```
+ignoreExtraElements=true означает, что в реальном body могут быть дополнительные поля.
+
+### Error Responses
+
+WireMock позволяет эмулировать ошибки внешних систем.
+
+Пример `500 Internal Server Error`:
+
+```json
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/external/service"
+  },
+  "response": {
+    "status": 500,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "code": "500",
+      "message": "Mock external service error"
+    }
+  }
+}
+```
+
+
+### Delays
+
+Можно эмулировать медленный внешний сервис.
+
+```json
+{
+  "response": {
+    "status": 200,
+    "fixedDelayMilliseconds": 5000
+  }
+}
+```
+
+
+## WireMock Admin API
+
+WireMock предоставляет Admin API для диагностики.
+
+### Загруженные mappings
+
+```bash
+curl http://localhost:8089/__admin/mappings
+```
+
+### Полученные запросы
+
+```bash
+curl http://localhost:8089/__admin/requests
+```
+
+### Сброс истории запросов
+
+```bash
+curl -X DELETE http://localhost:8089/__admin/requests
+```
+
+## DEV Deployment
+
+На DEV-стенде `srhr-ms-mock-service` запускается как отдельный сервис.
+
+Внешние URL SRHR-сервисов перенаправляются на него через environment/configuration.
+
+Пример:
+
+```yaml
+TSRM_INTEGRATION_SERVICE_URL: http://srhr-ms-mock-service:8080
+EASUP_INTEGRATION_SERVICE_URL: http://srhr-ms-mock-service:8080
+```
+
+Таким образом можно запускать сервисы SRHR без доступа к реальным внешним интеграционным системам.
