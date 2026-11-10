@@ -1,3 +1,5 @@
+https://mock-service.srhr.innodev.local/__admin/gui
+
 ## srhr-ms-mock-service
 Заглушечный сервис для эмуляции внешних REST-интеграций для SRHR сервсиов на DEV-стенде.
 
