@@ -1,0 +1,16 @@
+@Override
+public PayavgEventDto getPayavgEvent(SapSystemParamsDto systemParams) {
+    String url = sapGeneralUrl + sapUrlPayavgEvent + sapMandantParam;
+
+    RequestEntity<Void> request = RequestEntity.get(URI.create(url))
+            .headers(easupClient.csrfHeaders(systemParams, csrfUri()))
+            .build();
+
+    return easupClient.forRole(systemParams.getRole())
+            .exchange(request, PayavgEventDto.class)
+            .getBody();
+}
+
+private URI csrfUri() {
+    return URI.create(sapGeneralUrl + sapUrlCsrfToken + sapMandantParam);
+}
