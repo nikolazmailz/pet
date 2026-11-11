@@ -1,0 +1,252 @@
+ @GetMapping(value = "/event", produces = "application/json")
+    public ResponseEntity<Object> getPayavgEvent(
+            HttpServletRequest request
+    ) throws Exception{
+        SapSystemParamsDto systemParams = setSystemParams(request);
+        setAttributes(request, "easup_payavg_event");
+        PayavgEventDto dto = easupPaystubPayavgIntegrationService.getPayavgEvent(systemParams);
+        log.info("Успешное выполнение эндпоинта [SRHR_EASUP_REQUEST_GET_PAYAVG_EVENT]");
+        if (dto != null) {
+            return new ResponseEntity<>(dto, HttpStatus.OK);
+        } else {
+            log.warn("Неуспешное выполнение эндпоинта [SRHR_EASUP_REQUEST_GET_PAYAVG_EVENT]: вернулось нулевое значение");
+            throw new HttpResponseException(404, ErrorResponse.EASUP_REQUEST_NOT_FOUND);
+        }
+    }
+
+
+ private SapSystemParamsDto setSystemParams(HttpServletRequest request) {
+        SapSystemParamsDto systemParams = new SapSystemParamsDto();
+        systemParams.setTabNumber(request.getHeader("pernr"));
+        systemParams.setSessionId(request.getHeader("sessionId"));
+        systemParams.setRole(request.getHeader("role"));
+        systemParams.setRolesHeader(request.getHeader("Roles"));
+        systemParams.setTraceId(request.getHeader("logId"));
+        systemParams.setRealm(request.getHeader("realm"));
+        return systemParams;
+    }
+
+
+private void setAttributes(HttpServletRequest request, String requestType) {
+        request.setAttribute("requestType", requestType);
+        request.setAttribute("sessionId", request.getHeader("sessionId"));
+        request.setAttribute("pernr", request.getHeader("pernr"));
+        request.setAttribute("adlogin", request.getHeader("X-user-login"));
+        request.setAttribute("traceId", request.getHeader("logId"));
+    }
+
+
+@Override
+    public PayavgEventDto getPayavgEvent(SapSystemParamsDto systemParams) throws JsonProcessingException {
+        String url = sapGeneralUrl+sapUrlPayavgEvent+sapMandantParam;
+        ObjectMapper mapper = new ObjectMapper();
+        RestTemplate restTemplate = easupClient.buildRestTemplateWithRoles(systemParams);
+        ResponseEntity<String> responseBody = restTemplate.getForEntity(url, String.class);
+        return mapper.readValue(responseBody.getBody(), PayavgEventDto.class);
+    }
+
+
+
+package ru.ntdev.srhr.ms.easup.integration.client;
+
+import org.apache.hc.client5.http.classic.HttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
+import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
+import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.client5.http.utils.Base64;
+import org.apache.hc.core5.http.Header;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.config.Registry;
+import org.apache.hc.core5.http.config.RegistryBuilder;
+import org.apache.hc.core5.http.message.BasicHeader;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Scope;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestTemplate;
+import ru.ntdev.srhr.common.constant.RealmConstant;
+import ru.ntdev.srhr.common.dto.SapSystemParamsDto;
+import ru.ntdev.srhr.common.jwt.OpenTelemetryTraceContextProvider;
+import ru.ntdev.srhr.common.util.LogUtil;
+import ru.ntdev.srhr.ms.easup.integration.config.EasupCertificateConfig;
+import ru.ntdev.srhr.ms.easup.integration.filter.EasupClientSideMetricsInterceptor;
+import ru.ntdev.srhr.ms.easup.integration.filter.EasupRequestInterceptor;
+
+import javax.net.ssl.SSLContext;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Component
+@Scope("prototype")
+public class EasupClient {
+
+    private final EasupCertificateConfig easupCertificateConfig;
+    private final LogUtil logUtil;
+    private final OpenTelemetryTraceContextProvider openTelemetryTraceContextProvider;
+
+    @Autowired
+    private EasupClientSideMetricsInterceptor easupClientSideMetricsInterceptor;
+
+    @Value("${easup.basic-auth.enable}") Boolean easupBasicAuthEnable;
+    @Value("${easup.basic-auth.login}") String easupBasicAuthLogin;
+    @Value("${easup.basic-auth.password}") String easupBasicAuthPassword;
+    @Value("${easup.headers.service-id-header-name}") String serviceIdHeaderName;
+    @Value("${easup.headers.service-id-header-staff-value}") String serviceIdHeaderStaffValue;
+    @Value("${easup.headers.service-id-header-staff-mobile-value}") String serviceIdHeaderStaffMobileValue;
+
+    public EasupClient(EasupCertificateConfig easupCertificateConfig, LogUtil logUtil, OpenTelemetryTraceContextProvider openTelemetryTraceContextProvider) {
+        this.easupCertificateConfig = easupCertificateConfig;
+        this.logUtil = logUtil;
+        this.openTelemetryTraceContextProvider = openTelemetryTraceContextProvider;
+    }
+
+    public RestTemplate buildRestTemplateWithRoles(SapSystemParamsDto systemParams) {
+
+        SSLContext sslContext = easupCertificateConfig.configureHttpClientSsl(systemParams.getRole());
+
+        Header headerPernr = new BasicHeader("pernr", systemParams.getTabNumber());
+        Header headerSessionId = new BasicHeader("sessionId", systemParams.getSessionId());
+        Header headerCSRFToken = new BasicHeader("x-csrf-token", "fetch");
+        Header headerRoles = new BasicHeader("Roles", systemParams.getRolesHeader());
+        Header headerLogId = new BasicHeader("logId", systemParams.getTraceId());
+        Header headerServiceId;
+        if(systemParams.getRealm()!=null) {
+            headerServiceId = new BasicHeader(serviceIdHeaderName, chooseServiceIdBasedOnRealm(systemParams.getRealm()));
+        } else {
+            headerServiceId = new BasicHeader(serviceIdHeaderName, serviceIdHeaderStaffValue);
+        }
+        List<Header> headers = new ArrayList<>();
+        if (easupBasicAuthEnable&&!easupBasicAuthLogin.isEmpty()&&!easupBasicAuthPassword.isEmpty()) {
+            final String auth = easupBasicAuthLogin + ":" + easupBasicAuthPassword;
+            final byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1));
+            final String authH = "Basic " + new String(encodedAuth);
+            Header authHeader = new BasicHeader(HttpHeaders.AUTHORIZATION, authH);
+            headers.add(headerPernr);
+            headers.add(headerSessionId);
+            headers.add(authHeader);
+            headers.add(headerCSRFToken);
+            headers.add(headerRoles);
+            headers.add(headerLogId);
+            headers.add(headerServiceId);
+        } else {
+            headers.add(headerPernr);
+            headers.add(headerSessionId);
+            headers.add(headerCSRFToken);
+            headers.add(headerRoles);
+            headers.add(headerLogId);
+            headers.add(headerServiceId);
+        }
+
+        return finishSettings(sslContext, headers);
+    }
+
+    public RestTemplate buildRestTemplateWithCSRFTokenWithRoles(SapSystemParamsDto systemParams, Map<String, List<String>> headerMap ) {
+
+        SSLContext sslContext = easupCertificateConfig.configureHttpClientSsl(systemParams.getRole());
+
+        Header headerPernr = new BasicHeader("pernr", systemParams.getTabNumber());
+        Header headerSessionId = new BasicHeader("sessionId", systemParams.getSessionId());
+        Header headerCSRFToken = new BasicHeader("x-csrf-token", headerMap.get("x-csrf-token").get(0));
+        Header headerRoles = new BasicHeader("Roles", systemParams.getRolesHeader());
+        Header headerLogId = new BasicHeader("logId", systemParams.getTraceId());
+        Header headerServiceId;
+        if(systemParams.getRealm()!=null) {
+            headerServiceId = new BasicHeader(serviceIdHeaderName, chooseServiceIdBasedOnRealm(systemParams.getRealm()));
+        } else {
+            headerServiceId = new BasicHeader(serviceIdHeaderName, serviceIdHeaderStaffValue);
+        }
+        List<String> cookiesList = headerMap.get("cookie");
+        List<Header> headers = new ArrayList<>();
+        if (easupBasicAuthEnable&&!easupBasicAuthLogin.isEmpty()&&!easupBasicAuthPassword.isEmpty()) {
+            final String auth = easupBasicAuthLogin + ":" + easupBasicAuthPassword;
+            final byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(StandardCharsets.ISO_8859_1));
+            final String authH = "Basic " + new String(encodedAuth);
+            Header authHeader = new BasicHeader(HttpHeaders.AUTHORIZATION, authH);
+            headers.add(headerPernr);
+            headers.add(headerSessionId);
+            headers.add(authHeader);
+            headers.add(headerCSRFToken);
+            headers.add(headerRoles);
+            headers.add(headerLogId);
+            headers.add(headerServiceId);
+            for (String cookie : cookiesList ) {
+                headers.add(new BasicHeader("Cookie",cookie));
+            }
+        } else {
+            headers.add(headerPernr);
+            headers.add(headerSessionId);
+            headers.add(headerCSRFToken);
+            headers.add(headerRoles);
+            headers.add(headerLogId);
+            headers.add(headerServiceId);
+            for (String cookie : cookiesList ) {
+                headers.add(new BasicHeader("Cookie",cookie));
+            }
+        }
+        return finishSettings(sslContext, headers);
+    }
+
+    public RestTemplate finishSettings(SSLContext sslContext, List<Header> headers) {
+        final SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
+        final Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory> create()
+                .register("https", sslsf)
+                .register("http", new PlainConnectionSocketFactory())
+                .build();
+
+        final BasicHttpClientConnectionManager connectionManager =
+                new BasicHttpClientConnectionManager(socketFactoryRegistry);
+
+        final HttpClient httpClient = HttpClients.custom()
+                .setDefaultHeaders(headers)
+                .setConnectionManager(connectionManager)
+                .build();
+        
+        Map<String,String> headersValue = new HashMap<>(headers.size());
+        for (Header header : headers ) {
+            headersValue.put(header.getName(),header.getValue());
+        }
+
+        RestTemplate restTemplate = new RestTemplateBuilder()
+                .defaultHeader(HttpHeaders.CONTENT_TYPE,"application/json;charset=UTF-8")
+                .defaultHeader("pernr", headersValue.get("pernr"))
+                .defaultHeader("sessionId", headersValue.get("sessionId"))
+                .defaultHeader("x-csrf-token", headersValue.get("x-csrf-token"))
+                .defaultHeader("Roles", headersValue.get("Roles"))
+                .defaultHeader("logId", headersValue.get("logId"))
+                .defaultHeader("Cookie", headersValue.get("Cookie"))
+                .defaultHeader(serviceIdHeaderName,headersValue.get(serviceIdHeaderName))
+                .build();
+
+        restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(httpClient));
+        List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
+        if (CollectionUtils.isEmpty(interceptors)) {
+            interceptors = new ArrayList<>();
+        }
+        interceptors.add(new EasupRequestInterceptor(logUtil));
+        interceptors.add(easupClientSideMetricsInterceptor);
+        restTemplate.setInterceptors(interceptors);
+
+        return restTemplate;
+    }
+
+    private String chooseServiceIdBasedOnRealm (String realm) {
+        switch (realm) {
+            case RealmConstant.STAFF_REALM:
+                return serviceIdHeaderStaffValue;
+            case RealmConstant.STAFF_MOBILE_REALM:
+                return serviceIdHeaderStaffMobileValue;
+            default:
+                return serviceIdHeaderStaffValue;
+        }
+    }
+}
