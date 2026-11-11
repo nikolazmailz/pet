@@ -14,3 +14,18 @@ public PayavgEventDto getPayavgEvent(SapSystemParamsDto systemParams) {
 private URI csrfUri() {
     return URI.create(sapGeneralUrl + sapUrlCsrfToken + sapMandantParam);
 }
+
+
+    private final static String sapUrlMail = "zhrxss_0894/default/sap/zhrxss_0894_req_pays/0001/IRequestMail?";
+    private final static String sapUrlPayPeriod = "zhrxss_0894/default/sap/zhrxss_0894_req_pays/0001/IRequestPeriod?$expand=pmonth&";
+    private final static String sapUrlPayPdf = "zhrxss_0894/default/sap/zhrxss_0894_req_pays/0001/IRequestPDF(id='%s',year='%s',month='%s')?";
+    private final static String sapUrlPayHead = "zhrxss_0894/default/sap/zhrxss_0894_req_pays/0001/IRequestSalaryHead(id='%s',year='%s',month='%s')?$expand=shead($expand=hinfo)&";
+    private final static String sapUrlPayBody = "zhrxss_0894/default/sap/zhrxss_0894_req_pays/0001/IRequestSalaryBody(id='%s',year='%s',month='%s')?$expand=sbody($expand=days($expand=quest))&";
+    private final static String sapUrlPayavgEvent = "zhrxss_0891/default/sap/zhrxss_0891_avrg_earn/0001/ICalcTypeVH?";
+    private final static String sapUrlPayavgCalculate = "zhrxss_0891/default/sap/zhrxss_0891_avrg_earn/0001/IAverage?";
+    private final static String sapUrlPayavgInit = "zhrxss_0891/default/sap/zhrxss_0891_avrg_earn/0001/IParams(pernr='%s')?";
+    private final static String sapUrlPayavgRefText = "zhrxss_0891/default/sap/zhrxss_0891_avrg_earn/0001/IInfoText(pernr='%s')?";
+    private final static String sapUrlPayavgPostSdz = "zhrxss_0891/default/sap/zhrxss_0891_avrg_earn/0001/IAverageModel?";
+    private final static String sapUrlPayavgAllRef = "zhrxss_0891/default/sap/zhrxss_0891_avrg_earn/0001/IHelps('')?";
+    private final static String sapUrlPayavgPostBenefit = "zhrxss_0891/default/sap/zhrxss_0891_avrg_earn/0001/ISick?";
+    private final static String sapUrlCsrfToken = "zhrbc_0720/default/sap/zhrbc_0720_react_utils/0001/IXCSRFToken?";
