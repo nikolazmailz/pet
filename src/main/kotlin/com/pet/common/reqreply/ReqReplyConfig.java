@@ -1,5 +1,3 @@
-// Пример конфигурации в конкретном сервисе (не в common).
-// Пакет поменяй под свой сервис.
 package com.pet.common.reqreply;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
