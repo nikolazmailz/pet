@@ -16,7 +16,6 @@ import org.apache.hc.core5.util.Timeout;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -40,143 +39,96 @@ public class EasupClient {
 
     public static final String HEADER_PERNR = "pernr";
     public static final String HEADER_SESSION_ID = "sessionId";
-    public static final String HEADER_CSRF_TOKEN = "x-csrf-token";
     public static final String HEADER_ROLES = "Roles";
     public static final String HEADER_LOG_ID = "logId";
+    public static final String HEADER_CSRF_TOKEN = "x-csrf-token";
 
     private static final String CSRF_FETCH = "fetch";
+    private static final String CONTENT_TYPE_JSON_UTF8 = "application/json;charset=UTF-8";
 
     private static final int MAX_CONNECTIONS_TOTAL = 50;
     private static final int MAX_CONNECTIONS_PER_ROUTE = 20;
 
-    private static final TimeValue CONNECTION_TTL =
-            TimeValue.ofMinutes(5);
-
-    private static final TimeValue VALIDATE_AFTER_INACTIVITY =
-            TimeValue.ofSeconds(10);
-
-    private static final TimeValue IDLE_EVICTION =
-            TimeValue.ofMinutes(1);
+    private static final TimeValue CONNECTION_TTL = TimeValue.ofMinutes(5);
+    private static final TimeValue VALIDATE_AFTER_INACTIVITY = TimeValue.ofSeconds(10);
+    private static final TimeValue IDLE_EVICTION = TimeValue.ofMinutes(1);
 
     private final EasupCertificateConfig certificateConfig;
     private final EasupClientSideMetricsInterceptor metricsInterceptor;
-    private final AuthEpaRestTemplateInterceptorConfig authInterceptor;
+    private final AuthEpaRestTemplateInterceptorConfig authEpaRestTemplateInterceptorConfig;
     private final EasupProperties.Headers headerProps;
 
     private final String basicAuthHeaderValue;
-
     private final int connectTimeoutMs;
     private final int readTimeoutMs;
 
-    private final Map<String, CloseableHttpClient> httpClientsByRole =
-            new ConcurrentHashMap<>();
-
-    private final Map<String, RestTemplate> restTemplatesByRole =
-            new ConcurrentHashMap<>();
+    private final Map<String, CloseableHttpClient> httpClientsByRole = new ConcurrentHashMap<>();
+    private final Map<String, RestTemplate> restTemplatesByRole = new ConcurrentHashMap<>();
 
     public EasupClient(
             EasupCertificateConfig certificateConfig,
             EasupClientSideMetricsInterceptor metricsInterceptor,
-            AuthEpaRestTemplateInterceptorConfig authInterceptor,
+            AuthEpaRestTemplateInterceptorConfig authEpaRestTemplateInterceptorConfig,
             EasupProperties properties,
             @Value("${app.rest.connect-timeout}") int connectTimeoutMs,
-            @Value("${app.rest.read-timeout}") int readTimeoutMs
-    ) {
+            @Value("${app.rest.read-timeout}") int readTimeoutMs) {
+
         this.certificateConfig = certificateConfig;
         this.metricsInterceptor = metricsInterceptor;
-        this.authInterceptor = authInterceptor;
+        this.authEpaRestTemplateInterceptorConfig = authEpaRestTemplateInterceptorConfig;
         this.headerProps = properties.getHeaders();
         this.basicAuthHeaderValue = buildBasicAuth(properties.getBasicAuth());
         this.connectTimeoutMs = connectTimeoutMs;
         this.readTimeoutMs = readTimeoutMs;
     }
 
-    /**
-     * Один RestTemplate на роль.
-     */
+    /** Общий RestTemplate для роли. */
     public RestTemplate forRole(String role) {
-        return restTemplatesByRole.computeIfAbsent(
-                role,
-                this::createRestTemplate
-        );
+        return restTemplatesByRole.computeIfAbsent(role, r -> new RestTemplateBuilder()
+                .requestFactory(() -> new HttpComponentsClientHttpRequestFactory(httpClient(r)))
+                .additionalInterceptors(
+                        new EasupRequestInterceptor(),
+                        metricsInterceptor,
+                        authEpaRestTemplateInterceptorConfig)
+                .build());
     }
 
-    /**
-     * Заголовки конкретного запроса.
-     * Получение CSRF-токена отдельным запросом не выполняется.
-     */
+    /** Заголовки конкретного запроса. */
     public HttpHeaders requestHeaders(SapSystemParamsDto params) {
-
         HttpHeaders headers = new HttpHeaders();
 
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add(HttpHeaders.CONTENT_TYPE, CONTENT_TYPE_JSON_UTF8);
 
         if (basicAuthHeaderValue != null) {
-            headers.set(HttpHeaders.AUTHORIZATION, basicAuthHeaderValue);
+            headers.add(HttpHeaders.AUTHORIZATION, basicAuthHeaderValue);
         }
 
-        setIfPresent(headers, HEADER_PERNR, params.getTabNumber());
-        setIfPresent(headers, HEADER_SESSION_ID, params.getSessionId());
-        setIfPresent(headers, HEADER_ROLES, params.getRolesHeader());
-        setIfPresent(headers, HEADER_LOG_ID, params.getTraceId());
-
-        headers.set(HEADER_CSRF_TOKEN, CSRF_FETCH);
-
-        headers.set(
-                headerProps.getServiceIdHeaderName(),
-                serviceIdFor(params.getRealm())
-        );
+        headers.add(HEADER_PERNR, params.getTabNumber());
+        headers.add(HEADER_SESSION_ID, params.getSessionId());
+        headers.add(HEADER_ROLES, params.getRolesHeader());
+        headers.add(HEADER_LOG_ID, params.getTraceId());
+        headers.add(HEADER_CSRF_TOKEN, CSRF_FETCH);
+        headers.add(headerProps.getServiceIdHeaderName(), serviceIdFor(params.getRealm()));
 
         return headers;
     }
 
-    private RestTemplate createRestTemplate(String role) {
-
-        return new RestTemplateBuilder()
-                .requestFactory(() ->
-                        new HttpComponentsClientHttpRequestFactory(
-                                httpClient(role)
-                        )
-                )
-                .additionalInterceptors(
-                        new EasupRequestInterceptor(),
-                        metricsInterceptor,
-                        authInterceptor
-                )
-                .build();
-    }
-
     private CloseableHttpClient httpClient(String role) {
-        return httpClientsByRole.computeIfAbsent(
-                role,
-                this::createHttpClient
-        );
+        return httpClientsByRole.computeIfAbsent(role, this::createHttpClient);
     }
 
     private CloseableHttpClient createHttpClient(String role) {
-
-        SSLContext sslContext =
-                certificateConfig.configureHttpClientSsl(role);
+        SSLContext sslContext = certificateConfig.configureHttpClientSsl(role);
 
         SSLConnectionSocketFactory sslSocketFactory =
-                new SSLConnectionSocketFactory(
-                        sslContext,
-                        NoopHostnameVerifier.INSTANCE
-                );
+                new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
 
-        ConnectionConfig connectionConfig =
-                ConnectionConfig.custom()
-                        .setConnectTimeout(
-                                Timeout.ofMilliseconds(connectTimeoutMs)
-                        )
-                        .setSocketTimeout(
-                                Timeout.ofMilliseconds(readTimeoutMs)
-                        )
-                        .setTimeToLive(CONNECTION_TTL)
-                        .setValidateAfterInactivity(
-                                VALIDATE_AFTER_INACTIVITY
-                        )
-                        .build();
+        ConnectionConfig connectionConfig = ConnectionConfig.custom()
+                .setConnectTimeout(Timeout.ofMilliseconds(connectTimeoutMs))
+                .setSocketTimeout(Timeout.ofMilliseconds(readTimeoutMs))
+                .setTimeToLive(CONNECTION_TTL)
+                .setValidateAfterInactivity(VALIDATE_AFTER_INACTIVITY)
+                .build();
 
         PoolingHttpClientConnectionManager connectionManager =
                 PoolingHttpClientConnectionManagerBuilder.create()
@@ -186,14 +138,11 @@ public class EasupClient {
                         .setDefaultConnectionConfig(connectionConfig)
                         .build();
 
-        RequestConfig requestConfig =
-                RequestConfig.custom()
-                        .setResponseTimeout(
-                                Timeout.ofMilliseconds(readTimeoutMs)
-                        )
-                        .build();
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setResponseTimeout(Timeout.ofMilliseconds(readTimeoutMs))
+                .build();
 
-        log.info("Создан пул HTTP-соединений ЕАСУП для роли [{}]", role);
+        log.info("Создан пул соединений ЕАСУП для роли [{}]", role);
 
         return HttpClients.custom()
                 .setConnectionManager(connectionManager)
@@ -210,32 +159,14 @@ public class EasupClient {
                 : headerProps.getServiceIdHeaderStaffValue();
     }
 
-    private static void setIfPresent(
-            HttpHeaders headers,
-            String name,
-            String value
-    ) {
-        if (value != null) {
-            headers.set(name, value);
-        }
-    }
-
-    private static String buildBasicAuth(
-            EasupProperties.BasicAuth auth
-    ) {
-        if (!auth.isEnable()
-                || !StringUtils.hasText(auth.getLogin())
-                || !StringUtils.hasText(auth.getPassword())) {
+    private static String buildBasicAuth(EasupProperties.BasicAuth auth) {
+        if (!auth.isEnable() || !StringUtils.hasText(auth.getLogin()) || !StringUtils.hasText(auth.getPassword())) {
             return null;
         }
 
-        String credentials =
-                auth.getLogin() + ":" + auth.getPassword();
-
+        String credentials = auth.getLogin() + ":" + auth.getPassword();
         return "Basic " + Base64.getEncoder()
-                .encodeToString(
-                        credentials.getBytes(StandardCharsets.ISO_8859_1)
-                );
+                .encodeToString(credentials.getBytes(StandardCharsets.ISO_8859_1));
     }
 
     @PreDestroy
@@ -244,11 +175,7 @@ public class EasupClient {
             try {
                 client.close();
             } catch (IOException e) {
-                log.warn(
-                        "Не удалось закрыть HttpClient ЕАСУП для роли [{}]",
-                        role,
-                        e
-                );
+                log.warn("Не удалось закрыть HttpClient ЕАСУП для роли [{}]", role, e);
             }
         });
     }
