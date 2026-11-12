@@ -1,41 +1,16 @@
-package ru.ntdev.srhr.common.web.systemparams;
+path = "/path/to/store"
+password = "password"
+type = "PKCS12"
 
-import org.springframework.core.MethodParameter;
-import org.springframework.web.bind.support.WebDataBinderFactory;
-import org.springframework.web.context.request.NativeWebRequest;
-import org.springframework.web.method.support.HandlerMethodArgumentResolver;
-import org.springframework.web.method.support.ModelAndViewContainer;
-import ru.ntdev.srhr.common.dto.SapSystemParamsDto;
-
-public class SapSystemParamsResolver implements HandlerMethodArgumentResolver {
-
-private static final String HEADER_TAB_NUMBER = "pernr";
-private static final String HEADER_SESSION_ID = "sessionId";
-private static final String HEADER_ROLE = "role";
-private static final String HEADER_ROLES = "Roles";
-private static final String HEADER_TRACE_ID = "logId";
-private static final String HEADER_REALM = "realm";
-
-    @Override
-    public boolean supportsParameter(MethodParameter parameter) {
-        return parameter.hasParameterAnnotation(SapSystemParams.class)
-                && SapSystemParamsDto.class.isAssignableFrom(parameter.getParameterType());
+ private static KeyStore loadKeyStore(String path, String password, String type)
+            throws GeneralSecurityException, IOException {
+        KeyStore keyStore = KeyStore.getInstance(type);
+        try (InputStream in = new FileInputStream(ResourceUtils.getFile(path))) {
+            keyStore.load(in, password.toCharArray());
+        }
+        return keyStore;
     }
 
-   @Override
-public SapSystemParamsDto resolveArgument(MethodParameter parameter,
-                                          ModelAndViewContainer mavContainer,
-                                          NativeWebRequest webRequest,
-                                          WebDataBinderFactory binderFactory) {
-    SapSystemParamsDto systemParams = new SapSystemParamsDto();
+падаю на InputStream in = new FileInputStream(ResourceUtils.getFile(path))
 
-    systemParams.setTabNumber(webRequest.getHeader(HEADER_TAB_NUMBER));
-    systemParams.setSessionId(webRequest.getHeader(HEADER_SESSION_ID));
-    systemParams.setRole(webRequest.getHeader(HEADER_ROLE));
-    systemParams.setRolesHeader(webRequest.getHeader(HEADER_ROLES));
-    systemParams.setTraceId(webRequest.getHeader(HEADER_TRACE_ID));
-    systemParams.setRealm(webRequest.getHeader(HEADER_REALM));
-
-    return systemParams;
-}
-}
+java.io.FileNotFoundException: \path\to\store (Системе не удается найти указанный путь)
