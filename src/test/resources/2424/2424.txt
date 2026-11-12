@@ -1,16 +1,10 @@
+
 package ru.ntdev.srhr.ms.master.data.integration.config.epa;
 
 import jakarta.annotation.PreDestroy;
-import java.io.IOException;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import javax.net.ssl.SSLContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.client5.http.config.ConnectionConfig;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
@@ -18,26 +12,28 @@ import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuil
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
 import org.apache.hc.core5.util.TimeValue;
+import org.apache.hc.core5.util.Timeout;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.RequestEntity;
+import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import ru.ntdev.srhr.common.constant.RealmConstant;
 import ru.ntdev.srhr.common.dto.SapSystemParamsDto;
+import ru.ntdev.srhr.common.epa.config.AuthEpaRestTemplateInterceptorConfig;
 import ru.ntdev.srhr.ms.master.data.integration.config.epa.filter.EasupClientSideMetricsInterceptor;
 import ru.ntdev.srhr.ms.master.data.integration.config.epa.filter.EasupRequestInterceptor;
 
-/**
- * Один пул соединений и один {@link org.springframework.web.client.RestTemplate} на роль,
- * живут всё время работы приложения.
- * Заголовки, зависящие от запроса (pernr, sessionId, csrf, cookie...),
- * собираются через requestHeaders и передаются в RequestEntity
- */
+import javax.net.ssl.SSLContext;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 @Slf4j
 @Component
 public class EasupClient {
@@ -48,149 +44,160 @@ public class EasupClient {
     public static final String HEADER_ROLES = "Roles";
     public static final String HEADER_LOG_ID = "logId";
 
-    public static final String CSRF_FETCH = "fetch";
-
-    private static final String CONTENT_TYPE_JSON_UTF8 = "application/json;charset=UTF-8";
+    private static final String CSRF_FETCH = "fetch";
 
     private static final int MAX_CONNECTIONS_TOTAL = 50;
     private static final int MAX_CONNECTIONS_PER_ROUTE = 20;
-    private static final TimeValue CONNECTION_TTL = TimeValue.ofMinutes(5);
-    private static final TimeValue VALIDATE_AFTER_INACTIVITY = TimeValue.ofSeconds(10);
-    private static final TimeValue IDLE_EVICTION = TimeValue.ofMinutes(1);
+
+    private static final TimeValue CONNECTION_TTL =
+            TimeValue.ofMinutes(5);
+
+    private static final TimeValue VALIDATE_AFTER_INACTIVITY =
+            TimeValue.ofSeconds(10);
+
+    private static final TimeValue IDLE_EVICTION =
+            TimeValue.ofMinutes(1);
 
     private final EasupCertificateConfig certificateConfig;
     private final EasupClientSideMetricsInterceptor metricsInterceptor;
+    private final AuthEpaRestTemplateInterceptorConfig authInterceptor;
     private final EasupProperties.Headers headerProps;
 
     private final String basicAuthHeaderValue;
 
-    private final Map<String, CloseableHttpClient> httpClientsByRole = new ConcurrentHashMap<>();
-    private final Map<String, RestTemplate> restTemplatesByRole = new ConcurrentHashMap<>();
+    private final int connectTimeoutMs;
+    private final int readTimeoutMs;
 
-    public EasupClient(EasupCertificateConfig certificateConfig,
-                       EasupClientSideMetricsInterceptor metricsInterceptor,
-                       EasupProperties properties) {
+    private final Map<String, CloseableHttpClient> httpClientsByRole =
+            new ConcurrentHashMap<>();
+
+    private final Map<String, RestTemplate> restTemplatesByRole =
+            new ConcurrentHashMap<>();
+
+    public EasupClient(
+            EasupCertificateConfig certificateConfig,
+            EasupClientSideMetricsInterceptor metricsInterceptor,
+            AuthEpaRestTemplateInterceptorConfig authInterceptor,
+            EasupProperties properties,
+            @Value("${app.rest.connect-timeout}") int connectTimeoutMs,
+            @Value("${app.rest.read-timeout}") int readTimeoutMs
+    ) {
         this.certificateConfig = certificateConfig;
         this.metricsInterceptor = metricsInterceptor;
+        this.authInterceptor = authInterceptor;
         this.headerProps = properties.getHeaders();
         this.basicAuthHeaderValue = buildBasicAuth(properties.getBasicAuth());
+        this.connectTimeoutMs = connectTimeoutMs;
+        this.readTimeoutMs = readTimeoutMs;
     }
 
-
-    /** Общий RestTemplate для роли. Потокобезопасен, создаётся один раз на роль. */
+    /**
+     * Один RestTemplate на роль.
+     */
     public RestTemplate forRole(String role) {
-        return restTemplatesByRole.computeIfAbsent(role, r -> new RestTemplateBuilder()
-                .requestFactory(() -> new HttpComponentsClientHttpRequestFactory(httpClient(r)))
-                .additionalInterceptors(new EasupRequestInterceptor(), metricsInterceptor)
-                .build());
+        return restTemplatesByRole.computeIfAbsent(
+                role,
+                this::createRestTemplate
+        );
     }
 
-    /** Заголовки запроса без CSRF-токена */
+    /**
+     * Заголовки конкретного запроса.
+     * Получение CSRF-токена отдельным запросом не выполняется.
+     */
     public HttpHeaders requestHeaders(SapSystemParamsDto params) {
-        return buildHeaders(params, CSRF_FETCH, List.of());
-    }
 
-    /**
-     * Заголовки запроса с CSRF-токеном: клиент делает GET,
-     * забирает из ответа x-csrf-token и Set-Cookie и подставляет их в заголовки.
-     */
-    public HttpHeaders csrfHeaders(SapSystemParamsDto params, URI csrfUrl) {
-        RequestEntity<Void> fetch = RequestEntity.get(csrfUrl)
-                .headers(requestHeaders(params))
-                .build();
-        HttpHeaders response = forRole(params.getRole()).exchange(fetch, Void.class).getHeaders();
-
-        String token = response.getFirst(HEADER_CSRF_TOKEN);
-        if (!StringUtils.hasText(token)) {
-            throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED,
-                    "Не были получены токен и куки для CSRF аутентификации.");
-        }
-        List<String> cookies = response.getOrDefault(HttpHeaders.SET_COOKIE, List.of()).stream()
-                .map(EasupClient::cookieNameValue)
-                .toList();
-        return buildHeaders(params, token, cookies);
-    }
-
-    // legacy API
-
-    @Deprecated
-    public RestTemplate buildRestTemplateWithRoles(SapSystemParamsDto params) {
-        return withDefaultHeaders(params.getRole(), requestHeaders(params));
-    }
-
-    @Deprecated
-    public RestTemplate buildRestTemplateWithCSRFTokenWithRoles(SapSystemParamsDto params,
-                                                                Map<String, List<String>> csrfHeaders) {
-        return withDefaultHeaders(params.getRole(), requestHeaders(params, csrfHeaders));
-    }
-
-    @Deprecated
-    private RestTemplate withDefaultHeaders(String role, HttpHeaders headers) {
-        RestTemplateBuilder builder = new RestTemplateBuilder()
-                .requestFactory(() -> new HttpComponentsClientHttpRequestFactory(httpClient(role)))
-                .additionalInterceptors(new EasupRequestInterceptor(), metricsInterceptor);
-        for (Map.Entry<String, List<String>> header : headers.entrySet()) {
-            builder = builder.defaultHeader(header.getKey(), header.getValue().toArray(String[]::new));
-        }
-        return builder.build();
-    }
-
-    /**
-     * Заголовки запроса с уже известными токеном и куками.
-     */
-    @Deprecated
-    public HttpHeaders requestHeaders(SapSystemParamsDto params, Map<String, List<String>> csrfHeaders) {
-        List<String> csrf = csrfHeaders.get(HEADER_CSRF_TOKEN);
-        if (csrf == null || csrf.isEmpty()) {
-            throw new IllegalStateException("Не передан заголовок " + HEADER_CSRF_TOKEN);
-        }
-        return buildHeaders(params, csrf.get(0), csrfHeaders.getOrDefault("cookie", List.of()));
-    }
-
-    // internals
-
-    private HttpHeaders buildHeaders(SapSystemParamsDto params, String csrfToken, List<String> cookies) {
         HttpHeaders headers = new HttpHeaders();
-        headers.add(HttpHeaders.CONTENT_TYPE, CONTENT_TYPE_JSON_UTF8);
+
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
         if (basicAuthHeaderValue != null) {
-            headers.add(HttpHeaders.AUTHORIZATION, basicAuthHeaderValue);
+            headers.set(HttpHeaders.AUTHORIZATION, basicAuthHeaderValue);
         }
-        headers.add(HEADER_PERNR, params.getTabNumber());
-        headers.add(HEADER_SESSION_ID, params.getSessionId());
-        headers.add(HEADER_CSRF_TOKEN, csrfToken);
-        headers.add(HEADER_ROLES, params.getRolesHeader());
-        headers.add(HEADER_LOG_ID, params.getTraceId());
-        headers.add(headerProps.getServiceIdHeaderName(), serviceIdFor(params.getRealm()));
-        cookies.forEach(cookie -> headers.add(HttpHeaders.COOKIE, cookie));
+
+        setIfPresent(headers, HEADER_PERNR, params.getTabNumber());
+        setIfPresent(headers, HEADER_SESSION_ID, params.getSessionId());
+        setIfPresent(headers, HEADER_ROLES, params.getRolesHeader());
+        setIfPresent(headers, HEADER_LOG_ID, params.getTraceId());
+
+        headers.set(HEADER_CSRF_TOKEN, CSRF_FETCH);
+
+        headers.set(
+                headerProps.getServiceIdHeaderName(),
+                serviceIdFor(params.getRealm())
+        );
+
         return headers;
     }
 
-    private static String cookieNameValue(String setCookie) {
-        return setCookie.split(";", 2)[0].trim();
+    private RestTemplate createRestTemplate(String role) {
+
+        return new RestTemplateBuilder()
+                .requestFactory(() ->
+                        new HttpComponentsClientHttpRequestFactory(
+                                httpClient(role)
+                        )
+                )
+                .additionalInterceptors(
+                        new EasupRequestInterceptor(),
+                        metricsInterceptor,
+                        authInterceptor
+                )
+                .build();
     }
 
     private CloseableHttpClient httpClient(String role) {
-        return httpClientsByRole.computeIfAbsent(role, this::createHttpClient);
+        return httpClientsByRole.computeIfAbsent(
+                role,
+                this::createHttpClient
+        );
     }
 
     private CloseableHttpClient createHttpClient(String role) {
-        SSLContext sslContext = certificateConfig.configureHttpClientSsl(role);
+
+        SSLContext sslContext =
+                certificateConfig.configureHttpClientSsl(role);
+
         SSLConnectionSocketFactory sslSocketFactory =
-                new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
+                new SSLConnectionSocketFactory(
+                        sslContext,
+                        NoopHostnameVerifier.INSTANCE
+                );
 
-        PoolingHttpClientConnectionManager connectionManager = PoolingHttpClientConnectionManagerBuilder.create()
-                .setSSLSocketFactory(sslSocketFactory)
-                .setMaxConnTotal(MAX_CONNECTIONS_TOTAL)
-                .setMaxConnPerRoute(MAX_CONNECTIONS_PER_ROUTE)
-                .setDefaultConnectionConfig(ConnectionConfig.custom()
+        ConnectionConfig connectionConfig =
+                ConnectionConfig.custom()
+                        .setConnectTimeout(
+                                Timeout.ofMilliseconds(connectTimeoutMs)
+                        )
+                        .setSocketTimeout(
+                                Timeout.ofMilliseconds(readTimeoutMs)
+                        )
                         .setTimeToLive(CONNECTION_TTL)
-                        .setValidateAfterInactivity(VALIDATE_AFTER_INACTIVITY)
-                        .build())
-                .build();
+                        .setValidateAfterInactivity(
+                                VALIDATE_AFTER_INACTIVITY
+                        )
+                        .build();
 
-        log.info("Создан пул соединений ЕАСУП для роли [{}]", role);
+        PoolingHttpClientConnectionManager connectionManager =
+                PoolingHttpClientConnectionManagerBuilder.create()
+                        .setSSLSocketFactory(sslSocketFactory)
+                        .setMaxConnTotal(MAX_CONNECTIONS_TOTAL)
+                        .setMaxConnPerRoute(MAX_CONNECTIONS_PER_ROUTE)
+                        .setDefaultConnectionConfig(connectionConfig)
+                        .build();
+
+        RequestConfig requestConfig =
+                RequestConfig.custom()
+                        .setResponseTimeout(
+                                Timeout.ofMilliseconds(readTimeoutMs)
+                        )
+                        .build();
+
+        log.info("Создан пул HTTP-соединений ЕАСУП для роли [{}]", role);
+
         return HttpClients.custom()
                 .setConnectionManager(connectionManager)
+                .setDefaultRequestConfig(requestConfig)
                 .disableCookieManagement()
                 .evictExpiredConnections()
                 .evictIdleConnections(IDLE_EVICTION)
@@ -203,12 +210,32 @@ public class EasupClient {
                 : headerProps.getServiceIdHeaderStaffValue();
     }
 
-    private static String buildBasicAuth(EasupProperties.BasicAuth auth) {
-        if (!auth.isEnable() || !StringUtils.hasText(auth.getLogin()) || !StringUtils.hasText(auth.getPassword())) {
+    private static void setIfPresent(
+            HttpHeaders headers,
+            String name,
+            String value
+    ) {
+        if (value != null) {
+            headers.set(name, value);
+        }
+    }
+
+    private static String buildBasicAuth(
+            EasupProperties.BasicAuth auth
+    ) {
+        if (!auth.isEnable()
+                || !StringUtils.hasText(auth.getLogin())
+                || !StringUtils.hasText(auth.getPassword())) {
             return null;
         }
-        String credentials = auth.getLogin() + ":" + auth.getPassword();
-        return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.ISO_8859_1));
+
+        String credentials =
+                auth.getLogin() + ":" + auth.getPassword();
+
+        return "Basic " + Base64.getEncoder()
+                .encodeToString(
+                        credentials.getBytes(StandardCharsets.ISO_8859_1)
+                );
     }
 
     @PreDestroy
@@ -217,160 +244,12 @@ public class EasupClient {
             try {
                 client.close();
             } catch (IOException e) {
-                log.warn("Не удалось закрыть HttpClient ЕАСУП для роли [{}]", role, e);
+                log.warn(
+                        "Не удалось закрыть HttpClient ЕАСУП для роли [{}]",
+                        role,
+                        e
+                );
             }
         });
-    }
-}
-
-
-
-package ru.ntdev.srhr.ms.master.data.integration.client;
-
-import org.apache.hc.client5.http.classic.HttpClient;
-import org.apache.hc.client5.http.config.ConnectionConfig;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
-import org.apache.hc.client5.http.impl.io.BasicHttpClientConnectionManager;
-import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
-import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
-import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
-import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
-import org.apache.hc.core5.http.Header;
-import org.apache.hc.core5.http.HttpHeaders;
-import org.apache.hc.core5.http.config.Registry;
-import org.apache.hc.core5.http.config.RegistryBuilder;
-import org.apache.hc.core5.http.message.BasicHeader;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Scope;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import org.springframework.web.client.RestTemplate;
-import ru.ntdev.srhr.common.constant.RealmConstant;
-import ru.ntdev.srhr.common.dto.SapSystemParamsDto;
-import ru.ntdev.srhr.common.epa.config.AuthEpaRestTemplateInterceptorConfig;
-import ru.ntdev.srhr.common.util.LogUtil;
-import ru.ntdev.srhr.ms.master.data.integration.config.MasterDataCertificateConfig;
-import ru.ntdev.srhr.ms.master.data.integration.filter.SpoRequestInterceptor;
-
-import javax.net.ssl.SSLContext;
-import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
-@Component
-@Scope("prototype")
-public class MasterDataClient {
-
-    private final MasterDataCertificateConfig masterDataCertificateConfig;
-    private final LogUtil logUtil;
-    private final AuthEpaRestTemplateInterceptorConfig authEpaRestTemplateInterceptorConfig;
-
-    @Value("${master-data.headers.service-id-header-name}") String serviceIdHeaderName;
-    @Value("${master-data.headers.service-id-header-staff-value}") String serviceIdHeaderStaffValue;
-    @Value("${master-data.headers.service-id-header-staff-mobile-value}") String serviceIdHeaderStaffMobileValue;
-    @Value("${app.rest.read-timeout}")
-    Integer masterDataReadTimeoutMs;
-    @Value("${app.rest.connect-timeout}")
-    Integer masterDataConnectTimeoutMs;
-
-    public MasterDataClient(
-            MasterDataCertificateConfig masterDataCertificateConfig,
-            LogUtil logUtil,
-            AuthEpaRestTemplateInterceptorConfig authEpaRestTemplateInterceptorConfig
-    ) {
-        this.masterDataCertificateConfig = masterDataCertificateConfig;
-        this.logUtil = logUtil;
-        this.authEpaRestTemplateInterceptorConfig = authEpaRestTemplateInterceptorConfig;
-    }
-
-    public RestTemplate buildRestTemplateWithRoles(SapSystemParamsDto systemParams) {
-
-        SSLContext sslContext = masterDataCertificateConfig.configureHttpClientSsl();
-
-        Header headerPernr = new BasicHeader("pernr", systemParams.getTabNumber());
-        Header headerSessionId = new BasicHeader("sessionId", systemParams.getSessionId());
-        Header headerCSRFToken = new BasicHeader("x-csrf-token", "fetch");
-        Header headerRoles = new BasicHeader("Roles", systemParams.getRolesHeader());
-        Header headerLogId = new BasicHeader("logId", systemParams.getTraceId());
-        Header headerServiceId;
-        if(systemParams.getRealm()!=null) {
-            headerServiceId = new BasicHeader(serviceIdHeaderName, chooseServiceIdBasedOnRealm(systemParams.getRealm()));
-        } else {
-            headerServiceId = new BasicHeader(serviceIdHeaderName, serviceIdHeaderStaffValue);
-        }
-        List<Header> headers = new ArrayList<>();
-            headers.add(headerPernr);
-            headers.add(headerSessionId);
-            headers.add(headerCSRFToken);
-            headers.add(headerRoles);
-            headers.add(headerLogId);
-            headers.add(headerServiceId);
-
-        return finishSettings(sslContext, headers);
-    }
-
-    public RestTemplate finishSettings(SSLContext sslContext, List<Header> headers) {
-        final SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
-        final Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory> create()
-                .register("https", sslsf)
-                .register("http", new PlainConnectionSocketFactory())
-                .build();
-
-        ConnectionConfig connectionConfig = ConnectionConfig.custom()
-                .setSocketTimeout(masterDataReadTimeoutMs, TimeUnit.MILLISECONDS)
-                .setConnectTimeout(masterDataConnectTimeoutMs, TimeUnit.MILLISECONDS)
-                .build();
-
-        final BasicHttpClientConnectionManager connectionManager =
-                new BasicHttpClientConnectionManager(socketFactoryRegistry);
-        connectionManager.setConnectionConfig(connectionConfig);
-
-        final HttpClient httpClient = HttpClients.custom()
-                .setDefaultHeaders(headers)
-                .setConnectionManager(connectionManager)
-                .build();
-        
-        Map<String,String> headersValue = new HashMap<>(headers.size());
-        for (Header header : headers ) {
-            headersValue.put(header.getName(),header.getValue());
-        }
-
-        RestTemplate restTemplate = new RestTemplateBuilder()
-                .defaultHeader(HttpHeaders.CONTENT_TYPE,"application/json;charset=UTF-8")
-                .defaultHeader("pernr", headersValue.get("pernr"))
-                .defaultHeader("sessionId", headersValue.get("sessionId"))
-                .defaultHeader("x-csrf-token", headersValue.get("x-csrf-token"))
-                .defaultHeader("Roles", headersValue.get("Roles"))
-                .defaultHeader("logId", headersValue.get("logId"))
-                .defaultHeader("Cookie", headersValue.get("Cookie"))
-                .defaultHeader(serviceIdHeaderName,headersValue.get(serviceIdHeaderName))
-                .setConnectTimeout(Duration.ofMillis(masterDataConnectTimeoutMs))
-                .setReadTimeout(Duration.ofMillis(masterDataReadTimeoutMs))
-                .build();
-
-        restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory(httpClient));
-        List<ClientHttpRequestInterceptor> interceptors = restTemplate.getInterceptors();
-        if (CollectionUtils.isEmpty(interceptors)) {
-            interceptors = new ArrayList<>();
-        }
-        interceptors.add(new SpoRequestInterceptor(logUtil));
-        interceptors.add(authEpaRestTemplateInterceptorConfig);
-        restTemplate.setInterceptors(interceptors);
-
-        return restTemplate;
-    }
-
-    private String chooseServiceIdBasedOnRealm (String realm) {
-        switch (realm) {
-            case RealmConstant.STAFF_REALM:
-                return serviceIdHeaderStaffValue;
-            case RealmConstant.STAFF_MOBILE_REALM:
-                return serviceIdHeaderStaffMobileValue;
-            default:
-                return serviceIdHeaderStaffValue;
-        }
     }
 }
