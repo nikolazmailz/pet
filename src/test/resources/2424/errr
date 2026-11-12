@@ -9,26 +9,33 @@ import ru.ntdev.srhr.common.dto.SapSystemParamsDto;
 
 public class SapSystemParamsResolver implements HandlerMethodArgumentResolver {
 
+private static final String HEADER_TAB_NUMBER = "pernr";
+private static final String HEADER_SESSION_ID = "sessionId";
+private static final String HEADER_ROLE = "role";
+private static final String HEADER_ROLES = "Roles";
+private static final String HEADER_TRACE_ID = "logId";
+private static final String HEADER_REALM = "realm";
+
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
         return parameter.hasParameterAnnotation(SapSystemParams.class)
                 && SapSystemParamsDto.class.isAssignableFrom(parameter.getParameterType());
     }
 
-    @Override
-    public SapSystemParamsDto resolveArgument(MethodParameter parameter,
-                                              ModelAndViewContainer mavContainer,
-                                              NativeWebRequest webRequest,
-                                              WebDataBinderFactory binderFactory) {
-        SapSystemParamsDto systemParams = new SapSystemParamsDto();
+   @Override
+public SapSystemParamsDto resolveArgument(MethodParameter parameter,
+                                          ModelAndViewContainer mavContainer,
+                                          NativeWebRequest webRequest,
+                                          WebDataBinderFactory binderFactory) {
+    SapSystemParamsDto systemParams = new SapSystemParamsDto();
 
-        systemParams.setTabNumber(webRequest.getHeader("pernr"));
-        systemParams.setSessionId(webRequest.getHeader("sessionId"));
-        systemParams.setRole(webRequest.getHeader("role"));
-        systemParams.setRolesHeader(webRequest.getHeader("Roles"));
-        systemParams.setTraceId(webRequest.getHeader("logId"));
-        systemParams.setRealm(webRequest.getHeader("realm"));
+    systemParams.setTabNumber(webRequest.getHeader(HEADER_TAB_NUMBER));
+    systemParams.setSessionId(webRequest.getHeader(HEADER_SESSION_ID));
+    systemParams.setRole(webRequest.getHeader(HEADER_ROLE));
+    systemParams.setRolesHeader(webRequest.getHeader(HEADER_ROLES));
+    systemParams.setTraceId(webRequest.getHeader(HEADER_TRACE_ID));
+    systemParams.setRealm(webRequest.getHeader(HEADER_REALM));
 
-        return systemParams;
-    }
+    return systemParams;
+}
 }
