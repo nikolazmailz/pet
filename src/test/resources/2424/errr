@@ -1,15 +1,42 @@
-keytool -genkeypair \
-  -alias test-key \
-  -keyalg RSA \
-  -keysize 2048 \
-  -storetype PKCS12 \
-  -keystore src/test/resources/test-keystore.p12 \
-  -storepass password \
-  -keypass password \
-  -validity 3650 \
-  -dname "CN=localhost, OU=Test, O=Test, L=Moscow, C=RU"
+         main] [trace123                        -                ] ru.ntdev.srhr.common.util.LogUtil        : >> [GET] request sent to [http://localhost:55172/zhrbc_0720/default/sap/zhrbc_0720_react_utils/0001/IXCSRFToken?sap-client=]
+Headers: 
+Accept=[application/json, application/*+json],
+pernr=[70169676],
+sessionId=[session1],
+Roles=[ROLE_USER],
+logId=[trace123],
+sessionservice=[if-iprt-service@test.vtb.ru]
+2026-11-12T10:57:56.854+03:00 ERROR 22176 --- [srhr-ms-master-integration] [qtp563734597-45] [                                                 ] WireMock easup                           : 
+                                               Request was not matched
+                                               =======================
+
+-----------------------------------------------------------------------------------------------------------------------
+| Closest stub                                             | Request                                                  |
+-----------------------------------------------------------------------------------------------------------------------
+                                                           |
+GET                                                        | GET
+[path] /org-structure                                      | /zhrbc_0720/default/sap/zhrbc_0720_react_utils/0001/IXCSR<<<<< URL does not match
+                                                           | FToken?sap-client=
+                                                           |
+Query: employee = 70169676                                 |                                                     <<<<< Query is not present
+Query: date = 1704067200                                   |                                                     <<<<< Query is not present
+Query: dependencyType = L                                  |                                                     <<<<< Query is not present
+                                                           |
+                                                           |
+-----------------------------------------------------------------------------------------------------------------------
+
+2026-11-12T10:57:57.053+03:00 ERROR 22176 --- [srhr-ms-master-integration] [           main] [trace123                        -                ] ru.ntdev.srhr.common.util.LogUtil        : << Status: [404]	<< [GET] request received from [http://localhost:55172/zhrbc_0720/default/sap/zhrbc_0720_react_utils/0001/IXCSRFToken?sap-client=]
+Headers: 
+Content-Type=[text/plain;charset=UTF-8],
+Transfer-Encoding=[chunked]
+2026-11-12T10:57:57.084+03:00  WARN 22176 --- [srhr-ms-master-integration] [           main] [trace123                        -                ] m.d.i.f.EasupIntegrationExceptionHandler : Не удалось разобрать тело ошибки интеграции: status=404, traceId=trace123
 
 
-path: classpath:test-keystore.p12
-password: password
-type: PKCS12
+
+
+        HttpHeaders response = forRole(params.getRole()).exchange(fetch, Void.class).getHeaders();
+
+        String token = response.getFirst(HEADER_CSRF_TOKEN);
+
+
+    public static final String HEADER_CSRF_TOKEN = "x-csrf-token";
