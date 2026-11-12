@@ -1,16 +1,15 @@
-path = "/path/to/store"
-password = "password"
-type = "PKCS12"
+keytool -genkeypair \
+  -alias test-key \
+  -keyalg RSA \
+  -keysize 2048 \
+  -storetype PKCS12 \
+  -keystore src/test/resources/test-keystore.p12 \
+  -storepass password \
+  -keypass password \
+  -validity 3650 \
+  -dname "CN=localhost, OU=Test, O=Test, L=Moscow, C=RU"
 
- private static KeyStore loadKeyStore(String path, String password, String type)
-            throws GeneralSecurityException, IOException {
-        KeyStore keyStore = KeyStore.getInstance(type);
-        try (InputStream in = new FileInputStream(ResourceUtils.getFile(path))) {
-            keyStore.load(in, password.toCharArray());
-        }
-        return keyStore;
-    }
 
-падаю на InputStream in = new FileInputStream(ResourceUtils.getFile(path))
-
-java.io.FileNotFoundException: \path\to\store (Системе не удается найти указанный путь)
+path: classpath:test-keystore.p12
+password: password
+type: PKCS12
