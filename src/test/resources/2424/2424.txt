@@ -1,32 +1,6 @@
- @FunctionalInterface
-    private interface AuditAction {
-        void send(AuditSender sender, String sessionId, LocalDateTime createdAt)
-                throws Exception;
-    }
+SRHR-2424 Доработка эндпоинта получение доступных событий
 
-    private enum AuditEvent {
-        UNEXPECTED_ERROR(AuditSender::sendUnexpectedErrorEvent, AuditSender::eventErrorCode),
-        FORBIDDEN(AuditSender::sendForbiddenEvent, AuditSender::eventForbiddenCode),
-        NOT_FOUND(AuditSender::sendNotFoundEvent, AuditSender::eventNotFoundCode);
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-payavg/pulls/2902741
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-master-data-integration/pulls/2902744
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-easup-integration/pulls/2902746
 
-        final AuditAction action;
-        final Function<AuditSender, String> code;
-
-        AuditEvent(AuditAction action, Function<AuditSender, String> code) {
-            this.action = action;
-            this.code = code;
-        }
-    }
-
-    private void sendAudit(AuditContext ctx, AuditEvent event, String errorText) {
-        logFailure(ctx, errorText);
-        AuditSender sender = null;
-//                auditSenderResolver.resolve(ctx.requestType());
-        if (sender == null) {
-            return;
-        }
-        try {
-            event.action.send(sender, ctx.sessionId(), ctx.sessionCreatedAt());
-        } catch (Exception ex) {
-            log.error("Ошибка отправки события [{}] в аудит: [{}]", event.code.apply(sender), ex.getMessage());
-        }
