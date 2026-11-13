@@ -6,3 +6,7 @@ https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-easup-integratio
 
 
 git merge-base --is-ancestor release/9.1.0 release/9.2.0
+
+git merge-base --is-ancestor release/9.1.0 release/9.2.0 && echo "OK: старый релиз включён в новый" || echo "ВНИМАНИЕ: история релизов расходится"
+
+git log release/9.2.0..release/9.1.0 --oneline
