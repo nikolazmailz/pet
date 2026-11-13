@@ -5,4 +5,4 @@ https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-master-data-inte
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-easup-integration/pulls/2902746
 
 
-git merge-base --is-ancestor release/9.3.0 release/9.4.0
+git merge-base --is-ancestor release/9.1.0 release/9.2.0
