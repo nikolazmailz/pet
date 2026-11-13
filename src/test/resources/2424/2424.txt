@@ -10,3 +10,11 @@ git merge-base --is-ancestor release/9.1.0 release/9.2.0
 git merge-base --is-ancestor release/9.1.0 release/9.2.0 && echo "OK: старый релиз включён в новый" || echo "ВНИМАНИЕ: история релизов расходится"
 
 git log release/9.2.0..release/9.1.0 --oneline
+
+$ git log release/9.2.0..release/9.1.0 --oneline
+c5a8fd3 (origin/release/9.1.0, origin/bugfix/SRHR-2325, release/9.1.0, bugfix/SRHR-2325) Merge pull request #2821294 from "bugfix/SRHR-3800" into "release/9.1.0"
+cfd82fd (origin/bugfix/SRHR-3800) [bugfix-2353/SRHR-3800] исправление потери traceId в requisition - изменение билдера restTemplate и добавление перехватчику ClientLogInterceptor первого приоритета в срабатывании
+b2ef6d2 SRHR-2246 update version audit lib
+3ae28c5 Merge pull request #2813469 from "bugfix/SRHR-3800" into "release/9.1.0"
+cdd2e6a [bugfix-2353/SRHR-3800] исправление потери traceId в requisition
+
