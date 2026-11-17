@@ -19,7 +19,7 @@ b2ef6d2 SRHR-2246 update version audit lib
 cdd2e6a [bugfix-2353/SRHR-3800] исправление потери traceId в requisition
 
 
-SRHR-2426 Доработка эндпоинта получения начальных параметров сервиса
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-payavg/pulls/2913200
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-master-data-integration/pulls/2913196
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-easup-integration/pulls/2913199
+SRHR-2427 Доработка эндпоинта получение получения длинных текстов запроса
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-payavg/pulls/2915242
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-master-data-integration/pulls/2915243
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-easup-integration/pulls/2915247
