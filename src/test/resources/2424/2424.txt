@@ -19,72 +19,7 @@ b2ef6d2 SRHR-2246 update version audit lib
 cdd2e6a [bugfix-2353/SRHR-3800] исправление потери traceId в requisition
 
 
-SRHR-2425 Доработка эндпоинта получения доступных данных по периоду 
-
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-payavg/pulls/2909791
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-master-data-integration/pulls/2909792
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-easup-integration/pulls/2909794
-
-
-БУдет ли так работать?
-@Slf4j @Component public class MasterDataIntegrationClient {
-private static final int MAX_CONNECTIONS_TOTAL = 50;
-private static final int MAX_CONNECTIONS_PER_ROUTE = 20;
-private static final TimeValue CONNECTION_TTL = TimeValue.ofMinutes(5);
-private static final TimeValue VALIDATE_AFTER_INACTIVITY = TimeValue.ofSeconds(10);
-private static final TimeValue IDLE_EVICTION = TimeValue.ofMinutes(1);
-
-private final CloseableHttpClient httpClient;
-private final RestTemplate masterDataRestTemplate;
-
-public MasterDataIntegrationClient(
-        RestTemplateBuilder restTemplateBuilder,
-        @Value("${app.rest.connect-timeout}") int connectTimeoutMs,
-        @Value("${app.rest.read-timeout}") int readTimeoutMs) {
-
-    ConnectionConfig connectionConfig = ConnectionConfig.custom()
-            .setConnectTimeout(Timeout.ofMilliseconds(connectTimeoutMs))
-            .setSocketTimeout(Timeout.ofMilliseconds(readTimeoutMs))
-   .setTimeToLive(CONNECTION_TTL)
-            .setValidateAfterInactivity(VALIDATE_AFTER_INACTIVITY)
-            .build();
-
-    PoolingHttpClientConnectionManager connectionManager =
-            PoolingHttpClientConnectionManagerBuilder.create()
-                    .setMaxConnTotal(MAX_CONNECTIONS_TOTAL)
-                    .setMaxConnPerRoute(MAX_CONNECTIONS_PER_ROUTE)
-                    .setDefaultConnectionConfig(connectionConfig)
-                    .build();
-
-    RequestConfig requestConfig = RequestConfig.custom()
-            .setResponseTimeout(Timeout.ofMilliseconds(readTimeoutMs))
-            .build();
-
-    this.httpClient = HttpClients.custom()
-            .setConnectionManager(connectionManager)
-            .setDefaultRequestConfig(requestConfig)
-            .disableCookieManagement()
-            .evictExpiredConnections()
-            .evictIdleConnections(IDLE_EVICTION)
-            .build();
-
-    this.masterDataRestTemplate = restTemplateBuilder
-            .requestFactory(() -> new HttpComponentsClientHttpRequestFactory(httpClient))
-            .build();
-    this.masterDataRestTemplate.getInterceptors().add(new IntegrationRequestInterceptor());
-
-}
-
-public RestTemplate restTemplate() {
-    return masterDataRestTemplate;
-}
-
-@PreDestroy
-void shutdown() {
-    try {
-        httpClient.close();
-    } catch (IOException e) {
-        log.warn("Не удалось закрыть HttpClient srhr-ms-master-data-integration", e);
-    }
-}
-}
+SRHR-2426 Доработка эндпоинта получения начальных параметров сервиса
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-payavg/pulls/2913200
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-master-data-integration/pulls/2913196
+https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-easup-integration/pulls/2913199
