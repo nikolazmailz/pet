@@ -23,3 +23,12 @@ SRHR-2427 Доработка эндпоинта получение получе�
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-payavg/pulls/2915242
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-master-data-integration/pulls/2915243
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-easup-integration/pulls/2915247
+
+
+NPushkaryov@NPushkaryov MINGW64 ~/IdeaProjects/srhr-backend/srhr-ms-master-data-integration (release/9.3.0)
+$ git log origin/release/9.3.0..origin/master --oneline
+1aabfb1 (origin/master, origin/HEAD) Merge pull request #2916297 from "release/9.1.0" into "master"
+7ece5ef Merge pull request #2916118 from "release/9.0.0" into "master"
+1401652 release/8.1.0
+e46a2cf (master) release/7.4.0
+
