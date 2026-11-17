@@ -32,3 +32,11 @@ $ git log origin/release/9.3.0..origin/master --oneline
 1401652 release/8.1.0
 e46a2cf (master) release/7.4.0
 
+
+git fetch --all --prune
+
+git for-each-ref \
+  --sort=committerdate \
+  --format='%(committerdate:short) %(refname:short) %(authorname)' \
+  refs/remotes/origin/
+
