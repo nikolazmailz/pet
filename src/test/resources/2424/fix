@@ -1,0 +1,343 @@
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class EasupCertificateConfig {
+
+    /** Роль из запроса → ключ в easup.ssl.* */
+    private static final Map<String, String> ROLE_TO_STORE_KEY = Map.of(
+            RolesConstant.MSS_FULL, "mss-full",
+            RolesConstant.MSS_LIMITED, "mss-limited",
+            RolesConstant.MSS_STANDARD, "mss-standard",
+            RolesConstant.ESS, "ess",
+            RolesConstant.TABEL, "tabel"
+    );
+
+    private final EasupProperties properties;
+    private final Map<String, SSLContext> contextsByRole = new ConcurrentHashMap<>();
+
+    public SSLContext configureHttpClientSsl(String role) {
+        String storeKey = ROLE_TO_STORE_KEY.get(role);
+        if (storeKey == null) {
+            log.warn("При выборе сертификата не найдена указанная в запросе роль: [{}]", role);
+            throw new IllegalArgumentException(
+                    "Указанная роль не числится среди вариантов при выборе сертификата: " + role);
+        }
+        return contextsByRole.computeIfAbsent(role, r -> buildContext(storeKey));
+    }
+
+    private SSLContext buildContext(String storeKey) {
+        EasupProperties.SslStores stores = properties.getSsl().get(storeKey);
+        if (stores == null) {
+            throw new IllegalStateException("Не задана конфигурация easup.ssl." + storeKey);
+        }
+        try {
+            KeyStore trustStore = loadKeyStore(stores.getTrustStore(), stores.getTrustStorePassword(), stores.getTrustStoreType());
+            KeyStore keyStore = loadKeyStore(stores.getKeyStore(), stores.getKeyStorePassword(), stores.getKeyStoreType());
+
+            return SSLContextBuilder.create()
+                    .loadKeyMaterial(keyStore, stores.getKeyStorePassword().toCharArray())
+                    .loadTrustMaterial(trustStore, TrustAllStrategy.INSTANCE)
+                    .build();
+        } catch (GeneralSecurityException | IOException e) {
+            throw new IllegalStateException("Ошибка сборки SSLContext для easup.ssl." + storeKey, e);
+        }
+    }
+
+    private static KeyStore loadKeyStore(String path, String password, String type)
+            throws GeneralSecurityException, IOException {
+        KeyStore keyStore = KeyStore.getInstance(type);
+        try (InputStream in = new FileInputStream(ResourceUtils.getFile(path))) {
+            keyStore.load(in, password.toCharArray());
+        }
+        return keyStore;
+    }
+}
+
+
+@Slf4j
+@Component
+public class EasupClient {
+
+    public static final String HEADER_PERNR = "pernr";
+    public static final String HEADER_SESSION_ID = "sessionId";
+    public static final String HEADER_CSRF_TOKEN = "x-csrf-token";
+    public static final String HEADER_ROLES = "Roles";
+    public static final String HEADER_LOG_ID = "logId";
+
+    public static final String CSRF_FETCH = "fetch";
+
+    private static final String CONTENT_TYPE_JSON_UTF8 = "application/json;charset=UTF-8";
+
+    private static final int MAX_CONNECTIONS_TOTAL = 50;
+    private static final int MAX_CONNECTIONS_PER_ROUTE = 20;
+    private static final TimeValue CONNECTION_TTL = TimeValue.ofMinutes(5);
+    private static final TimeValue VALIDATE_AFTER_INACTIVITY = TimeValue.ofSeconds(10);
+    private static final TimeValue IDLE_EVICTION = TimeValue.ofMinutes(1);
+
+    private final EasupCertificateConfig certificateConfig;
+    private final EasupClientSideMetricsInterceptor metricsInterceptor;
+    private final AuthEpaRestTemplateInterceptorConfig authInterceptor;
+    private final EasupProperties.Headers headerProps;
+
+    private final String basicAuthHeaderValue;
+
+    private final int connectTimeoutMs;
+    private final int readTimeoutMs;
+
+    private final Map<String, CloseableHttpClient> httpClientsByRole = new ConcurrentHashMap<>();
+    private final Map<String, RestTemplate> restTemplatesByRole = new ConcurrentHashMap<>();
+
+    public EasupClient(
+            EasupCertificateConfig certificateConfig,
+            EasupClientSideMetricsInterceptor metricsInterceptor,
+            AuthEpaRestTemplateInterceptorConfig authInterceptor,
+            EasupProperties properties,
+            @Value("${app.rest.connect-timeout}") int connectTimeoutMs,
+            @Value("${app.rest.read-timeout}") int readTimeoutMs
+    ) {
+        this.certificateConfig = certificateConfig;
+        this.metricsInterceptor = metricsInterceptor;
+        this.authInterceptor = authInterceptor;
+        this.headerProps = properties.getHeaders();
+        this.basicAuthHeaderValue = buildBasicAuth(properties.getBasicAuth());
+        this.connectTimeoutMs = connectTimeoutMs;
+        this.readTimeoutMs = readTimeoutMs;
+    }
+
+
+    /** Общий RestTemplate для роли. Потокобезопасен, создаётся один раз на роль. */
+    public RestTemplate forRole(String role) {
+        return restTemplatesByRole.computeIfAbsent(role, r -> new RestTemplateBuilder()
+                .requestFactory(() -> new HttpComponentsClientHttpRequestFactory(httpClient(r)))
+                .additionalInterceptors(new EasupRequestInterceptor(), metricsInterceptor, authInterceptor)
+                .build());
+    }
+
+    /** Заголовки запроса. */
+    public HttpHeaders requestHeaders(SapSystemParamsDto params) {
+        HttpHeaders headers = new HttpHeaders();
+
+        headers.add(HttpHeaders.CONTENT_TYPE, CONTENT_TYPE_JSON_UTF8);
+
+        if (basicAuthHeaderValue != null) {
+            headers.add(HttpHeaders.AUTHORIZATION, basicAuthHeaderValue);
+        }
+
+        headers.add(HEADER_PERNR, params.getTabNumber());
+        headers.add(HEADER_SESSION_ID, params.getSessionId());
+        headers.add(HEADER_ROLES, params.getRolesHeader());
+        headers.add(HEADER_LOG_ID, params.getTraceId());
+        headers.add(HEADER_CSRF_TOKEN, CSRF_FETCH);
+        headers.add(headerProps.getServiceIdHeaderName(), serviceIdFor(params.getRealm()));
+
+        return headers;
+    }
+
+    private CloseableHttpClient httpClient(String role) {
+        return httpClientsByRole.computeIfAbsent(role, this::createHttpClient);
+    }
+
+    private CloseableHttpClient createHttpClient(String role) {
+        SSLContext sslContext = certificateConfig.configureHttpClientSsl(role);
+
+        SSLConnectionSocketFactory sslSocketFactory =
+                new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
+
+        ConnectionConfig connectionConfig = ConnectionConfig.custom()
+                .setConnectTimeout(Timeout.ofMilliseconds(connectTimeoutMs))
+                .setSocketTimeout(Timeout.ofMilliseconds(readTimeoutMs))
+                .setTimeToLive(CONNECTION_TTL)
+                .setValidateAfterInactivity(VALIDATE_AFTER_INACTIVITY)
+                .build();
+
+        PoolingHttpClientConnectionManager connectionManager =
+                PoolingHttpClientConnectionManagerBuilder.create()
+                        .setSSLSocketFactory(sslSocketFactory)
+                        .setMaxConnTotal(MAX_CONNECTIONS_TOTAL)
+                        .setMaxConnPerRoute(MAX_CONNECTIONS_PER_ROUTE)
+                        .setDefaultConnectionConfig(connectionConfig)
+                        .build();
+
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setResponseTimeout(Timeout.ofMilliseconds(readTimeoutMs))
+                .build();
+
+        log.info("Создан пул соединений ЕАСУП для роли [{}]", role);
+
+        return HttpClients.custom()
+                .setConnectionManager(connectionManager)
+                .setDefaultRequestConfig(requestConfig)
+                .disableCookieManagement()
+                .evictExpiredConnections()
+                .evictIdleConnections(IDLE_EVICTION)
+                .build();
+    }
+
+    private String serviceIdFor(String realm) {
+        return RealmConstant.STAFF_MOBILE_REALM.equals(realm)
+                ? headerProps.getServiceIdHeaderStaffMobileValue()
+                : headerProps.getServiceIdHeaderStaffValue();
+    }
+
+    private static String buildBasicAuth(EasupProperties.BasicAuth auth) {
+        if (!auth.isEnable() || !StringUtils.hasText(auth.getLogin()) || !StringUtils.hasText(auth.getPassword())) {
+            return null;
+        }
+        String credentials = auth.getLogin() + ":" + auth.getPassword();
+        return "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.ISO_8859_1));
+    }
+
+    @PreDestroy
+    void shutdown() {
+        httpClientsByRole.forEach((role, client) -> {
+            try {
+                client.close();
+            } catch (IOException e) {
+                log.warn("Не удалось закрыть HttpClient ЕАСУП для роли [{}]", role, e);
+            }
+        });
+    }
+}
+
+
+
+
+
+
+---
+
+
+@Component
+public class AuthEpaRestTemplateInterceptorConfig implements ClientHttpRequestInterceptor {
+    private static final Logger log = LoggerFactory.getLogger(AuthEpaRestTemplateInterceptorConfig.class);
+    private static final String BEARER_PREFIX = "Bearer ";
+    private final EpaSdkService epaSdkService;
+
+    public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) {
+        try {
+            ClientHttpResponse response;
+            try {
+                EpaAccessToken epaAccessToken = this.epaSdkService.refreshCacheableTokenModel();
+                request.getHeaders().set("Authorization", "Bearer " + epaAccessToken.getValue());
+                response = execution.execute(request, body);
+                if (response.getStatusCode().value() == 401) {
+                    response.close();
+                    Thread.sleep(1000L);
+                    log.info("Повторный запрос токена от ЕПА");
+                    epaAccessToken = this.epaSdkService.refreshCacheableTokenModel();
+                    request.getHeaders().set("Authorization", "Bearer " + epaAccessToken.getValue());
+                    response = execution.execute(request, body);
+                }
+            } catch (Throwable var6) {
+                Throwable ex = var6;
+                log.error("Ошибка выполнения запроса: [{}], [{}], [{}]", new Object[]{request.getURI(), ex.getMessage(), request.getHeaders()});
+                throw ex;
+            }
+
+            return response;
+        } catch (Throwable var7) {
+            Throwable $ex = var7;
+            throw $ex;
+        }
+    }
+
+    public AuthEpaRestTemplateInterceptorConfig(final EpaSdkService epaSdkService) {
+        this.epaSdkService = epaSdkService;
+    }
+}
+
+
+
+@Service
+@Log4j2
+@RequiredArgsConstructor
+public class EpaSdkServiceImpl implements EpaSdkService {
+
+  public static final String AUTHORIZATION_HEADER = "Authorization";
+  public static final String CLIENT_SECRET = "client_secret";
+  private final Environment environment;
+  private final EpaValidationService epaValidationService;
+  private final EpaConfigurationProperties config;
+  private ClientCredentialsClient client;
+
+  @PostConstruct
+  public void init() {
+    client = EpaClientCredentialsClientFactory.createDefaultClient(environment,
+        config.getHostname(),
+        config.getAuth().getToken().getClient(),
+        config.getAuth().getToken().getPassword());
+    log.info("EPA SDK Service инициализирован с URL: {}", config.getHostname());
+  }
+
+  public String getAccessToken() {
+    return client.getToken();
+  }
+
+  public String getAccessToken(String clientId, String secret) {
+    return client.getToken(clientId, secret);
+  }
+
+  public String getAccessToken(MultiValuedMap<String, String> params) {
+    return client.getToken(params);
+  }
+
+  public EpaAccessToken getAccessTokenModel() {
+    log.debug("Запрос токена от ЕПА, url: {}", config.getHostname());
+    EpaAccessToken epaAccessToken = client.getTokenModel();
+    HttpDetails httpDetails = epaAccessToken.getHttpDetails();
+    log.debug("Token expires in: {}", epaAccessToken.getExpiresIn());
+    log.debug("Request body: {}", maskingParamsForLogging(httpDetails.getRequestBody()));
+    log.debug("Request headers: {}", List.of(httpDetails.getRequestHeaders()));
+    log.debug("Response body: {}", httpDetails.getResponseBody());
+    log.debug("Response headers: {}", List.of(httpDetails.getResponseHeaders()));
+    log.debug("Response status code: {}", httpDetails.getStatusCode());
+    return epaAccessToken;
+  }
+
+  public String refreshCacheableToken() {
+    return client.getRefreshedToken();
+  }
+
+  public EpaAccessToken refreshCacheableTokenModel() {
+    return client.getRefreshedTokenModel();
+  }
+
+  public EpaValidationResult checkJWT(HttpServletRequest request) {
+    String jwt;
+    try {
+      jwt = request.getHeader(AUTHORIZATION_HEADER).replace("Bearer ", "");
+    } catch (Exception ex) {
+      throw new RuntimeException("Отсутствует заголовок Authorization");
+    }
+    return checkJWT(jwt);
+  }
+
+  public EpaValidationResult checkJWT(String jwt) {
+    EpaValidationResult validate = epaValidationService.validate(jwt);
+    ValidationResult validationResult = validate.getValidationResult();
+    boolean success = validationResult.isSuccess();
+    if (!success) {
+      ValidationResult.Reason reason = validationResult.getReason();
+      log.warn("Токен не валиден: {}", reason);
+    }
+    return validate;
+  }
+
+  private String maskingParamsForLogging(String body) {
+    if (Strings.isEmpty(body) || !body.contains("&")) {
+      return body;
+    }
+    Map<String, String> params = new HashMap<>();
+    StringTokenizer tokenizer = new StringTokenizer(body, "&");
+    while (tokenizer.hasMoreTokens()) {
+      String token = tokenizer.nextToken();
+      String[] keyValue = token.split("=");
+      if (keyValue[0].equalsIgnoreCase(CLIENT_SECRET)) {
+        params.put(keyValue[0], "***");
+      } else {
+        params.put(keyValue[0], keyValue[1]);
+      }
+    }
+    return params.toString();
+  }
+}
