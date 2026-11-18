@@ -1,28 +1,95 @@
+srhr-mod-commons
+srhr-ms-easup-integration
+srhr-ms-master-data-integration
+srhr-ms-payavg
+srhr-ms-payavg-rest
+bscs-integration
+sys-staff-info
+srhr-ms-paystub
+srhr-ms-paystub-rest
+
+Задачи
+SRHR-2432 Добавление эндпоинта получения данных сотрудника в srhr-ms-bscs-integration
+SRHR-2433 Создание структуры хранения кэша сотрудников srhr-ms-sys-staff-info
+SRHR-2434 Создание каркаса
+SRHR-2435 Реализация поиска сотрудника и интеграционных вызовов
+SRHR-2436 Формирование ответа в зависимости от запрашивающего бизнес-сервиса
+
 SRHR-2424 Доработка эндпоинта получение доступных событий
-
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-payavg/pulls/2902741
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-master-data-integration/pulls/2902744
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-easup-integration/pulls/2902746
-
-
-git merge-base --is-ancestor release/9.1.0 release/9.2.0
-
-git merge-base --is-ancestor release/9.1.0 release/9.2.0 && echo "OK: старый релиз включён в новый" || echo "ВНИМАНИЕ: история релизов расходится"
-
-git log release/9.2.0..release/9.1.0 --oneline
-
-$ git log release/9.2.0..release/9.1.0 --oneline
-c5a8fd3 (origin/release/9.1.0, origin/bugfix/SRHR-2325, release/9.1.0, bugfix/SRHR-2325) Merge pull request #2821294 from "bugfix/SRHR-3800" into "release/9.1.0"
-cfd82fd (origin/bugfix/SRHR-3800) [bugfix-2353/SRHR-3800] исправление потери traceId в requisition - изменение билдера restTemplate и добавление перехватчику ClientLogInterceptor первого приоритета в срабатывании
-b2ef6d2 SRHR-2246 update version audit lib
-3ae28c5 Merge pull request #2813469 from "bugfix/SRHR-3800" into "release/9.1.0"
-cdd2e6a [bugfix-2353/SRHR-3800] исправление потери traceId в requisition
-
-
+SRHR-2425 Доработка эндпоинта получения доступных данных по периоду
+SRHR-2426 Доработка эндпоинта получения начальных параметров сервиса
 SRHR-2427 Доработка эндпоинта получение получения длинных текстов запроса
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-payavg/pulls/2915242
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-master-data-integration/pulls/2915243
-https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-easup-integration/pulls/2915247
+
+SRHR-2428 Доработка эндпоинта получения данных расчета среднедневного заработка (неоплаченные события)
+SRHR-2429 Доработка эндпоинта получения справочников сервиса
+SRHR-2430 Доработка эндпоинта получения данных расчета среднедневного заработка (СДЗ) – оплаченные события
+
+SRHR-2422 Новый эндпоинт получения данных печатной формы 
+SRHR-2423 Новый эндпоинт получения содержимого печатной формы
+
+SRHR-2419 Изменение эндпоинта получения доступных периодов
+SRHR-2420 Изменение эндпоинта получения информации по суммарной заработной плате
+SRHR-2421 Изменение эндпоинта получения детальной информации по суммарной заработной плате
+
+srhr-ms-master-data-integration
+#Mobile
+EASUP_SERVICE_ID_HEADER_NAME=
+EASUP_SERVICE_ID_HEADER_STAFF_VALUE=
+EASUP_SERVICE_ID_HEADER_STAFF_MOBILE_VALUE=
+
+#SSL
+MSS_FULL_SSL_KEY_STORE=/path/to/store
+MSS_FULL_SSL_KEY_STORE_PASSWORD=password
+MSS_FULL_SSL_TRUST_STORE=/path/to/store
+MSS_FULL_SSL_TRUST_STORE_PASSWORD=password
+MSS_FULL_SSL_KEY_STORE_TYPE=
+MSS_FULL_SSL_TRUST_STORE_TYPE=
+
+MSS_LIMITED_SSL_KEY_STORE=/path/to/store
+MSS_LIMITED_SSL_KEY_STORE_PASSWORD=password
+MSS_LIMITED_SSL_TRUST_STORE=/path/to/store
+MSS_LIMITED_SSL_TRUST_STORE_PASSWORD=password
+MSS_LIMITED_SSL_KEY_STORE_TYPE=
+MSS_LIMITED_SSL_TRUST_STORE_TYPE=
+
+MSS_STANDARD_SSL_KEY_STORE=/path/to/store
+MSS_STANDARD_SSL_KEY_STORE_PASSWORD=password
+MSS_STANDARD_SSL_TRUST_STORE=/path/to/store
+MSS_STANDARD_SSL_TRUST_STORE_PASSWORD=password
+MSS_STANDARD_SSL_KEY_STORE_TYPE=
+MSS_STANDARD_SSL_TRUST_STORE_TYPE=
+
+ESS_SSL_KEY_STORE=/path/to/store
+ESS_SSL_KEY_STORE_PASSWORD=password
+ESS_SSL_TRUST_STORE=/path/to/store
+ESS_SSL_TRUST_STORE_PASSWORD=password
+ESS_SSL_KEY_STORE_TYPE=
+ESS_SSL_TRUST_STORE_TYPE=
+
+TABEL_SSL_KEY_STORE=/path/to/store
+TABEL_SSL_KEY_STORE_PASSWORD=password
+TABEL_SSL_TRUST_STORE=/path/to/store
+TABEL_SSL_TRUST_STORE_PASSWORD=password
+TABEL_SSL_KEY_STORE_TYPE=
+TABEL_SSL_TRUST_STORE_TYPE=
+
+srhr-ms-payavg
+#MasterDataIntegration
+MASTER_DATA_INTEGRATION_SERVICE_URL=http://localhost:8083
+
+srhr-ms-paystub
+#MasterDataIntegration
+MASTER_DATA_INTEGRATION_SERVICE_URL=http://localhost:8083
+
+#Filestorage
+FILESTORAGE_REST_SERVICE_URL=http://localhost:8100
+
+#TIMEOUT
+PAYSTUB_REST_READ_TIMEOUT_MS=30000
+PAYSTUB_REST_CONNECT_TIMEOUT_MS=10000
+
+
+
 
 
 NPushkaryov@NPushkaryov MINGW64 ~/IdeaProjects/srhr-backend/srhr-ms-master-data-integration (release/9.3.0)
