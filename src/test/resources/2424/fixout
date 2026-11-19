@@ -1,0 +1,130 @@
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class EasupTokenProvider {
+
+    private static final Map<String, String> ROLE_TO_TUZ = Map.of(
+            RolesConstant.MSS_FULL, "mss-full",
+            RolesConstant.MSS_LIMITED, "mss-limited",
+            RolesConstant.MSS_STANDARD, "mss-standard",
+            RolesConstant.ESS, "ess",
+            RolesConstant.TABEL, "tabel"
+    );
+
+    private final Environment environment;
+    private final EpaConfigurationProperties epaConfig;
+    private final EasupProperties easupProperties;
+
+    private final Map<String, ClientCredentialsClient> clients =
+            new ConcurrentHashMap<>();
+
+    public String getToken(String role) {
+        return clientFor(role).getToken();
+    }
+
+    public String refreshToken(String role) {
+        return clientFor(role).getRefreshedToken();
+    }
+
+    private ClientCredentialsClient clientFor(String role) {
+        return clients.computeIfAbsent(role, this::createClient);
+    }
+
+    private ClientCredentialsClient createClient(String role) {
+        String key = ROLE_TO_TUZ.get(role);
+
+        if (key == null) {
+            throw new IllegalArgumentException(
+                    "Неизвестная роль ЕАСУП: " + role);
+        }
+
+        EasupProperties.TuzCredentials tuz =
+                easupProperties.getTuz().get(key);
+
+        if (tuz == null) {
+            throw new IllegalStateException(
+                    "Не задан ТУЗ для роли: " + role);
+        }
+
+        log.info("Создание EPA-клиента для роли [{}]", role);
+
+        return EpaClientCredentialsClientFactory.createDefaultClient(
+                environment,
+                epaConfig.getHostname(),
+                tuz.getClient(),
+                tuz.getPassword()
+        );
+    }
+}
+
+
+@RequiredArgsConstructor
+public class EasupAuthInterceptor implements ClientHttpRequestInterceptor {
+
+    private final EasupTokenProvider tokenProvider;
+    private final String role;
+
+    @Override
+    public ClientHttpResponse intercept(
+            HttpRequest request,
+            byte[] body,
+            ClientHttpRequestExecution execution
+    ) throws IOException {
+
+        String token = tokenProvider.getToken(role);
+
+        request.getHeaders().setBearerAuth(token);
+
+        ClientHttpResponse response = execution.execute(request, body);
+
+        if (response.getStatusCode().value() == 401) {
+            response.close();
+
+            token = tokenProvider.refreshToken(role);
+            request.getHeaders().setBearerAuth(token);
+
+            response = execution.execute(request, body);
+        }
+
+        return response;
+    }
+}
+
+
+
+public RestTemplate forRole(String role) {
+    return restTemplatesByRole.computeIfAbsent(role, r ->
+            new RestTemplateBuilder()
+                    .requestFactory(() ->
+                            new HttpComponentsClientHttpRequestFactory(httpClient(r)))
+                    .additionalInterceptors(
+                            new EasupRequestInterceptor(),
+                            metricsInterceptor,
+                            new EasupAuthInterceptor(tokenProvider, r)
+                    )
+                    .build());
+}
+
+
+
+easup:
+  tuz:
+    mss-full:
+      client: ${EASUP_MSS_FULL_CLIENT}
+      password: ${EASUP_MSS_FULL_PASSWORD}
+
+    mss-limited:
+      client: ${EASUP_MSS_LIMITED_CLIENT}
+      password: ${EASUP_MSS_LIMITED_PASSWORD}
+
+    mss-standard:
+      client: ${EASUP_MSS_STANDARD_CLIENT}
+      password: ${EASUP_MSS_STANDARD_PASSWORD}
+
+    ess:
+      client: ${EASUP_ESS_CLIENT}
+      password: ${EASUP_ESS_PASSWORD}
+
+    tabel:
+      client: ${EASUP_TABEL_CLIENT}
+      password: ${EASUP_TABEL_PASSWORD}
