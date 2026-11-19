@@ -118,24 +118,51 @@ public RestTemplate forRole(String role) {
 
 
 
-easup:
-  tuz:
-    mss-full:
-      client: ${EASUP_MSS_FULL_CLIENT}
-      password: ${EASUP_MSS_FULL_PASSWORD}
+epa:
+  auth:
+    token:
+      client: ${EPA_CLIENT}
+      password: ${EPA_PASSWORD}
 
-    mss-limited:
-      client: ${EASUP_MSS_LIMITED_CLIENT}
-      password: ${EASUP_MSS_LIMITED_PASSWORD}
+    tuz:
+      mss-full:
+        client: ${EPA_MSS_FULL_CLIENT}
+        password: ${EPA_MSS_FULL_PASSWORD}
 
-    mss-standard:
-      client: ${EASUP_MSS_STANDARD_CLIENT}
-      password: ${EASUP_MSS_STANDARD_PASSWORD}
+      mss-limited:
+        client: ${EPA_MSS_LIMITED_CLIENT}
+        password: ${EPA_MSS_LIMITED_PASSWORD}
 
-    ess:
-      client: ${EASUP_ESS_CLIENT}
-      password: ${EASUP_ESS_PASSWORD}
+      mss-standard:
+        client: ${EPA_MSS_STANDARD_CLIENT}
+        password: ${EPA_MSS_STANDARD_PASSWORD}
 
-    tabel:
-      client: ${EASUP_TABEL_CLIENT}
-      password: ${EASUP_TABEL_PASSWORD}
+      ess:
+        client: ${EPA_ESS_CLIENT}
+        password: ${EPA_ESS_PASSWORD}
+
+      tabel:
+        client: ${EPA_TABEL_CLIENT}
+        password: ${EPA_TABEL_PASSWORD}
+
+
+@Getter
+@Setter
+public static class Auth {
+    private Token token;
+    private Map<String, TuzCredentials> tuz = new HashMap<>();
+
+    @Getter
+    @Setter
+    public static class Token {
+        private String client;
+        private String password;
+    }
+
+    @Getter
+    @Setter
+    public static class TuzCredentials {
+        private String client;
+        private String password;
+    }
+}
