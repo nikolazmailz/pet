@@ -58,11 +58,14 @@ public class EasupTokenProvider {
 }
 
 
+@Slf4j
+@Component
 @RequiredArgsConstructor
-public class EasupAuthInterceptor implements ClientHttpRequestInterceptor {
+public class EpaAuthInterceptor implements ClientHttpRequestInterceptor {
 
-    private final EasupTokenProvider tokenProvider;
-    private final String role;
+    private static final String HEADER_ROLES = "Roles";
+
+    private final EpaTokenProvider tokenProvider;
 
     @Override
     public ClientHttpResponse intercept(
@@ -71,14 +74,22 @@ public class EasupAuthInterceptor implements ClientHttpRequestInterceptor {
             ClientHttpRequestExecution execution
     ) throws IOException {
 
-        String token = tokenProvider.getToken(role);
+        String role = request.getHeaders().getFirst(HEADER_ROLES);
 
+        if (!StringUtils.hasText(role)) {
+            throw new IllegalArgumentException(
+                    "Отсутствует заголовок Roles для авторизации EPA");
+        }
+
+        String token = tokenProvider.getToken(role);
         request.getHeaders().setBearerAuth(token);
 
         ClientHttpResponse response = execution.execute(request, body);
 
         if (response.getStatusCode().value() == 401) {
             response.close();
+
+            log.info("Повторный запрос токена EPA для роли [{}]", role);
 
             token = tokenProvider.refreshToken(role);
             request.getHeaders().setBearerAuth(token);
