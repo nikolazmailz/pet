@@ -2,3 +2,15 @@ SRHR-2424 Доработка интеграции EPA + TYK
 
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-mod-commons/pulls/2923833
 https://sfera.inno.local/sourcecode/projects/SRHR/repos/srhr-ms-master-data-integration/pulls/2923834
+
+
+
+#TUZ
+EPA_MSS_FULL_CLIENT=
+EPA_MSS_FULL_PASSWORD=
+EPA_MSS_LIMITED_CLIENT=
+EPA_MSS_LIMITED_PASSWORD=
+EPA_MSS_STANDARD_CLIENT=
+EPA_MSS_STANDARD_PASSWORD=
+EPA_ESS_CLIENT=
+EPA_ESS_PASSWORD=
