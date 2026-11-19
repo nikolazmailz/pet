@@ -405,3 +405,69 @@ private EpaAccessToken getTokenValidating(MultiValuedMap<String, String> request
         return token;
     }
 
+
+@Configuration
+@ConfigurationProperties(prefix = "epa")
+@Getter
+@Setter
+public class EpaConfigurationProperties {
+    private String hostname;
+    private Auth auth;
+    private Jwks jwks;
+
+    @Getter
+    @Setter
+    public static class Auth {
+        private Token token;
+
+        @Getter
+        @Setter
+        public static class Token {
+            private String client;
+            private String password;
+        }
+    }
+
+    @Getter
+    @Setter
+    public static class Jwks {
+        private Connect connect;
+        private Read read;
+
+        @Getter
+        @Setter
+        public static class Connect {
+            private int timeout;
+        }
+
+        @Getter
+        @Setter
+        public static class Read {
+            private int timeout;
+        }
+    }
+
+    @Getter
+    @Setter
+    public static class Ssl {
+        private boolean enabled;
+        private Keystore keystore;
+        private Truststore truststore;
+
+        @Getter
+        @Setter
+        public static class Keystore {
+            private String path;
+            private String password;
+            private String type;
+        }
+
+        @Getter
+        @Setter
+        public static class Truststore {
+            private String path;
+            private String password;
+            private String type;
+        }
+    }
+}
