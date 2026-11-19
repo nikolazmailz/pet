@@ -341,3 +341,67 @@ public class EpaSdkServiceImpl implements EpaSdkService {
     return params.toString();
   }
 }
+
+
+
+
+EpaSdkService
+  public EpaAccessToken refreshCacheableTokenModel() {
+    return client.getRefreshedTokenModel();
+  }
+
+где client - private ClientCredentialsClient client;
+
+public EpaAccessToken getRefreshedTokenModel() {
+        return this.getTokenRefreshing(this.defaultParameters);
+    }
+
+ private EpaAccessToken getTokenRefreshing(MultiValuedMap<String, String> requestParameters) {
+        MultiValuedMap<String, String> mergedParams = this.mergeRequestParams(requestParameters, this.defaultParameters);
+        LOG.trace("Application requested token (ignoring cache). Params: {}.", this.clearParamsForLogging(mergedParams));
+        EpaAccessToken token = this.authorizeAndGetToken(mergedParams);
+        this.cacheToken(mergedParams, token);
+        return token;
+    }
+
+и
+ String token = epaTokenProvider.getToken(role);
+
+public String getToken(String role) {
+        return clientFor(role).getToken();
+    }
+
+ClientCredentialsClient - String getToken();
+
+   public String getToken() {
+        return this.getTokenValidating(this.defaultParameters).getValue();
+    }
+
+private EpaAccessToken getTokenValidating(MultiValuedMap<String, String> requestParameters) {
+        MultiValuedMap<String, String> mergedParams = this.mergeRequestParams(requestParameters, this.defaultParameters);
+        MultiValuedMap<String, String> paramsForLogging = this.clearParamsForLogging(mergedParams);
+        LOG.trace("Application requested token (from cache or new). Params: {}.", paramsForLogging);
+        EpaAccessToken token = this.getCachedToken(mergedParams);
+        if (token == null) {
+            LOG.trace("No previous token in cache. Params: {}.", paramsForLogging);
+            token = this.authorizeAndGetToken(mergedParams);
+            this.cacheToken(mergedParams, token);
+        } else {
+            String tokenForLogging = this.trimTokenForLogging(token.getValue());
+            if (this.isExpired(token.getValue())) {
+                LOG.trace("Previous token expired. Params: {}, Token: {}.", paramsForLogging, tokenForLogging);
+                token = this.authorizeAndGetToken(mergedParams);
+                this.cacheToken(mergedParams, token);
+            } else {
+                LocalDateTime expirationUpdateTime = LocalDateTime.now().plusSeconds((long)this.configuration.getUpdateTimeBeforeTokenExpiration());
+                if (expirationUpdateTime.isAfter(token.getExpiresIn())) {
+                    LOG.trace("Previous token expired. Params: {}, Token: {}.", paramsForLogging, tokenForLogging);
+                    token = this.authorizeAndGetToken(mergedParams);
+                    this.cacheToken(mergedParams, token);
+                }
+            }
+        }
+
+        return token;
+    }
+
